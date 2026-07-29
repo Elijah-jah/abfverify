@@ -1,0 +1,720 @@
+/* =====================================
+   ABFverify Login CSS
+   Theme Compatible With Registration
+===================================== */
+
+
+/* ===============================
+   DARK MODE DEFAULT
+================================ */
+
+body {
+
+    --bg: #0f172a;
+    --card: #111827;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --border: #1f2937;
+    --input-bg: #0b1220;
+
+}
+
+
+/* ===============================
+   LIGHT MODE
+================================ */
+
+
+body.light {
+
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --input-bg: #ffffff;
+
+}
+
+
+
+
+
+/* ===============================
+   RESET
+================================ */
+
+
+* {
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+    font-family:"Inter", Arial, sans-serif;
+
+}
+
+
+
+
+
+/* ===============================
+   BODY
+================================ */
+
+
+body {
+
+    min-height:100vh;
+
+    background:var(--bg);
+
+    color:var(--text);
+
+    transition:.3s ease;
+
+}
+
+
+
+
+
+/* ===============================
+   HIDDEN THEME BUTTON
+================================ */
+
+
+.theme-btn {
+
+    display:none;
+
+}
+
+
+
+
+
+
+/* ===============================
+   WRAPPER
+================================ */
+
+
+.login-wrapper {
+
+    min-height:100vh;
+
+    display:flex;
+
+}
+
+
+
+
+
+/* ===============================
+   BRAND SECTION
+================================ */
+
+
+.login-brand {
+
+    flex:1;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    padding:50px;
+
+    background:
+    linear-gradient(
+        135deg,
+        var(--bg),
+        var(--card)
+    );
+
+    border-right:1px solid var(--border);
+
+}
+
+
+
+
+.brand-logo {
+
+    width:110px;
+
+    height:110px;
+
+    object-fit:contain;
+
+    margin-bottom:20px;
+
+}
+
+
+
+
+
+.login-brand h1 {
+
+    font-size:36px;
+
+    font-weight:800;
+
+    margin-bottom:10px;
+
+}
+
+
+
+
+
+.login-brand p {
+
+    color:var(--muted);
+
+    font-size:15px;
+
+    max-width:320px;
+
+}
+
+
+
+
+
+
+
+/* ===============================
+   LOGIN CARD
+================================ */
+
+
+.login-card {
+
+    flex:1;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    padding:60px;
+
+    background:var(--card);
+
+}
+
+
+
+
+
+.login-card h2 {
+
+    font-size:32px;
+
+    margin-bottom:8px;
+
+}
+
+
+
+
+
+.login-subtext {
+
+    color:var(--muted);
+
+    font-size:14px;
+
+    margin-bottom:30px;
+
+}
+
+
+
+
+
+
+
+
+/* ===============================
+   INPUTS
+================================ */
+
+
+.input-group {
+
+    margin-bottom:20px;
+
+}
+
+
+
+
+.input-group label {
+
+    display:block;
+
+    color:var(--muted);
+
+    font-size:13px;
+
+    margin-bottom:7px;
+
+}
+
+
+
+
+.input-group input {
+
+    width:100%;
+
+    padding:14px 15px;
+
+    border-radius:12px;
+
+    border:1px solid var(--border);
+
+    background:var(--input-bg);
+
+    color:var(--text);
+
+    outline:none;
+
+    font-size:14px;
+
+    transition:.3s;
+
+}
+
+
+
+
+
+.input-group input::placeholder {
+
+    color:var(--muted);
+
+}
+
+
+
+
+
+.input-group input:focus {
+
+    border-color:#1d4ed8;
+
+    box-shadow:
+
+    0 0 0 3px rgba(29,78,216,.15);
+
+}
+
+
+
+
+
+
+
+/* ===============================
+   PASSWORD
+================================ */
+
+
+.password-box {
+
+    position:relative;
+
+}
+
+
+
+
+
+.password-box input {
+
+    padding-right:45px;
+
+}
+
+
+
+
+
+.password-box i {
+
+    position:absolute;
+
+    right:15px;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    cursor:pointer;
+
+    color:var(--muted);
+
+}
+
+
+
+
+
+.password-box i:hover {
+
+    color:#1d4ed8;
+
+}
+
+
+
+
+
+
+
+
+/* ===============================
+   LOGIN BUTTON
+================================ */
+
+
+.login-btn {
+
+    width:100%;
+
+    margin-top:10px;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#1d4ed8;
+
+    color:white;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+
+
+
+
+.login-btn:hover {
+
+    background:#1e40af;
+
+    transform:translateY(-2px);
+
+}
+
+
+
+
+
+
+
+
+/* ===============================
+   FORGOT PASSWORD
+================================ */
+
+
+.login-options {
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    margin-top:18px;
+
+}
+
+
+
+
+
+.login-options a {
+
+    color:#1d4ed8;
+
+    text-decoration:none;
+
+    font-size:14px;
+
+    font-weight:600;
+
+}
+
+
+
+
+
+.login-options a:hover {
+
+    text-decoration:underline;
+
+}
+
+
+
+
+
+
+
+/* ===============================
+   FOOTER
+================================ */
+
+
+.login-footer {
+
+    margin-top:25px;
+
+    color:var(--muted);
+
+    font-size:13px;
+
+}
+
+
+
+
+
+.login-footer a {
+
+    color:#1d4ed8;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+}
+
+
+
+
+
+.login-footer a:hover {
+
+    text-decoration:underline;
+
+}
+
+
+
+
+
+
+
+/* ===============================
+   ALERTS
+================================ */
+
+
+.alert {
+
+    width:100%;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    margin-bottom:18px;
+
+    text-align:center;
+
+    font-size:14px;
+
+}
+
+
+
+
+
+.alert.success {
+
+    background:#d1fae5;
+
+    color:#065f46;
+
+}
+
+
+
+
+
+.alert.error {
+
+    background:#fee2e2;
+
+    color:#991b1b;
+
+}
+
+
+
+
+
+.alert.warning {
+
+    background:#fef3c7;
+
+    color:#92400e;
+
+}
+
+
+
+
+
+.alert.info {
+
+    background:#dbeafe;
+
+    color:#1e40af;
+
+}
+
+
+
+
+
+
+
+
+/* ===============================
+   TABLET
+================================ */
+
+
+@media(max-width:900px){
+
+
+    .login-wrapper {
+
+        flex-direction:column;
+
+    }
+
+
+
+    .login-brand {
+
+        padding:40px 25px;
+
+        border-right:none;
+
+        border-bottom:1px solid var(--border);
+
+    }
+
+
+
+    .brand-logo {
+
+        width:90px;
+
+        height:90px;
+
+    }
+
+
+
+    .login-brand h1 {
+
+        font-size:30px;
+
+    }
+
+
+
+    .login-card {
+
+        padding:40px 30px;
+
+    }
+
+
+}
+
+
+
+
+
+
+
+/* ===============================
+   MOBILE
+================================ */
+
+
+@media(max-width:480px){
+
+
+    .login-brand {
+
+        padding:30px 20px;
+
+    }
+
+
+
+    .brand-logo {
+
+        width:75px;
+
+        height:75px;
+
+    }
+
+
+
+    .login-card {
+
+        padding:30px 20px;
+
+    }
+
+
+
+    .login-card h2 {
+
+        font-size:25px;
+
+    }
+
+
+
+    .login-btn {
+
+        padding:13px;
+
+    }
+
+
+}

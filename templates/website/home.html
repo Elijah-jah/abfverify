@@ -1,0 +1,836 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ABFverify | Instant SMS Verification</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Landing CSS -->
+    <link rel="stylesheet" href="{% static 'css/landing.css' %}">
+
+    <link rel="icon" href="{% static 'images/mylogo1.png' %}">
+
+</head>
+
+<body>
+
+<!-- ==========================
+        NAVIGATION
+========================== -->
+
+<nav class="navbar navbar-expand-lg fixed-top custom-navbar">
+
+    <div class="container">
+
+        <!-- Logo -->
+
+        <a class="navbar-brand d-flex align-items-center" href="/">
+
+            <img
+                src="{% static 'images/mylogo1.png' %}"
+                alt="ABFverify Logo"
+                class="logo-image"
+            >
+
+            <span class="logo-text">
+                ABFverify
+            </span>
+
+        </a>
+
+        <!-- Mobile Toggle -->
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarMenu">
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+        <!-- Navigation -->
+
+        <div class="collapse navbar-collapse" id="navbarMenu">
+
+            <ul class="navbar-nav mx-auto">
+
+                <li class="nav-item">
+
+                    <a class="nav-link active" href="#">
+                        Home
+                    </a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link" href="#how">
+                        How It Works
+                    </a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link" href="#countries">
+                        Countries
+                    </a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link" href="#services">
+                        Services
+                    </a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link" href="#contact">
+                        Contact
+                    </a>
+
+                </li>
+
+            </ul>
+
+            <div class="d-flex align-items-center gap-2">
+
+                <button
+                    id="themeToggle"
+                    class="btn btn-theme">
+
+                    <i class="bi bi-moon-stars-fill"></i>
+
+                </button>
+
+                <a
+                    href="{% url 'login' %}"
+                    class="btn btn-outline-primary">
+
+                    Login
+
+                </a>
+
+                <a
+                    href="{% url 'register' %}"
+                    class="btn btn-primary">
+
+                    Get Started
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</nav>
+
+<!-- ==========================
+        HERO
+========================== -->
+
+<section class="hero-section">
+
+    <div class="container">
+
+        <div class="row align-items-center gy-5">
+
+            <!-- Left -->
+
+            <div class="col-lg-6">
+
+                <span class="hero-badge">
+
+                    <i class="bi bi-shield-check-fill"></i>
+
+                    Secure SMS Verification Platform
+
+                </span>
+
+                <h1 class="hero-title">
+
+                    Receive Verification SMS
+
+                    <span>
+
+                        Instantly
+
+                    </span>
+
+                    From Anywhere
+
+                </h1>
+
+                <p class="hero-description">
+
+                    ABFverify lets you purchase temporary virtual phone numbers
+                    from multiple countries for OTP verification on your favorite
+                    online services. Fast activation, affordable pricing,
+                    reliable SMS delivery, and an easy-to-use dashboard.
+
+                </p>
+
+                <div class="hero-buttons">
+
+                    <a
+                        href="{% url 'register' %}"
+                        class="btn btn-primary btn-lg">
+
+                        Get Started
+
+                    </a>
+
+                    <a
+                        href="#how"
+                        class="btn btn-outline-primary btn-lg">
+
+                        Learn More
+
+                    </a>
+
+                </div>
+
+                <!-- Statistics -->
+
+                <div class="hero-stats">
+
+                    <div class="stat-box">
+
+                        <h3>50+</h3>
+
+                        <p>Countries</p>
+
+                    </div>
+
+                    <div class="stat-box">
+
+                        <h3>500+</h3>
+
+                        <p>Services</p>
+
+                    </div>
+
+                    <div class="stat-box">
+
+                        <h3>24/7</h3>
+
+                        <p>Support</p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Right -->
+
+            <div class="col-lg-6">
+
+                <div class="phone-wrapper">
+
+                    <div class="phone-glow"></div>
+
+                    <div class="phone-frame">
+
+                        <img
+                            src="{% static 'images/dashboard-preview.png' %}"
+                            alt="Dashboard Preview"
+                            class="phone-screen">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+<!-- <div class="phone-wrapper">
+
+    <div class="phone-glow"></div>
+
+    <div class="phone-frame">
+
+        <img
+            src="{% static 'images/dashboard-preview.png' %}"
+            alt="Dashboard Preview"
+            class="phone-screen">
+
+    </div>
+
+</div> -->
+<!-- ==========================================
+        WHY CHOOSE ABFVERIFY
+========================================== -->
+
+<section class="py-5 bg-body-tertiary">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="section-badge">
+                WHY CHOOSE US
+            </span>
+
+            <h2 class="section-title">
+                Why Thousands Choose ABFverify
+            </h2>
+
+            <p class="section-subtitle">
+
+                Purchase temporary virtual numbers from multiple countries
+                with instant activation, reliable SMS delivery and an
+                easy-to-use dashboard.
+
+            </p>
+
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="feature-card h-100">
+
+                    <div class="feature-icon">
+
+                        <i class="bi bi-lightning-charge-fill"></i>
+
+                    </div>
+
+                    <h4>Instant Activation</h4>
+
+                    <p>
+
+                        Receive your virtual number within seconds after
+                        requesting it.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="feature-card h-100">
+
+                    <div class="feature-icon">
+
+                        <i class="bi bi-globe-americas"></i>
+
+                    </div>
+
+                    <h4>Global Coverage</h4>
+
+                    <p>
+
+                        Access numbers from multiple countries for your
+                        verification needs.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="feature-card h-100">
+
+                    <div class="feature-icon">
+
+                        <i class="bi bi-shield-lock-fill"></i>
+
+                    </div>
+
+                    <h4>Secure Platform</h4>
+
+                    <p>
+
+                        Your account, wallet and verification history
+                        remain protected.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+
+                <div class="feature-card h-100">
+
+                    <div class="feature-icon">
+
+                        <i class="bi bi-headset"></i>
+
+                    </div>
+
+                    <h4>24/7 Support</h4>
+
+                    <p>
+
+                        Our support team is always available whenever
+                        you need assistance.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ==========================================
+        HOW IT WORKS
+========================================== -->
+
+<section id="how" class="py-5">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="section-badge">
+
+                HOW IT WORKS
+
+            </span>
+
+            <h2 class="section-title">
+
+                Get Your Verification Number
+                In Six Simple Steps
+
+            </h2>
+
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-lg-2 col-md-4 col-6">
+
+                <div class="step-card">
+
+                    <div class="step-number">1</div>
+
+                    <i class="bi bi-wallet2"></i>
+
+                    <h6>Fund Wallet</h6>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-6">
+
+                <div class="step-card">
+
+                    <div class="step-number">2</div>
+
+                    <i class="bi bi-globe"></i>
+
+                    <h6>Select Country</h6>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-6">
+
+                <div class="step-card">
+
+                    <div class="step-number">3</div>
+
+                    <i class="bi bi-grid"></i>
+
+                    <h6>Select Service</h6>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-6">
+
+                <div class="step-card">
+
+                    <div class="step-number">4</div>
+
+                    <i class="bi bi-check-circle"></i>
+
+                    <h6>Check Stock</h6>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-6">
+
+                <div class="step-card">
+
+                    <div class="step-number">5</div>
+
+                    <i class="bi bi-phone"></i>
+
+                    <h6>Request Number</h6>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-2 col-md-4 col-6">
+
+                <div class="step-card">
+
+                    <div class="step-number">6</div>
+
+                    <i class="bi bi-chat-dots-fill"></i>
+
+                    <h6>Receive OTP</h6>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ==========================================
+        COUNTRIES & SERVICES
+========================================== -->
+
+<section class="py-5 bg-body-tertiary">
+
+    <div class="container">
+
+        <div class="row g-5">
+
+            <div class="col-lg-6" id="countries">
+
+                <div class="offer-card h-100">
+
+                    <h3>
+
+                        <i class="bi bi-globe2"></i>
+
+                        Available Countries
+
+                    </h3>
+
+                    <div class="row">
+
+                        <div class="col-6">
+
+                            <ul class="offer-list">
+
+                                <li>🇺🇸 United States</li>
+
+                                <li>🇬🇧 United Kingdom</li>
+
+                                <li>🇨🇦 Canada</li>
+
+                                <li>🇦🇺 Australia</li>
+
+                                <li>🇸🇬 Singapore</li>
+
+                            </ul>
+
+                        </div>
+
+                        <div class="col-6">
+
+                            <ul class="offer-list">
+
+                                <li>🇦🇹 Austria</li>
+
+                                <li>🇩🇪 Germany</li>
+
+                                <li>🇫🇷 France</li>
+
+                                <li>🇮🇹 Italy</li>
+
+                                <li>+ Many More</li>
+
+                            </ul>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6" id="services">
+
+                <div class="offer-card h-100">
+
+                    <h3>
+
+                        <i class="bi bi-app-indicator"></i>
+
+                        Supported Services
+
+                    </h3>
+
+                    <div class="row">
+
+                        <div class="col-6">
+
+                            <ul class="offer-list">
+
+                                <li>WhatsApp</li>
+
+                                <li>Telegram</li>
+
+                                <li>Facebook</li>
+
+                                <li>Instagram</li>
+
+                                <li>Google</li>
+
+                            </ul>
+
+                        </div>
+
+                        <div class="col-6">
+
+                            <ul class="offer-list">
+
+                                <li>TikTok</li>
+
+                                <li>Discord</li>
+
+                                <li>X (Twitter)</li>
+
+                                <li>Microsoft</li>
+
+                                <li>+ Hundreds More</li>
+
+                            </ul>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+<!-- ==========================================
+        CALL TO ACTION
+========================================== -->
+
+<section class="cta-section py-5">
+
+    <div class="container text-center">
+
+        <span class="section-badge">
+
+            GET STARTED
+
+        </span>
+
+        <h2 class="display-5 fw-bold mt-3">
+
+            Ready to Get Your Virtual Number?
+
+        </h2>
+
+        <p class="lead text-muted mt-3 mb-4">
+
+            Join thousands of users who trust ABFverify for fast,
+            secure and reliable SMS verification services.
+
+        </p>
+
+        <div class="d-flex justify-content-center flex-wrap gap-3">
+
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4">
+
+                Create Free Account
+
+            </a>
+
+            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg px-4">
+
+                Login
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ==========================================
+                FOOTER
+========================================== -->
+
+<footer class="footer">
+
+    <div class="container">
+
+        <div class="row gy-5">
+
+            <!-- ABOUT -->
+
+            <div class="col-lg-4">
+
+                <div class="footer-logo">
+
+                    <img src="{% static 'images/mylogo1.png' %}" alt="ABFverify">
+
+                    <span>ABFverify</span>
+
+                </div>
+
+                <p class="footer-text mt-3">
+
+                    ABFverify provides fast, secure and reliable
+                    virtual phone numbers for SMS verification across
+                    multiple countries and services.
+
+                </p>
+
+            </div>
+
+            <!-- QUICK LINKS -->
+
+            <div class="col-lg-4">
+
+                <h5 class="footer-title">
+
+                    Quick Links
+
+                </h5>
+
+                <ul class="footer-links">
+
+                    <li><a href="#">Home</a></li>
+
+                    <li><a href="#how">How It Works</a></li>
+
+                    <li><a href="#countries">Countries</a></li>
+
+                    <li><a href="#services">Services</a></li>
+
+                </ul>
+
+            </div>
+
+            <!-- SUPPORT -->
+
+            <div class="col-lg-4">
+
+                <h5 class="footer-title">
+
+                    Support
+
+                </h5>
+
+                <p>
+
+                    <i class="bi bi-envelope-fill"></i>
+
+                    <a href="mailto:abfverify@abfverify.com">
+
+                        abfverify@abfverify.com
+
+                    </a>
+
+                </p>
+
+                <p class="small text-muted">
+
+                    Need help? Contact our support team and we'll
+                    respond as quickly as possible.
+
+                </p>
+
+            </div>
+
+        </div>
+
+        <hr class="my-4">
+
+        <div class="footer-bottom">
+
+            <div>
+
+                <a href="{% url 'privacy_policy' %}">Privacy Policy</a>
+
+                <span class="mx-2">•</span>
+
+                <a href="{% url 'terms_of_service' %}">Terms of Service</a>
+
+            </div>
+
+            <p class="mb-0 mt-3 mt-lg-0">
+
+                © 2026 ABFverify. All Rights Reserved.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</footer>
+
+<!-- ==========================================
+        BACK TO TOP BUTTON
+========================================== -->
+
+<button id="backToTop" class="back-top">
+
+    <i class="bi bi-arrow-up"></i>
+
+</button>
+
+<!-- ==========================================
+        BOOTSTRAP JS
+========================================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<script src="{% static 'js/landing.js' %}"></script>
+
+</body>
+</html>

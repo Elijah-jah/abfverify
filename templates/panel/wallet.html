@@ -1,0 +1,130 @@
+{% extends "panel/dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Fund Wallet{% endblock %}
+{% block page_title %}Fund Wallet{% endblock %}
+{% block section_title %}Fund Wallet{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/wallet.css' %}">
+
+<div class="wallet-container">
+
+    <!-- HEADER -->
+    <div class="wallet-header">
+
+        <div>
+            <h2>Your Wallet</h2>
+
+            <p class="wallet-subtitle">
+                Add funds to your account to buy virtual numbers
+            </p>
+        </div>
+
+        <div class="wallet-balance">
+            Balance:
+            ₦{{ wallet.balance }}
+        </div>
+
+    </div>
+
+    <!-- FUND CARD -->
+    <div class="wallet-card">
+
+        <div class="wallet-group">
+
+            <label>
+                Amount (₦)
+            </label>
+
+            <input
+                type="number"
+                id="amountInput"
+                class="wallet-input"
+                placeholder="Enter amount e.g 1000"
+                min="500"
+            >
+
+        </div>
+
+        <!-- QUICK AMOUNT BUTTONS -->
+        <div class="wallet-suggestions">
+
+            <button
+                type="button"
+                class="wallet-chip"
+                data-amount="500">
+                ₦500
+            </button>
+
+            <button
+                type="button"
+                class="wallet-chip"
+                data-amount="1000">
+                ₦1000
+            </button>
+
+            <button
+                type="button"
+                class="wallet-chip"
+                data-amount="2000">
+                ₦2000
+            </button>
+
+            <button
+                type="button"
+                class="wallet-chip"
+                data-amount="5000">
+                ₦5000
+            </button>
+
+        </div>
+
+        <div class="wallet-note">
+            Minimum deposit: ₦500
+        </div>
+
+        <button
+            type="button"
+            class="wallet-button"
+            id="fundButton">
+            Proceed to Payment
+        </button>
+
+    </div>
+
+    <!-- INFO SECTION -->
+    <div class="wallet-info">
+
+        <h3>
+            How it works
+        </h3>
+
+        <ul>
+
+            <li>
+                Enter amount you want to fund
+            </li>
+
+            <li>
+                Click Proceed to Payment
+            </li>
+
+            <li>
+                Complete payment via secure gateway
+            </li>
+
+            <li>
+                Wallet is updated instantly
+            </li>
+
+        </ul>
+
+    </div>
+
+</div>
+
+<script src="{% static 'js/wallet.js' %}"></script>
+
+{% endblock %}

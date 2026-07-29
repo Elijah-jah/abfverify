@@ -1,0 +1,508 @@
+/* =====================================
+   ABFverify Privacy Policy
+===================================== */
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+body {
+
+    font-family: "Inter", Arial, sans-serif;
+
+    background: var(--bg);
+
+    color: var(--text);
+
+    line-height: 1.7;
+
+    transition: .3s ease;
+
+}
+
+
+
+/* ===============================
+   THEME VARIABLES
+================================ */
+
+
+html[data-theme="light"] {
+
+    --bg: #f8fafc;
+
+    --card: #ffffff;
+
+    --text: #0f172a;
+
+    --muted: #64748b;
+
+    --border: #e2e8f0;
+
+    --primary: #1d4ed8;
+
+}
+
+
+
+html[data-theme="dark"] {
+
+    --bg: #020617;
+
+    --card: #111827;
+
+    --text: #f8fafc;
+
+    --muted: #94a3b8;
+
+    --border: #1e293b;
+
+    --primary: #1d4ed8;
+
+}
+
+
+
+/* ===============================
+   WRAPPER
+================================ */
+
+
+.policy-wrapper {
+
+    min-height: 100vh;
+
+    padding: 30px;
+
+}
+
+
+
+/* ===============================
+   HEADER
+================================ */
+
+
+.policy-header {
+
+    max-width: 1100px;
+
+    margin: auto;
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 18px;
+
+    padding: 20px 25px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 30px;
+
+}
+
+
+
+.logo-section {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+}
+
+
+
+.logo {
+
+    width: 55px;
+
+    height: 55px;
+
+    object-fit: contain;
+
+}
+
+
+
+.logo-section h2 {
+
+    font-size: 22px;
+
+    color: var(--text);
+
+    font-weight: 700;
+
+}
+
+
+
+.logo-section p {
+
+    font-size: 14px;
+
+    color: var(--muted);
+
+}
+
+
+
+
+/* ===============================
+   HEADER ACTIONS
+================================ */
+
+
+.header-actions {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+}
+
+
+
+
+.theme-btn {
+
+    width: 42px;
+
+    height: 42px;
+
+    border-radius: 50%;
+
+    background: transparent;
+
+    border: 1px solid var(--border);
+
+    color: var(--text);
+
+    cursor: pointer;
+
+    font-size: 18px;
+
+    transition: .3s;
+
+}
+
+
+
+.theme-btn:hover {
+
+    background: var(--primary);
+
+    color: white;
+
+}
+
+
+
+
+.back-btn {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    text-decoration: none;
+
+    background: #1d4ed8;
+
+    color: white;
+
+    padding: 11px 18px;
+
+    border-radius: 10px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    transition: .3s;
+
+}
+
+
+
+.back-btn:hover {
+
+    opacity: .85;
+
+    transform: translateY(-2px);
+
+}
+
+
+
+/* ===============================
+   POLICY CARD
+================================ */
+
+
+.policy-card {
+
+    max-width: 1100px;
+
+    margin: auto;
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 20px;
+
+    padding: 45px;
+
+    box-shadow: 0 15px 40px rgba(0,0,0,.08);
+
+}
+
+
+
+
+.policy-card h1 {
+
+    font-size: 36px;
+
+    color: var(--text);
+
+    margin-bottom: 8px;
+
+}
+
+
+
+
+.last-updated {
+
+    color: var(--muted);
+
+    font-size: 14px;
+
+    margin-bottom: 35px;
+
+}
+
+
+
+/* ===============================
+   CONTENT
+================================ */
+
+
+.policy-card section {
+
+    margin-bottom: 35px;
+
+}
+
+
+
+.policy-card h3 {
+
+    color: #1d4ed8;
+
+    font-size: 20px;
+
+    margin-bottom: 12px;
+
+}
+
+
+
+.policy-card p {
+
+    color: var(--text);
+
+    font-size: 15px;
+
+}
+
+
+
+.policy-card ul {
+
+    padding-left: 25px;
+
+}
+
+
+
+.policy-card li {
+
+    color: var(--text);
+
+    margin-bottom: 8px;
+
+}
+
+
+
+
+.policy-card a {
+
+    color: #1d4ed8;
+
+    text-decoration: none;
+
+    font-weight: 600;
+
+}
+
+
+
+.policy-card a:hover {
+
+    text-decoration: underline;
+
+}
+
+
+
+/* ===============================
+   FOOTER
+================================ */
+
+
+.policy-footer {
+
+    max-width:1100px;
+
+    margin:30px auto 0;
+
+    text-align:center;
+
+    color:var(--muted);
+
+    font-size:14px;
+
+}
+
+
+
+
+
+/* ===============================
+   RESPONSIVE
+================================ */
+
+
+@media(max-width:768px) {
+
+
+    .policy-wrapper {
+
+        padding:15px;
+
+    }
+
+
+
+    .policy-header {
+
+        flex-direction: column;
+
+        align-items:flex-start;
+
+        gap:20px;
+
+    }
+
+
+
+    .header-actions {
+
+        width:100%;
+
+        justify-content:space-between;
+
+    }
+
+
+
+    .policy-card {
+
+        padding:25px;
+
+        border-radius:15px;
+
+    }
+
+
+
+    .policy-card h1 {
+
+        font-size:28px;
+
+    }
+
+
+}
+
+
+
+@media(max-width:450px) {
+
+
+    .logo {
+
+        width:45px;
+
+        height:45px;
+
+    }
+
+
+
+    .logo-section h2 {
+
+        font-size:20px;
+
+    }
+
+
+
+    .back-btn {
+
+        padding:10px 13px;
+
+        font-size:13px;
+
+    }
+
+
+
+    .policy-card {
+
+        padding:20px;
+
+    }
+
+
+
+    .policy-card p,
+    .policy-card li {
+
+        font-size:14px;
+
+    }
+
+
+}

@@ -1,0 +1,251 @@
+{% extends "panel/dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Buy Number{% endblock %} 
+{% block page_title %}Buy Number{% endblock %} 
+{% block section_title %}Buy Number{% endblock %} 
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/sms.css' %}">
+
+<div class="sms-container">
+
+    <!-- HEADER -->
+    <div class="sms-header">
+
+        <div>
+            <h1 class="sms-title">Buy Virtual Number</h1>
+
+            <p class="sms-subtitle">
+                Select a country and service to request a temporary virtual number.
+            </p>
+        </div>
+
+        <div class="sms-balance">
+            Balance:
+            ₦{{ user_wallet.balance|floatformat:2 }}
+        </div>
+
+    </div>
+
+    <!-- REQUEST FORM -->
+    <form method="POST" id="requestNumberForm">
+
+        {% csrf_token %}
+
+        <div class="sms-card">
+
+            <!-- SERVER -->
+            <div class="sms-group">
+
+                <label for="serverSelect">Server</label>
+
+                <select
+                    class="sms-select"
+                    id="serverSelect"
+                    name="server"
+                    required>
+
+                    <option value="">Select Server</option>
+                    
+                    <!-- Server 1 - Coming Soon -->
+                   <!-- <option value="server1">Server 1 (General)</option>  -->
+                    
+                    <!-- Server 2 - DaisySMS (USA Only) -->
+                    <option value="server2">Server 1 - USA Only</option>
+                    
+                    <!-- Server 3 - InstantNums (General) -->
+                    <option value="server3">Server 2 - All Countries</option>
+
+                </select>
+
+            </div>
+
+            <!-- COUNTRY -->
+            <div class="sms-group">
+
+                <label for="countrySelect">Country</label>
+
+                <select
+                    class="sms-select"
+                    id="countrySelect"
+                    name="country"
+                    required>
+
+                    <option value="">Select Server First</option>
+
+                </select>
+
+            </div>
+
+            <!-- SERVICE -->
+            <div class="sms-group">
+
+                <label for="serviceSelect">Service</label>
+
+                <select
+                    class="sms-select"
+                    id="serviceSelect"
+                    name="service"
+                    required>
+
+                    <option value="">Select Server First</option>
+
+                </select>
+
+            </div>
+
+            <!-- PRICE -->
+            <div class="sms-price-box">
+
+                <p>Estimated Price</p>
+
+                <h2 id="priceDisplay">
+                    ₦0.00
+                </h2>
+
+            </div>
+            <div class="sms-stock-box">
+    <p>Availability</p>
+
+    <h4 id="stockDisplay">
+        Checking...
+    </h4>
+</div>
+
+            <button
+                type="submit"
+                class="sms-button"
+                id="requestBtn">
+
+                Request Number
+
+            </button> 
+
+        </div>
+
+    </form>
+
+    {% if active_orders %}
+    {% for order in active_orders %}
+
+    <div class="sms-session" data-order-id="{{ order.id }}">
+
+    <div class="sms-session-header">
+
+        <span class="sms-country">
+            {{ order.country.iso_code }}
+        </span>
+
+        <span class="sms-service">
+            {{ order.service.name }}
+        </span>
+
+    </div>
+
+    <!-- NUMBER -->
+    <div class="sms-session-item">
+
+        <span>Number:</span>
+
+        <div class="sms-copy-box">
+
+            <strong class="active-number">
+                {{ order.phone_number }}
+            </strong>
+
+            <button
+                type="button"
+                class="copy-btn"
+                data-copy="{{ order.phone_number }}"
+                title="Copy Number">
+
+                <i class="fa-regular fa-copy"></i>
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- TIMER -->
+    <div class="sms-session-item">
+
+        <span>Timer:</span>
+
+        <strong class="sms-timer" data-created="{{ order.created_at|date:'c' }}">
+    20:00
+</strong>
+
+    </div>
+
+    <!-- OTP -->
+    <div class="sms-session-item">
+
+        <span>OTP:</span>
+
+        <div class="sms-copy-box">
+
+            <div class="otp-box">
+
+                {% if order.sms_code %}
+                    {{ order.sms_code }}
+                {% else %}
+                    Waiting...
+                {% endif %}
+
+            </div>
+
+            <button
+                type="button"
+                class="copy-btn otp-copy-btn"
+                {% if not order.sms_code %}disabled{% endif %}
+                data-copy="{{ order.sms_code|default:'' }}">
+
+                <i class="fa-regular fa-copy"></i>
+
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- SMS STATUS -->
+    <div
+        class="sms-session-item sms-status"
+        data-provider-order="{{ order.provider_order_id }}">
+
+        {% if order.sms_code %}
+            SMS Received
+        {% else %}
+            Waiting for SMS...
+        {% endif %}
+
+    </div>
+
+    <!-- CANCEL -->
+    <form method="POST" action="{% url 'cancel_order' %}">
+    {% csrf_token %}
+
+    <input
+        type="hidden"
+        name="order_id"
+        value="{{ order.id }}">
+
+    <button
+        type="submit"
+        class="sms-cancel-btn">
+        Cancel
+    </button>
+</form>
+
+</div>
+    {% endfor %}
+{% endif %}
+
+</div>
+
+<script src="{% static 'js/sms.js' %}"></script>
+
+{% endblock %}

@@ -1,0 +1,206 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Inter,sans-serif;
+}
+
+body{
+    background:#0f172a;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    transition:.3s;
+}
+
+.check-wrapper{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.check-card{
+    width:100%;
+    max-width:560px;
+    background:#111827;
+    border:1px solid #1f2937;
+    border-radius:18px;
+    padding:45px 35px;
+    text-align:center;
+    box-shadow:0 20px 45px rgba(0,0,0,.35);
+    transition:.3s;
+}
+
+.check-icon{
+    width:90px;
+    height:90px;
+    margin:0 auto 25px;
+    border-radius:50%;
+    background:#38bdf8;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.check-icon i{
+    color:#fff;
+    font-size:40px;
+}
+
+.check-card h1{
+    color:#fff;
+    font-size:30px;
+    margin-bottom:15px;
+}
+
+.check-title{
+    color:#e5e7eb;
+    font-size:17px;
+    font-weight:600;
+    margin-bottom:15px;
+}
+
+.check-text{
+    color:#9ca3af;
+    line-height:1.8;
+    margin-bottom:25px;
+}
+
+.email-box{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    background:#1e293b;
+    color:#38bdf8;
+    padding:16px;
+    border-radius:12px;
+    font-weight:600;
+    word-break:break-word;
+    margin-bottom:30px;
+}
+
+.info-box{
+    background:#0f172a;
+    border:1px solid #1f2937;
+    border-radius:12px;
+    padding:20px;
+    text-align:left;
+    margin-bottom:25px;
+}
+
+.info-item{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    color:#d1d5db;
+}
+
+.info-item:not(:last-child){
+    margin-bottom:18px;
+}
+
+.info-item i{
+    color:#38bdf8;
+    margin-top:3px;
+}
+
+.check-note{
+    color:#94a3b8;
+    line-height:1.8;
+    font-size:14px;
+}
+
+/* ---------- LIGHT THEME ---------- */
+
+body.light{
+    background:#f4f7fb;
+}
+
+body.light .check-card{
+    background:#ffffff;
+    border:1px solid #dbe4ee;
+    box-shadow:0 15px 35px rgba(0,0,0,.08);
+}
+
+body.light .check-card h1{
+    color:#111827;
+}
+
+body.light .check-title{
+    color:#1f2937;
+}
+
+body.light .check-text{
+    color:#4b5563;
+}
+
+body.light .email-box{
+    background:#eff6ff;
+    color:#0f5ed7;
+}
+
+body.light .info-box{
+    background:#f8fafc;
+    border-color:#dbe4ee;
+}
+
+body.light .info-item{
+    color:#374151;
+}
+
+body.light .check-note{
+    color:#6b7280;
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width:768px){
+
+    .check-card{
+        padding:35px 25px;
+    }
+
+    .check-card h1{
+        font-size:26px;
+    }
+
+    .check-title{
+        font-size:16px;
+    }
+
+}
+
+@media (max-width:480px){
+
+    body{
+        padding:15px;
+    }
+
+    .check-card{
+        padding:28px 20px;
+    }
+
+    .check-icon{
+        width:75px;
+        height:75px;
+    }
+
+    .check-icon i{
+        font-size:32px;
+    }
+
+    .check-card h1{
+        font-size:23px;
+    }
+
+    .email-box{
+        flex-direction:column;
+        gap:8px;
+        font-size:14px;
+    }
+
+}

@@ -1,0 +1,366 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Login | ABFverify</title>
+
+
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+<link rel="icon" href="{% static 'images/mylogo1.png' %}">
+
+<link rel="stylesheet" href="{% static 'css/toast.css' %}">
+
+
+<link 
+rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+
+</head>
+
+
+
+<body>
+
+
+<!-- Hidden theme controller for dashboard_base.js -->
+
+<button id="themeToggle" class="theme-btn">
+
+    <i class="fa-solid fa-moon"></i>
+
+</button>
+
+
+
+
+
+<div class="login-wrapper">
+
+
+
+    <!-- BRAND SIDE -->
+
+
+    <div class="login-brand">
+
+
+        <img
+        src="{% static 'images/mylogo1.png' %}"
+        alt="ABFverify Logo"
+        class="brand-logo">
+
+
+
+        <h1>
+            ABFverify
+        </h1>
+
+
+
+        <p>
+            Secure SMS verification & virtual number platform
+        </p>
+
+
+
+    </div>
+
+
+
+
+
+
+
+    <!-- LOGIN FORM -->
+
+
+    <div class="login-card">
+
+
+
+        <h2>
+            Welcome Back
+        </h2>
+
+
+
+        <p class="login-subtext">
+
+            Login to access your dashboard
+
+        </p>
+
+
+
+
+
+
+        <form method="POST" action="{% url 'login' %}">
+
+
+            {% csrf_token %}
+
+
+
+
+            <div class="input-group">
+
+
+                <label>
+                    Email
+                </label>
+
+
+
+                <input
+                type="email"
+                name="email"
+                value="{{ email|default:'' }}"
+                placeholder="Enter your email"
+                required>
+
+
+            </div>
+
+
+
+
+
+
+
+            <div class="input-group">
+
+
+                <label>
+                    Password
+                </label>
+
+
+
+                <div class="password-box">
+
+
+
+                    <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    placeholder="Enter your password"
+                    required>
+
+
+
+
+                    <i
+                    class="fa-solid fa-eye"
+                    id="togglePassword">
+
+                    </i>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+            <button
+            type="submit"
+            class="login-btn">
+
+
+                Login
+
+
+            </button>
+
+
+
+
+
+        </form>
+
+
+
+
+
+
+
+
+
+        <div class="login-options">
+
+
+            <a href="{% url 'forgot_password' %}">
+
+                Forgot Password?
+
+            </a>
+
+
+
+        </div>
+
+
+
+
+
+
+
+
+        <div class="login-footer">
+
+
+            <p>
+
+
+                Don’t have an account?
+
+
+                <a href="{% url 'register' %}">
+
+                    Create account
+
+                </a>
+
+
+            </p>
+
+
+        </div>
+
+
+
+
+
+    </div>
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+<div class="toast-container"></div>
+
+
+
+
+
+
+
+<script src="{% static 'js/dashboard_base.js' %}"></script>
+
+<script src="{% static 'js/toast.js' %}"></script>
+
+
+
+
+
+
+
+
+<script>
+
+{% if messages %}
+
+{% for message in messages %}
+
+showToast(
+
+    "{{ message.tags }}",
+
+    "{{ message|escapejs }}"
+
+);
+
+{% endfor %}
+
+{% endif %}
+
+</script>
+
+
+
+
+
+
+
+<script>
+
+
+const togglePassword = document.getElementById("togglePassword");
+
+const password = document.getElementById("password");
+
+
+
+togglePassword.addEventListener("click", function(){
+
+
+
+    if(password.type === "password"){
+
+
+        password.type = "text";
+
+
+        this.classList.remove("fa-eye");
+
+
+        this.classList.add("fa-eye-slash");
+
+
+
+    } else {
+
+
+
+        password.type = "password";
+
+
+        this.classList.remove("fa-eye-slash");
+
+
+        this.classList.add("fa-eye");
+
+
+
+    }
+
+
+
+});
+
+
+
+</script>
+
+
+
+
+
+</body>
+
+</html>

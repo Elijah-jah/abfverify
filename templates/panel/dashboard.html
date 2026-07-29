@@ -1,0 +1,124 @@
+{% extends "panel/dashboard_base.html" %}
+{% load static %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block page_title %}
+Dashboard
+{% endblock %}
+
+{% block section_title %}
+Dashboard
+{% endblock %}
+
+{% block content %}
+
+<!-- DASHBOARD CSS -->
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+<!-- WELCOME SECTION -->
+<section class="dashboard-hero">
+
+    <div class="hero-content">
+        <h2>Welcome back, {{ request.user.username }}</h2>
+        <p>
+            Manage your virtual numbers, fund your wallet,
+            track transactions and monitor account activity.
+        </p>
+    </div>
+
+</section>
+
+<!-- STATS -->
+<section class="grid dashboard-stats">
+
+    <!-- <div class="card stat-card">
+        <div class="stat-icon">
+            <i class="fa-solid fa-sim-card"></i>
+        </div>
+        <h3>Active Orders</h3>
+        <p>{{ active_orders }}</p>
+    </div>
+
+    <div class="card stat-card">
+        <div class="stat-icon">
+            <i class="fa-solid fa-message"></i>
+        </div>
+        <h3>Messages</h3>
+        <p>{{ total_sms }}</p>
+    </div> -->
+
+    <div class="card stat-card">
+        <div class="stat-icon">
+            <i class="fa-solid fa-wallet"></i>
+        </div>
+        <h3>Total Spent</h3>
+        <p>₦{{ total_spent|floatformat:2 }}</p>
+    </div>
+    
+
+    <div class="card stat-card">
+        <div class="stat-icon">
+            <i class="fa-solid fa-receipt"></i>
+        </div>
+        <h3>Transactions</h3>
+        <p>{{ total_transactions }}</p>
+    </div>
+
+</section>
+
+<!-- QUICK ACTIONS -->
+<section class="quick-actions-card">
+
+    <h3>Quick Actions</h3>
+
+    <div class="actions">
+
+        <button onclick="location.href='{% url 'sms' %}'">
+            <i class="fa-solid fa-sim-card"></i>
+            Buy Number
+        </button>
+
+        <button onclick="location.href='{% url 'wallet' %}'">
+            <i class="fa-solid fa-wallet"></i>
+            Fund Wallet
+        </button>
+
+        <button onclick="location.href='{% url 'transactions' %}'">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            Transactions
+        </button>
+
+    </div>
+
+</section>
+
+<!-- RECENT ACTIVITY -->
+<section class="panel recent-activity">
+
+    <h3>Recent Activity</h3>
+
+    <div class="activity-list">
+
+        <div class="activity-item">
+            <i class="fa-solid fa-receipt"></i>
+            <p>Wallet funding activities will appear here</p>
+        </div>
+
+        <div class="activity-item">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <p>Incoming OTP messages will appear here</p>
+        </div>
+
+        <div class="activity-item">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <p>Purchased numbers will appear here</p>
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

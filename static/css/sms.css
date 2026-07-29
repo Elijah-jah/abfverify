@@ -1,0 +1,411 @@
+/* =========================
+   THEME VARIABLES
+========================= */
+
+:root{
+    --bg: #0f172a;
+    --card: #111827;
+    --border: #1f2937;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --accent: #38bdf8;
+    --danger: #ef4444;
+    --success: #22c55e;
+}
+
+/* LIGHT MODE */
+body.light{
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #0ea5e9;
+}
+
+/* =========================
+   BASE LAYOUT
+========================= */
+
+.sms-container{
+    padding: 20px;
+    color: var(--text);
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.sms-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 10px;
+}
+
+.sms-title{
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.sms-subtitle{
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+.sms-balance{
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+/* =========================
+   MAIN CARD
+========================= */
+
+.sms-card{
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 18px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+/* FORM GROUP */
+.sms-group label{
+    font-size: 12px;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px;
+}
+
+.sms-select{
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    font-size: 13px;
+}
+
+/* =========================
+   PRICE BOX
+========================= */
+
+.sms-price-box{
+    text-align: center;
+    padding: 15px;
+    border-radius: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+}
+
+.sms-price-box p{
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.sms-price-box h2{
+    font-size: 24px;
+    margin-top: 6px;
+    color: #2563eb;
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+.sms-button{
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.sms-button:hover{
+    background: #1d4ed8;
+}
+
+/* =========================
+   STATUS BOX
+========================= */
+
+.sms-status{
+    margin-bottom: 18px;
+}
+
+.sms-status-title{
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.sms-status-box{
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+/* =========================
+   SESSION BOX
+========================= */
+
+.sms-session{
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 14px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sms-session-item{
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+}
+
+.sms-session-item span{
+    color: var(--muted);
+}
+
+.sms-cancel-btn{
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--danger);
+    cursor: pointer;
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+========================= */
+
+@media (max-width: 900px){
+
+    .sms-header{
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .sms-balance{
+        width: 100%;
+        text-align: center;
+    }
+
+    .rug{
+        display: none;
+    }
+}
+
+@media (max-width: 600px){
+
+    .sms-container{
+        padding: 15px;
+    }
+
+    .sms-card{
+        padding: 14px;
+    }
+
+    .sms-price-box h2{
+        font-size: 20px;
+    }
+
+    .sms-button{
+        font-size: 13px;
+    }
+
+    .rug{
+        display: none;
+    }
+}
+
+
+
+
+
+/* =========================
+   SEARCHABLE SELECTS
+========================= */
+
+.choices {
+    width: 100%;
+    margin-top: 5px;
+    font-family: inherit;
+}
+
+.choices__inner {
+    min-height: 48px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    box-shadow: none;
+    transition: all 0.2s ease;
+}
+
+.is-focused .choices__inner,
+.is-open .choices__inner {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+
+.choices__list--single {
+    color: var(--text);
+}
+
+.choices__placeholder {
+    color: var(--muted);
+    opacity: 1;
+}
+
+.choices__input {
+    background: transparent !important;
+    color: var(--text) !important;
+    font-size: 13px;
+}
+
+.choices__input::placeholder {
+    color: var(--muted);
+}
+
+/* Dropdown */
+
+.choices__list--dropdown,
+.choices__list[aria-expanded] {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    margin-top: 6px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,.15);
+}
+
+/* Search input inside dropdown */
+
+.choices__list--dropdown .choices__input,
+.choices__list[aria-expanded] .choices__input {
+    width: calc(100% - 20px);
+    margin: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg) !important;
+    color: var(--text) !important;
+}
+
+/* Dropdown items */
+
+.choices__item--choice {
+    padding: 11px 14px;
+    color: var(--text);
+    transition: background .15s ease;
+}
+
+/* Hover */
+
+.choices__list--dropdown .choices__item--choice.is-highlighted,
+.choices__list[aria-expanded] .choices__item--choice.is-highlighted {
+    background: rgba(56, 189, 248, 0.15) !important;
+    color: var(--text) !important;
+}
+
+/* Selected */
+
+.choices__item--selectable.is-selected {
+    background: rgba(56, 189, 248, 0.20) !important;
+    color: var(--text) !important;
+}
+
+/* Disabled */
+
+.choices__item--disabled {
+    color: var(--muted) !important;
+}
+
+/* Dropdown arrow */
+
+.choices[data-type*="select-one"]::after {
+    border-color: var(--muted) transparent transparent;
+}
+
+.choices[data-type*="select-one"].is-open::after {
+    border-color: transparent transparent var(--muted);
+}
+
+/* Scrollbar */
+
+.choices__list--dropdown::-webkit-scrollbar,
+.choices__list[aria-expanded]::-webkit-scrollbar {
+    width: 8px;
+}
+
+.choices__list--dropdown::-webkit-scrollbar-track,
+.choices__list[aria-expanded]::-webkit-scrollbar-track {
+    background: var(--bg);
+}
+
+.choices__list--dropdown::-webkit-scrollbar-thumb,
+.choices__list[aria-expanded]::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 20px;
+}
+
+.choices__list--dropdown::-webkit-scrollbar-thumb:hover,
+.choices__list[aria-expanded]::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+/* ==========================================
+   ORDER HEADER
+========================================== */
+
+.sms-session-header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:15px;
+}
+
+.sms-country{
+    background:#2563eb;
+    color:#fff;
+    padding:5px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+    text-transform:uppercase;
+}
+
+.sms-service{
+    background:#10b981;
+    color:#fff;
+    padding:5px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+}

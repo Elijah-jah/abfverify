@@ -1,0 +1,264 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>{% block title %}ABFverify{% endblock %}</title>
+
+<link rel="shortcut icon" href="{% static 'images/mylogo1.png'%}" type="image/x-icon">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+<link rel="stylesheet" href="{% static 'css/dashboard_base.css' %}">
+<link rel="stylesheet" href="{% static 'css/logout_modal.css' %}">
+<link rel="stylesheet" href="{% static 'css/toast.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+
+{% block extra_css %}{% endblock %}
+</head>
+
+<body class="dashboard">
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+
+    <div class="logo">
+        <img src="{% static 'images/mylogo1.png' %}"
+             class="logo-icon"
+             alt="ABFverify Logo">
+
+        <span class="logo-text">
+            ABFverify
+        </span>
+    </div>
+
+    <nav class="nav">
+
+        <button
+            onclick="location.href='{% url 'dashboard' %}'"
+            class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            
+            <i class="fa-solid fa-house"></i>
+            <span>Dashboard</span>
+
+        </button>
+
+        <button
+            onclick="location.href='{% url 'sms' %}'"
+            class="{% if request.resolver_match.url_name == 'sms' %}active{% endif %}">
+            
+            <i class="fa-solid fa-sim-card"></i>
+            <span>Buy Number</span>
+
+        </button>
+
+        <button
+            onclick="location.href='{% url 'wallet' %}'"
+            class="{% if request.resolver_match.url_name == 'wallet' %}active{% endif %}">
+            
+            <i class="fa-solid fa-wallet"></i>
+            <span>Fund Wallet</span>
+
+        </button>
+
+        <button
+            onclick="location.href='{% url 'orders' %}'"
+            class="{% if request.resolver_match.url_name == 'orders' %}active{% endif %}">
+            
+            <i class="fa-solid fa-clipboard-list"></i>
+            <span>Orders</span>
+
+        </button>
+
+        <button
+            onclick="location.href='{% url 'transactions' %}'"
+            class="{% if request.resolver_match.url_name == 'transactions' %}active{% endif %}">
+            
+            <i class="fa-solid fa-receipt"></i>
+            <span>Transactions</span>
+
+        </button>
+
+        <button
+            onclick="location.href='{% url 'services' %}'"
+            class="{% if request.resolver_match.url_name == 'services' %}active{% endif %}">
+            
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Buy Logs</span>
+
+        </button>
+
+    </nav>
+
+
+    <!-- THEME TOGGLE -->
+
+    <div class="theme-box">
+
+        <button
+            type="button"
+            class="theme-toggle"
+            id="themeToggle">
+
+            <i class="fa-solid fa-moon"></i>
+
+            <span>
+                Toggle Theme
+            </span>
+
+        </button>
+
+    </div>
+
+
+    <nav class="nav">
+
+        <button
+            type="button"
+            class="ctrl-logout logout-trigger">
+
+            <i class="fa-solid fa-right-from-bracket"></i>
+
+            <span>
+                Logout
+            </span>
+
+        </button>
+
+
+        <button
+            onclick="location.href='{% url 'settings' %}'"
+            class="{% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
+
+            <i class="fa-solid fa-gear"></i>
+
+            <span>
+                Settings
+            </span>
+
+        </button>
+
+    </nav>
+
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+
+        <button class="hamburger" id="hamburger">☰</button>
+
+        <div class="logos">
+            <img src="{% static 'images/mylogo1.png' %}" class="logo-icon" alt="ABFverify Logo">
+        </div>
+
+        <h1 class="bot">ABFverify</h1>
+
+        <h1 class="rug">
+            {% block page_title %}
+            Dashboard
+            {% endblock %}
+        </h1> 
+
+        <div class="topbar-user">
+
+            <div class="wallet">
+                ₦{{ user_wallet.balance|floatformat:2 }}
+            </div>
+
+            <a href="{% url 'settings' %}" class="profile-icon">
+                <div class="egg-user-avatar">
+                    {{ request.user.username|first|upper }}
+                </div>
+            </a>
+
+        </div>
+
+    </header>
+        <h2 class="section-title">
+{% block section_title %}
+Dashboard
+{% endblock %}
+</h2>
+
+    {% block content %}
+    <!--
+        Dashboard content goes here.
+
+        dashboard.html will override this block with:
+        - Welcome Hero
+        - Statistics
+        - Quick Actions
+        - Recent Activity
+
+        Other pages like Wallet, Orders, Transactions,
+        Buy Number, etc. will also replace this block
+        with their own content.
+    -->
+    {% endblock %}
+
+</main>
+<div class="toast-container"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+<script src="{% static 'js/dashboard_base.js' %}"></script>
+<script src="{% static 'js/toast.js' %}"></script>
+
+{% if messages %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    {% for message in messages %}
+        showToast(
+            "{{ message.tags|default:'info' }}",
+            "{{ message|escapejs }}"
+        );
+    {% endfor %}
+});
+</script>
+{% endif %}
+
+<div class="logout-modal" id="logoutModal">
+
+    <div class="logout-box">
+
+        <div class="logout-icon">
+            <i class="fa-solid fa-right-from-bracket"></i>
+        </div>
+
+        <h3>Logout</h3>
+
+        <p>
+            Are you sure you want to logout from your ABFverify account?
+        </p>
+
+        <div class="logout-actions">
+
+            <button class="cancel-logout" id="cancelLogout">
+                Cancel
+            </button>
+
+            <a href="{% url 'logout' %}" class="confirm-logout">
+                Logout
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% block extra_js %}
+{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,372 @@
+/* =========================================
+   RESET
+========================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Inter,sans-serif;
+    background:#f5f7fb;
+    color:#111827;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:25px;
+    transition:.3s;
+}
+
+/* =========================================
+   WRAPPER
+========================================= */
+
+.check-wrapper{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.check-card{
+
+    width:100%;
+    max-width:650px;
+
+    background:#fff;
+
+    border-radius:22px;
+
+    padding:45px;
+
+    text-align:center;
+
+    box-shadow:0 20px 60px rgba(0,0,0,.08);
+
+}
+
+/* =========================================
+   ICON
+========================================= */
+
+.check-icon{
+
+    width:90px;
+    height:90px;
+
+    margin:0 auto 25px;
+
+    border-radius:50%;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:linear-gradient(135deg,#2563eb,#38bdf8);
+
+    color:#fff;
+
+    font-size:40px;
+
+}
+
+.check-card h1{
+
+    font-size:34px;
+
+    margin-bottom:18px;
+
+}
+
+.check-text{
+
+    color:#6b7280;
+
+    line-height:1.8;
+
+    margin-bottom:18px;
+
+    font-size:16px;
+
+}
+
+/* =========================================
+   EMAIL BOX
+========================================= */
+
+.email-box{
+
+    margin:28px 0;
+
+    padding:16px;
+
+    background:#eef6ff;
+
+    border:1px solid #cfe5ff;
+
+    border-radius:12px;
+
+    font-size:17px;
+
+    font-weight:600;
+
+    color:#2563eb;
+
+    word-break:break-word;
+
+}
+
+/* =========================================
+   INFO BOX
+========================================= */
+
+.info-box{
+
+    margin-top:25px;
+
+    text-align:left;
+
+    background:#f8fafc;
+
+    border-radius:15px;
+
+    padding:22px;
+
+}
+
+.info-item{
+
+    display:flex;
+
+    gap:14px;
+
+    align-items:flex-start;
+
+    margin-bottom:18px;
+
+}
+
+.info-item:last-child{
+
+    margin-bottom:0;
+
+}
+
+.info-item i{
+
+    color:#2563eb;
+
+    margin-top:3px;
+
+    font-size:17px;
+
+}
+
+.info-item span{
+
+    color:#475569;
+
+    line-height:1.7;
+
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.footer-note{
+
+    margin-top:30px;
+
+    color:#64748b;
+
+    line-height:1.8;
+
+    font-size:15px;
+
+}
+
+/* =========================================
+   BUTTON
+========================================= */
+
+.login-btn{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    margin-top:35px;
+
+    width:100%;
+
+    height:52px;
+
+    border-radius:12px;
+
+    background:#2563eb;
+
+    color:#fff;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.login-btn:hover{
+
+    background:#1d4ed8;
+
+    transform:translateY(-2px);
+
+}
+
+/* =========================================
+   DARK MODE
+========================================= */
+
+body:not(.light){
+
+    background:#0f172a;
+
+    color:#f8fafc;
+
+}
+
+body:not(.light) .check-card{
+
+    background:#111827;
+
+    box-shadow:0 25px 60px rgba(0,0,0,.45);
+
+}
+
+body:not(.light) .check-text{
+
+    color:#94a3b8;
+
+}
+
+body:not(.light) .email-box{
+
+    background:#172554;
+
+    border-color:#1d4ed8;
+
+    color:#7dd3fc;
+
+}
+
+body:not(.light) .info-box{
+
+    background:#1e293b;
+
+}
+
+body:not(.light) .info-item span{
+
+    color:#cbd5e1;
+
+}
+
+body:not(.light) .info-item i{
+
+    color:#38bdf8;
+
+}
+
+body:not(.light) .footer-note{
+
+    color:#94a3b8;
+
+}
+
+body:not(.light) .login-btn{
+
+    background:#38bdf8;
+
+    color:#08111f;
+
+}
+
+body:not(.light) .login-btn:hover{
+
+    background:#0ea5e9;
+
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media(max-width:768px){
+
+.check-card{
+
+padding:35px 25px;
+
+}
+
+.check-card h1{
+
+font-size:28px;
+
+}
+
+.check-icon{
+
+width:75px;
+height:75px;
+font-size:32px;
+
+}
+
+.email-box{
+
+font-size:15px;
+
+}
+
+}
+
+@media(max-width:480px){
+
+body{
+
+padding:15px;
+
+}
+
+.check-card{
+
+padding:25px 18px;
+
+}
+
+.check-card h1{
+
+font-size:24px;
+
+}
+
+.check-text{
+
+font-size:15px;
+
+}
+
+.login-btn{
+
+height:48px;
+
+}
+
+}

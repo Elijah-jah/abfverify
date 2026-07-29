@@ -1,0 +1,85 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Password Reset Sent | ABFverify</title>
+
+    <link rel="stylesheet" href="{% static 'css/reset_email_sent.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="check-wrapper">
+
+    <div class="check-card">
+
+        <div class="check-icon">
+            <i class="fa-solid fa-envelope-circle-check"></i>
+        </div>
+
+        <h1>Check Your Email</h1>
+
+        <p class="check-text">
+            If an account exists for the email address below, we've sent a password reset link.
+        </p>
+
+        <div class="email-box">
+            {{ email }}
+        </div>
+
+        <div class="info-box">
+
+            <div class="info-item">
+                <i class="fa-solid fa-key"></i>
+                <span>Click the password reset link in the email.</span>
+            </div>
+
+            <div class="info-item">
+                <i class="fa-solid fa-clock"></i>
+                <span>The reset link expires automatically for your security.</span>
+            </div>
+
+            <div class="info-item">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>If you didn't request a password reset, you can safely ignore this email.</span>
+            </div>
+
+        </div>
+
+        <div class="footer-note">
+
+            Didn't receive the email?
+
+            <br><br>
+
+            • Check your Spam or Junk folder.
+
+            <br>
+
+            • Make sure you entered the correct email address.
+
+            <br>
+
+            • Wait a few minutes before trying again.
+
+        </div>
+
+        <a href="{% url 'login' %}" class="login-btn">
+            Back to Login
+        </a>
+
+    </div>
+
+</div>
+
+<script src="{% static 'js/dashboard_base.js' %}"></script>
+
+</body>
+</html>

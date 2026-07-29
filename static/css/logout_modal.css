@@ -1,0 +1,393 @@
+/* ==========================
+   LOGOUT MODAL
+========================== */
+
+.logout-modal{
+    position: fixed;
+    inset: 0;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(15, 23, 42, .65);
+
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+
+    z-index: 9999;
+
+    opacity: 0;
+
+    transition: opacity .25s ease;
+}
+
+.logout-modal.show{
+    display: flex;
+    opacity: 1;
+}
+
+
+/* ==========================
+   MODAL BOX
+========================== */
+
+.logout-box{
+
+    width: 420px;
+    max-width: 100%;
+
+    border-radius: 22px;
+
+    padding: 35px 30px;
+
+    text-align: center;
+
+    transform: translateY(20px) scale(.92);
+
+    transition:
+        transform .28s ease,
+        background .25s ease,
+        color .25s ease;
+
+    box-shadow:
+        0 30px 70px rgba(0, 0, 0, .22);
+
+}
+
+
+/* ==========================
+   ANIMATION
+========================== */
+
+.logout-modal.show .logout-box{
+
+    transform: translateY(0) scale(1);
+
+}
+
+
+/* ==========================
+   ICON
+========================== */
+
+.logout-icon{
+
+    width: 72px;
+    height: 72px;
+
+    margin: auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    font-size: 28px;
+
+    transition: .25s;
+
+}
+
+
+/* ==========================
+   TEXT
+========================== */
+
+.logout-box h3{
+
+    margin-top: 20px;
+
+    font-size: 25px;
+    font-weight: 700;
+
+}
+
+
+.logout-box p{
+
+    margin-top: 12px;
+
+    line-height: 1.7;
+
+    font-size: 15px;
+
+}
+
+
+/* ==========================
+   BUTTONS
+========================== */
+
+.logout-actions{
+
+    display: flex;
+
+    gap: 14px;
+
+    margin-top: 28px;
+
+}
+
+
+.logout-actions button,
+.logout-actions a{
+
+    flex: 1;
+
+    padding: 13px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    text-decoration: none;
+
+    transition:
+        background .25s ease,
+        color .25s ease,
+        transform .25s ease;
+
+}
+
+
+/* ==========================
+   BUTTON HOVER
+========================== */
+
+.cancel-logout:hover,
+.confirm-logout:hover{
+
+    transform: translateY(-2px);
+
+}
+
+
+/* ==========================
+   LIGHT THEME
+========================== */
+
+body.light .logout-box{
+
+    background: #ffffff;
+
+    color: #111827;
+
+}
+
+
+body.light .logout-icon{
+
+    background: #dbeafe;
+
+    color: #2563eb;
+
+    border: 1px solid #bfdbfe;
+
+}
+
+
+body.light .logout-box p{
+
+    color: #64748b;
+
+}
+
+
+body.light .cancel-logout{
+
+    background: #e2e8f0;
+
+    color: #0f172a;
+
+}
+
+
+body.light .cancel-logout:hover{
+
+    background: #cbd5e1;
+
+}
+
+
+body.light .confirm-logout{
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+}
+
+
+body.light .confirm-logout:hover{
+
+    background: #1d4ed8;
+
+}
+
+
+/* ==========================
+   DARK THEME
+========================== */
+
+body.dark .logout-box{
+
+    background: #111827;
+
+    color: #f8fafc;
+
+    border: 1px solid rgba(37, 99, 235, .25);
+
+    box-shadow:
+        0 25px 60px rgba(0, 0, 0, .55),
+        0 0 0 1px rgba(37, 99, 235, .08);
+
+}
+
+
+body.dark .logout-icon{
+
+    background: rgba(37, 99, 235, .12);
+
+    color: #60a5fa;
+
+    border: 1px solid rgba(37, 99, 235, .30);
+
+}
+
+
+body.dark .logout-box h3{
+
+    color: #ffffff;
+
+}
+
+
+body.dark .logout-box p{
+
+    color: #cbd5e1;
+
+}
+
+
+body.dark .cancel-logout{
+
+    background: #1e293b;
+
+    color: #e2e8f0;
+
+    border: 1px solid rgba(37, 99, 235, .20);
+
+}
+
+
+body.dark .cancel-logout:hover{
+
+    background: #334155;
+
+    border-color: #2563eb;
+
+    color: #ffffff;
+
+}
+
+
+body.dark .confirm-logout{
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+    font-weight: 700;
+
+}
+
+
+body.dark .confirm-logout:hover{
+
+    background: #1d4ed8;
+
+}
+
+
+body.dark .confirm-logout:active{
+
+    transform: scale(.98);
+
+}
+
+
+/* ==========================
+   RESPONSIVE
+========================== */
+
+@media(max-width: 600px){
+
+    .logout-box{
+
+        width: 100%;
+
+        padding: 28px 22px;
+
+        border-radius: 18px;
+
+    }
+
+
+    .logout-icon{
+
+        width: 64px;
+        height: 64px;
+
+        font-size: 25px;
+
+    }
+
+
+    .logout-box h3{
+
+        font-size: 22px;
+
+    }
+
+
+    .logout-actions{
+
+        flex-direction: column;
+
+    }
+
+}
+
+
+@media(max-width: 400px){
+
+    .logout-box{
+
+        padding: 24px 18px;
+
+    }
+
+
+    .logout-box h3{
+
+        font-size: 20px;
+
+    }
+
+
+    .logout-box p{
+
+        font-size: 14px;
+
+    }
+
+}

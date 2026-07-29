@@ -1,0 +1,225 @@
+:root{
+    /* DARK MODE (default) */
+    --bg: #0f172a;
+    --card: #111827;
+    --border: #1f2937;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --accent: #38bdf8;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warning: #f59e0b;
+}
+
+/* LIGHT MODE OVERRIDE */
+body.light{
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #0ea5e9;
+}
+
+/* =========================
+   BASE LAYOUT
+========================= */
+
+.orders-container{
+    padding: 20px;
+    color: var(--text);
+    background: transparent;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.orders-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.orders-title{
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.orders-subtitle{
+    font-size: 16px;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+.orders-badge{
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+/* =========================
+   FILTER BAR
+========================= */
+
+.orders-filter-bar{
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+
+.orders-input,
+.orders-select{
+    flex: 1;
+    min-width: 160px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    font-size: 13px;
+}
+
+.orders-input::placeholder{
+    color: var(--muted);
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.orders-table-wrap{
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.orders-table{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.orders-table th{
+    background: var(--bg);
+    color: var(--muted);
+    font-size: 12px;
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.orders-table td{
+    padding: 12px;
+    font-size: 13px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+}
+
+.orders-empty{
+    text-align: center;
+    padding: 30px;
+    color: var(--muted);
+}
+
+/* =========================
+   STATUS
+========================= */
+
+.status-active{ color: var(--accent); font-weight: 600; }
+.status-completed{ color: var(--success); font-weight: 600; }
+.status-expired{ color: var(--warning); font-weight: 600; }
+.status-cancelled{ color: var(--danger); font-weight: 600; }
+
+/* =========================
+   BUTTON
+========================= */
+
+.orders-action-btn{
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.orders-action-btn:hover{
+    background: var(--accent);
+    color: #0f172a;
+}
+
+/* =========================
+   MOBILE CARD VIEW
+========================= */
+
+.orders-mobile-list{
+    display: none;
+}
+
+.orders-card{
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+}
+
+.orders-card-top{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.orders-id{
+    font-weight: 600;
+    color: var(--text);
+}
+
+.orders-card-body p{
+    font-size: 12px;
+    color: var(--muted);
+    margin: 3px 0;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px){
+
+    .orders-table-wrap{
+        display: none;
+    }
+
+    .orders-mobile-list{
+        display: block;
+    }
+
+    .orders-header{
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .orders-filter-bar{
+        flex-direction: column;
+    }
+
+    .orders-input,
+    .orders-select{
+        width: 100%;
+    }
+    .rug{
+        display: none;
+    }
+}

@@ -1,0 +1,228 @@
+/* =========================
+   THEME VARIABLES
+========================= */
+
+:root{
+    --bg: #0f172a;
+    --card: #111827;
+    --border: #1f2937;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+
+    /* ABFverify BLUE */
+    --accent: #2563eb;
+}
+
+/* =========================
+   LIGHT MODE
+========================= */
+
+body.light{
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text: #0f172a;
+    --muted: #64748b;
+
+    /* ABFverify BLUE */
+    --accent: #2563eb;
+}
+
+
+/* =========================
+   CONTAINER
+========================= */
+
+.services-container{
+    padding: 20px;
+    color: var(--text);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.services-header{
+    width: 100%;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 25px;
+    gap: 10px;
+}
+
+.services-title{
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.services-subtitle{
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+.services-badge{
+    background: var(--card);
+    border: 1px solid var(--border);
+
+    padding: 8px 12px;
+
+    border-radius: 10px;
+
+    font-size: 13px;
+
+    color: #2563eb;
+}
+
+
+/* =========================
+   MAIN CARD
+========================= */
+
+.services-card{
+    width: 100%;
+    max-width: 600px;
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 16px;
+
+    padding: 30px 20px;
+
+    text-align: center;
+
+    position: relative;
+
+    overflow: hidden;
+}
+
+
+/* =========================
+   SUBTLE BLUE GLOW
+========================= */
+
+.services-card::before{
+    content: "";
+
+    position: absolute;
+
+    top: -50%;
+    left: -50%;
+
+    width: 200%;
+    height: 200%;
+
+    background: radial-gradient(
+        circle,
+        rgba(37, 99, 235, 0.08),
+        transparent 60%
+    );
+
+    transform: rotate(25deg);
+
+    pointer-events: none;
+}
+
+
+/* =========================
+   ICON
+========================= */
+
+.services-icon{
+    font-size: 40px;
+
+    color: #2563eb;
+
+    margin-bottom: 15px;
+
+    position: relative;
+}
+
+
+/* =========================
+   TEXT
+========================= */
+
+.services-heading{
+    font-size: 18px;
+
+    font-weight: 700;
+
+    margin-bottom: 10px;
+
+    position: relative;
+}
+
+.services-text{
+    font-size: 13px;
+
+    color: var(--muted);
+
+    line-height: 1.6;
+
+    margin-bottom: 10px;
+
+    position: relative;
+}
+
+.services-note{
+    font-size: 12px;
+
+    color: #2563eb;
+
+    position: relative;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px){
+
+    .services-header{
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .services-badge{
+        width: 100%;
+        text-align: center;
+    }
+
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px){
+
+    .services-container{
+        padding: 15px;
+    }
+
+    .services-card{
+        padding: 20px 15px;
+    }
+
+    .services-title{
+        font-size: 20px;
+    }
+
+    .rug{
+        display: none;
+    }
+
+}

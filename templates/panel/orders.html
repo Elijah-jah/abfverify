@@ -1,0 +1,278 @@
+{% extends "panel/dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Orders{% endblock %}
+{% block page_title %}Orders{% endblock %}
+{% block section_title %}Orders{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/orders.css' %}">
+
+<div class="orders-container">
+
+    <!-- HEADER -->
+    <div class="orders-header">
+
+        <div>
+            <p class="orders-subtitle">
+                Track your purchased numbers and OTP sessions
+            </p>
+        </div>
+
+        <div class="orders-badge">
+            Total: {{ orders|length }}
+        </div>
+
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="orders-filter-bar">
+
+        <input
+            type="text"
+            class="orders-input"
+            placeholder="Search order ID..."
+        >
+
+        <select class="orders-select">
+            <option value="">Status</option>
+            <option value="waiting">Waiting</option>
+            <option value="completed">Completed</option>
+            <option value="expired">Expired</option>
+            <option value="cancelled">Cancelled</option>
+        </select>
+
+    </div>
+
+    <!-- TABLE -->
+    <div class="orders-table-wrap">
+
+        <table class="orders-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+                    <th>Service</th>
+                    <th>Number</th>
+                    <th>Amount</th>
+                    <th>OTP</th>
+                    <th>Status</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% if orders %}
+
+                {% for order in orders %}
+
+                <tr>
+
+                <td>
+                    {{ order.order_id }}
+                </td>
+
+                <td>
+                    {{ order.service.name }}
+                </td>
+
+                <td>
+                    {{ order.phone_number }}
+                </td>
+
+                <td>
+                    ₦{{ order.price }}
+                </td>
+
+                <td>
+                    {% if order.sms_code %}
+                        {{ order.sms_code }}
+                    {% else %}
+                        Waiting...
+                    {% endif %}
+                </td>
+
+                    <td>
+
+                        {% if order.status == "waiting" %}
+
+                            <span class="status-active">
+                                Waiting
+                            </span>
+
+                        {% elif order.status == "completed" %}
+
+                            <span class="status-completed">
+                                Completed
+                            </span>
+
+                        {% elif order.status == "cancelled" %}
+
+                            <span class="status-cancelled">
+                                Cancelled
+                            </span>
+
+                        {% elif order.status == "expired" %}
+
+                            <span class="status-expired">
+                                Expired
+                            </span>
+
+                        {% else %}
+
+                            {{ order.status }}
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+                        {{ order.created_at|date:"d M Y H:i" }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            {% else %}
+
+                <tr>
+
+                    <td colspan="6" class="orders-empty">
+                        No orders yet
+                    </td>
+
+                </tr>
+
+            {% endif %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- MOBILE VIEW -->
+
+    <div class="orders-mobile-list">
+
+    {% if orders %}
+
+        {% for order in orders %}
+
+        <div class="orders-card">
+
+            <div class="orders-card-top">
+
+                <span class="orders-id">
+
+                    {{ order.order_id }}
+
+                </span>
+
+                {% if order.status == "waiting" %}
+
+                    <span class="status-active">
+                        Waiting
+                    </span>
+
+                {% elif order.status == "completed" %}
+
+                    <span class="status-completed">
+                        Completed
+                    </span>
+
+                {% elif order.status == "cancelled" %}
+
+                    <span class="status-cancelled">
+                        Cancelled
+                    </span>
+
+                {% elif order.status == "expired" %}
+
+                    <span class="status-expired">
+                        Expired
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+            <div class="orders-card-body">
+
+                <p>
+
+                    <strong>Service:</strong>
+
+                    {{ order.service.name }}
+
+                </p>
+
+                <p>
+
+                    <strong>Country:</strong>
+
+                    {{ order.country.name }}
+
+                </p>
+
+                <p>
+
+                    <strong>Number:</strong>
+
+                    {{ order.phone_number }}
+
+                </p>
+
+                <p>
+    <strong>Amount:</strong>
+
+    ₦{{ order.price }}
+
+</p>
+
+<p>
+    <strong>OTP:</strong>
+
+    {% if order.sms_code %}
+        {{ order.sms_code }}
+    {% else %}
+        Waiting...
+    {% endif %}
+
+</p>
+
+                <p>
+
+                    <strong>Date:</strong>
+
+                    {{ order.created_at|date:"d M Y H:i" }}
+
+                </p>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p class="orders-mobile-empty">
+
+            No orders yet
+
+        </p>
+
+    {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

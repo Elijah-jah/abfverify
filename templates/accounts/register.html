@@ -1,0 +1,502 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Create Account | ABFverify</title>
+
+
+<link rel="stylesheet" href="{% static 'css/register.css' %}">
+<link rel="icon" href="{% static 'images/mylogo1.png' %}">
+<link rel="stylesheet" href="{% static 'css/toast.css' %}">
+
+
+<link 
+rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+
+</head>
+
+
+<body>
+
+
+<div class="register-wrapper">
+
+
+
+    <!-- BRAND SIDE -->
+
+
+    <div class="register-brand">
+
+
+        <img
+        src="{% static 'images/mylogo1.png' %}"
+        class="brand-logo"
+        alt="ABFverify Logo">
+
+
+
+        <h1>
+            ABFverify
+        </h1>
+
+
+        <p>
+            Join the secure SMS verification platform
+        </p>
+
+
+    </div>
+
+
+
+
+
+
+
+    <!-- FORM SIDE -->
+
+
+    <div class="register-card">
+
+
+
+        <h2>
+            Create Account
+        </h2>
+
+
+        <p class="register-subtext">
+            Sign up to get started
+        </p>
+
+
+
+
+
+
+
+        <form 
+        method="POST"
+        action="{% url 'register' %}"
+        id="registerForm">
+
+
+            {% csrf_token %}
+
+
+
+
+
+            <div class="input-group">
+
+                <label>
+                    Username
+                </label>
+
+
+                <input
+                type="text"
+                name="username"
+                value="{{ username|default:'' }}"
+                placeholder="Enter username"
+                required>
+
+
+            </div>
+
+
+
+
+
+
+
+
+            <div class="input-group">
+
+
+                <label>
+                    Email
+                </label>
+
+
+
+                <input
+                type="email"
+                name="email"
+                value="{{ email|default:'' }}"
+                placeholder="Enter email"
+                required>
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            <div class="input-group">
+
+
+                <label>
+                    Password
+                </label>
+
+
+
+                <div class="password-box">
+
+
+                    <input
+                    type="password"
+                    name="password1"
+                    id="password1"
+                    placeholder="Enter password"
+                    required>
+
+
+
+                    <i 
+                    class="fa-solid fa-eye"
+                    id="togglePassword1">
+                    </i>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+            <div class="input-group">
+
+
+                <label>
+                    Confirm Password
+                </label>
+
+
+
+
+                <div class="password-box">
+
+
+                    <input
+                    type="password"
+                    name="password2"
+                    id="password2"
+                    placeholder="Confirm password"
+                    required>
+
+
+
+
+                    <i
+                    class="fa-solid fa-eye"
+                    id="togglePassword2">
+                    </i>
+
+
+
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            <!-- TERMS CHECKBOX -->
+
+
+            <div class="terms-box">
+
+
+                <input
+                type="checkbox"
+                id="termsCheck">
+
+
+
+                <label for="termsCheck">
+
+                    I agree to ABFverify
+
+                    <a href="{% url 'privacy_policy' %}" target="_blank">
+                        Privacy Policy
+                    </a>
+
+                    and
+
+                    <a href="{% url 'terms_of_service' %}" target="_blank">
+                        Terms of Service
+                    </a>
+
+
+                </label>
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            <button 
+            type="submit"
+            class="register-btn">
+
+
+                Create Account
+
+
+            </button>
+
+
+
+
+
+        </form>
+
+
+
+
+
+
+
+
+        <div class="register-footer">
+
+
+            <p>
+
+                Already have an account?
+
+
+                <a href="{% url 'login' %}">
+                    Login
+                </a>
+
+
+            </p>
+
+
+        </div>
+
+
+
+
+
+    </div>
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+<div class="toast-container"></div>
+
+
+
+
+
+
+
+<script src="{% static 'js/dashboard_base.js' %}"></script>
+
+<script src="{% static 'js/toast.js' %}"></script>
+
+
+
+
+
+
+
+<script>
+
+{% if messages %}
+
+{% for message in messages %}
+
+showToast(
+    "{{ message.tags }}",
+    "{{ message|escapejs }}"
+);
+
+{% endfor %}
+
+{% endif %}
+
+</script>
+
+
+
+
+
+
+
+
+<script>
+
+
+/* PASSWORD TOGGLE */
+
+
+function togglePasswordVisibility(inputId, iconId){
+
+
+    const passwordInput =
+    document.getElementById(inputId);
+
+
+    const icon =
+    document.getElementById(iconId);
+
+
+
+    icon.addEventListener("click", function(){
+
+
+
+        if(passwordInput.type === "password"){
+
+
+            passwordInput.type="text";
+
+
+            this.classList.remove("fa-eye");
+
+
+            this.classList.add("fa-eye-slash");
+
+
+
+        }else{
+
+
+            passwordInput.type="password";
+
+
+            this.classList.remove("fa-eye-slash");
+
+
+            this.classList.add("fa-eye");
+
+
+        }
+
+
+
+    });
+
+
+}
+
+
+
+togglePasswordVisibility(
+    "password1",
+    "togglePassword1"
+);
+
+
+
+togglePasswordVisibility(
+    "password2",
+    "togglePassword2"
+);
+
+
+
+
+
+
+
+
+/* TERMS VALIDATION */
+
+
+const registerForm =
+document.getElementById("registerForm");
+
+
+const termsCheck =
+document.getElementById("termsCheck");
+
+
+
+
+registerForm.addEventListener("submit", function(event){
+
+
+
+    if(!termsCheck.checked){
+
+
+        event.preventDefault();
+
+
+
+        showToast(
+            "error",
+            "Please agree to the Privacy Policy and Terms of Service before creating an account."
+        );
+
+
+
+    }
+
+
+
+});
+
+
+
+</script>
+
+
+
+
+
+</body>
+
+</html>

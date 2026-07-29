@@ -1,0 +1,722 @@
+/* =====================================
+   ABFverify Register Page CSS
+   Responsive + Theme Support
+===================================== */
+
+
+/* ===============================
+   THEME VARIABLES
+================================ */
+
+
+:root {
+
+    --bg:#0f172a;
+
+    --card:#111827;
+
+    --text:#e5e7eb;
+
+    --muted:#94a3b8;
+
+    --border:#1f2937;
+
+    --input:#0b1220;
+
+    --primary:#1d4ed8;
+
+    --primary-hover:#1e40af;
+
+}
+
+
+
+body.light {
+
+    --bg:#f8fafc;
+
+    --card:#ffffff;
+
+    --text:#0f172a;
+
+    --muted:#64748b;
+
+    --border:#e2e8f0;
+
+    --input:#ffffff;
+
+}
+
+
+
+
+
+/* ===============================
+   RESET
+================================ */
+
+
+* {
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+    font-family:"Inter",Arial,sans-serif;
+
+}
+
+
+
+
+
+/* ===============================
+   BODY
+================================ */
+
+
+body {
+
+    min-height:100vh;
+
+    background:var(--bg);
+
+    color:var(--text);
+
+    transition:.3s ease;
+
+}
+
+
+
+
+
+
+/* ===============================
+   WRAPPER
+================================ */
+
+
+.register-wrapper {
+
+    min-height:100vh;
+
+    display:flex;
+
+}
+
+
+
+
+
+
+/* ===============================
+   BRAND SIDE
+================================ */
+
+
+.register-brand {
+
+    flex:1;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    padding:50px;
+
+    background:
+    linear-gradient(
+        135deg,
+        var(--bg),
+        var(--card)
+    );
+
+    border-right:1px solid var(--border);
+
+}
+
+
+
+
+.brand-logo {
+
+    width:110px;
+
+    height:110px;
+
+    object-fit:contain;
+
+    margin-bottom:20px;
+
+}
+
+
+
+
+.register-brand h1 {
+
+    font-size:36px;
+
+    font-weight:800;
+
+    margin-bottom:10px;
+
+}
+
+
+
+
+.register-brand p {
+
+    max-width:320px;
+
+    color:var(--muted);
+
+    font-size:15px;
+
+}
+
+
+
+
+
+
+
+/* ===============================
+   FORM CARD
+================================ */
+
+
+.register-card {
+
+    flex:1;
+
+    background:var(--card);
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    padding:60px;
+
+}
+
+
+
+
+.register-card h2 {
+
+    font-size:32px;
+
+    font-weight:700;
+
+    margin-bottom:8px;
+
+}
+
+
+
+
+.register-subtext {
+
+    font-size:14px;
+
+    color:var(--muted);
+
+    margin-bottom:30px;
+
+}
+
+
+
+
+
+
+
+/* ===============================
+   INPUTS
+================================ */
+
+
+.input-group {
+
+    margin-bottom:18px;
+
+}
+
+
+
+.input-group label {
+
+    display:block;
+
+    font-size:13px;
+
+    color:var(--muted);
+
+    margin-bottom:7px;
+
+}
+
+
+
+
+.input-group input {
+
+    width:100%;
+
+    padding:14px 15px;
+
+    border-radius:12px;
+
+    border:1px solid var(--border);
+
+    background:var(--input);
+
+    color:var(--text);
+
+    outline:none;
+
+    transition:.3s;
+
+}
+
+
+
+
+.input-group input::placeholder {
+
+    color:var(--muted);
+
+}
+
+
+
+
+.input-group input:focus {
+
+    border-color:var(--primary);
+
+    box-shadow:
+
+    0 0 0 3px rgba(29,78,216,.15);
+
+}
+
+
+
+
+
+
+
+
+/* ===============================
+   PASSWORD FIELD
+================================ */
+
+
+.password-box {
+
+    position:relative;
+
+}
+
+
+
+.password-box input {
+
+    padding-right:45px;
+
+}
+
+
+
+.password-box i {
+
+    position:absolute;
+
+    right:15px;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    cursor:pointer;
+
+    color:var(--muted);
+
+}
+
+
+
+.password-box i:hover {
+
+    color:var(--primary);
+
+}
+
+
+
+
+
+
+
+
+/* ===============================
+   TERMS CHECKBOX
+================================ */
+
+
+.terms-box {
+
+    display:flex;
+
+    align-items:flex-start;
+
+    gap:10px;
+
+    margin:15px 0 20px;
+
+    font-size:13px;
+
+    line-height:1.5;
+
+    color:var(--muted);
+
+}
+
+
+
+.terms-box input {
+
+    width:16px;
+
+    height:16px;
+
+    margin-top:3px;
+
+    cursor:pointer;
+
+}
+
+
+
+.terms-box a {
+
+    color:var(--primary);
+
+    text-decoration:none;
+
+    font-weight:600;
+
+}
+
+
+
+.terms-box a:hover {
+
+    text-decoration:underline;
+
+}
+
+
+
+
+
+
+
+/* ===============================
+   BUTTON
+================================ */
+
+
+.register-btn {
+
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    margin-top:5px;
+
+    background:var(--primary);
+
+    color:white;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+
+
+.register-btn:hover {
+
+    background:var(--primary-hover);
+
+    transform:translateY(-2px);
+
+}
+
+
+
+
+
+
+
+/* ===============================
+   FOOTER
+================================ */
+
+
+.register-footer {
+
+    margin-top:25px;
+
+    font-size:13px;
+
+    color:var(--muted);
+
+}
+
+
+
+.register-footer a {
+
+    color:var(--primary);
+
+    text-decoration:none;
+
+    font-weight:600;
+
+}
+
+
+
+.register-footer a:hover {
+
+    text-decoration:underline;
+
+}
+
+
+
+
+
+
+
+/* ===============================
+   ALERTS
+================================ */
+
+
+.alert {
+
+    width:100%;
+
+    padding:12px 15px;
+
+    border-radius:10px;
+
+    margin-bottom:18px;
+
+    text-align:center;
+
+    font-size:14px;
+
+}
+
+
+
+
+
+.alert.success {
+
+    background:#d1fae5;
+
+    color:#065f46;
+
+}
+
+
+
+.alert.error {
+
+    background:#fee2e2;
+
+    color:#991b1b;
+
+}
+
+
+
+.alert.warning {
+
+    background:#fef3c7;
+
+    color:#92400e;
+
+}
+
+
+
+.alert.info {
+
+    background:#dbeafe;
+
+    color:#1e40af;
+
+}
+
+
+
+
+
+
+
+/* ===============================
+   TABLET RESPONSIVE
+================================ */
+
+
+@media(max-width:900px){
+
+
+    .register-wrapper {
+
+        flex-direction:column;
+
+    }
+
+
+
+    .register-brand {
+
+        padding:40px 25px;
+
+        border-right:none;
+
+        border-bottom:1px solid var(--border);
+
+    }
+
+
+
+    .register-card {
+
+        padding:40px 30px;
+
+    }
+
+
+
+    .brand-logo {
+
+        width:90px;
+
+        height:90px;
+
+    }
+
+
+
+    .register-brand h1 {
+
+        font-size:30px;
+
+    }
+
+
+}
+
+
+
+
+
+
+
+/* ===============================
+   MOBILE RESPONSIVE
+================================ */
+
+
+@media(max-width:480px){
+
+
+    .register-brand {
+
+        padding:30px 20px;
+
+    }
+
+
+
+    .register-card {
+
+        padding:30px 20px;
+
+    }
+
+
+
+    .brand-logo {
+
+        width:75px;
+
+        height:75px;
+
+    }
+
+
+
+    .register-card h2 {
+
+        font-size:25px;
+
+    }
+
+
+
+    .register-subtext {
+
+        font-size:13px;
+
+    }
+
+
+
+    .terms-box {
+
+        font-size:12px;
+
+    }
+
+
+
+    .register-btn {
+
+        padding:13px;
+
+    }
+
+
+}

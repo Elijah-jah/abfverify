@@ -1,0 +1,70 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Your Email | ABFverify</title>
+
+    <link rel="stylesheet" href="{% static 'css/checkemail.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+
+<div class="check-wrapper">
+
+    <div class="check-card">
+
+        <div class="check-icon">
+            <i class="fa-solid fa-envelope-circle-check"></i>
+        </div>
+
+        <h1>Check Your Email</h1>
+
+        <p class="check-title">
+            Your account has been created successfully.
+        </p>
+
+        <p class="check-text">
+            We've sent a verification link to the email address below. To activate your ABFverify account, please open your inbox and click the verification link.
+        </p>
+
+        <div class="email-box">
+            <i class="fa-solid fa-envelope"></i>
+            <span>{{ email }}</span>
+        </div>
+
+        <div class="info-box">
+
+            <div class="info-item">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Open the verification email.</span>
+            </div>
+
+            <div class="info-item">
+                <i class="fa-solid fa-link"></i>
+                <span>Click the verification link.</span>
+            </div>
+
+            <div class="info-item">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span>After verification, return to ABFverify and sign in.</span>
+            </div>
+
+        </div>
+
+        <p class="check-note">
+            Can't find the email? Check your Spam, Junk or Promotions folder. Email delivery may take a few minutes depending on your email provider.
+        </p>
+
+    </div>
+
+</div>
+
+<script src="{% static 'js/dashboard_base.js' %}"></script>
+
+</body>
+</html>
+
