@@ -13,7 +13,7 @@ SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = config("DEBUG", cast=bool, default=False)
 
-ALLOWED_HOSTS = ['abfverify.com', 'www.abfverify.com', 'abfverify.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['abfverify.com', 'abfverify.onrender.com', 'localhost', '127.0.0.1']
 
 # CRITICAL: Required for HTTPS POST requests on Django 4.0+
 CSRF_TRUSTED_ORIGINS = ['https://abfverify.onrender.com']
