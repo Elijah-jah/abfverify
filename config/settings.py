@@ -25,7 +25,7 @@ SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = config("DEBUG", cast=bool, default=False)
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "abfverify.com", "www.abfverify.com"]
+ALLOWED_HOSTS = ['abfverify.onrender.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
