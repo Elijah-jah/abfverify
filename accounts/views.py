@@ -143,9 +143,22 @@ def sms_view(request):
             messages.error(request, "This service is currently unavailable.")
             return redirect("sms")
 
-        # Check wallet balance
-        if wallet.balance < pricing.selling_price:
-            messages.error(request, "Your wallet balance is too low. Add funds to continue.")
+                # Check wallet balance including pending orders
+        pending_total = Order.objects.filter(
+            user=request.user,
+            status__in=["waiting", "pending"],
+        ).aggregate(total=Sum("price"))["total"] or 0
+
+        total_needed = pending_total + pricing.selling_price
+
+        if wallet.balance < total_needed:
+            if pending_total > 0:
+                messages.error(
+                    request,
+                    "Insufficient balance. You have pending orders. Cancel uncompleted orders and try again."
+                )
+            else:
+                messages.error(request, "Your wallet balance is too low. Add funds to continue.")
             return redirect("wallet")
 
         # Prevent duplicate requests within 10 seconds
