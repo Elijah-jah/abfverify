@@ -1626,3 +1626,92 @@ body.dashboard.light .stat-icon{
     }
 
 }
+
+/* ==========================================
+   FLOATING SUPPORT BUTTON
+========================================== */
+
+.support-float {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    color: #fff !important;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 20px rgba(13, 110, 253, 0.4);
+    z-index: 9999;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    animation: supportPulse 2s infinite;
+}
+
+.support-float:hover {
+    transform: scale(1.1) translateY(-3px);
+    box-shadow: 0 8px 25px rgba(13, 110, 253, 0.5);
+    animation: none;
+}
+
+/* Tooltip text */
+.support-tooltip {
+    position: absolute;
+    right: 65px;
+    background: #0d6efd;
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.support-float:hover .support-tooltip {
+    opacity: 1;
+    visibility: visible;
+    right: 70px;
+}
+
+/* Pulse animation */
+@keyframes supportPulse {
+    0% { box-shadow: 0 4px 20px rgba(13, 110, 253, 0.4); }
+    50% { box-shadow: 0 4px 30px rgba(13, 110, 253, 0.6); }
+    100% { box-shadow: 0 4px 20px rgba(13, 110, 253, 0.4); }
+}
+
+/* Dark mode */
+[data-theme="dark"] .support-float {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+}
+
+[data-theme="dark"] .support-float:hover {
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+[data-theme="dark"] .support-tooltip {
+    background: #2563eb;
+}
+
+/* Mobile adjustments */
+@media (max-width: 576px) {
+    .support-float {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+        bottom: 15px;
+        right: 15px;
+    }
+    
+    .support-tooltip {
+        display: none; /* Hide tooltip on mobile to save space */
+    }
+}
