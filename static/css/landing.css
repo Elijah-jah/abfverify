@@ -1129,6 +1129,47 @@ img{
 
 }
 
+/* ==========================================
+   TELEGRAM SUPPORT BUTTON
+========================================== */
+
+.btn-telegram {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    border: none;
+    color: #fff !important;
+    font-weight: 500;
+    padding: 0.65rem 1.2rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-telegram:hover {
+    background: linear-gradient(135deg, #0b5ed7 0%, #0949b0 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4);
+    color: #fff !important;
+}
+
+.btn-telegram:active {
+    transform: translateY(0);
+}
+
+/* Dark mode */
+[data-theme="dark"] .btn-telegram {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
+}
+
+[data-theme="dark"] .btn-telegram:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+}
 
 /* ==========================================
    FOOTER
