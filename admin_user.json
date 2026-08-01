@@ -1,48 +1,16 @@
 [
 {
   "model": "accounts.user",
-  "pk": 1,
+  "pk": 10,
   "fields": {
-    "password": "pbkdf2_sha256$1200000$mqoPKODnyiaQGqtlXbskbk$xtmeC4txQHZ6kaU1DuPH4J+GRqwfPqMBBeylzfCQv8I=",
-    "last_login": "2026-07-29T13:29:59.176Z",
-    "is_superuser": true,
-    "email": "semilorevictor72@gmail.com",
-    "username": "abfverify",
-    "is_active": true,
-    "is_staff": true,
-    "created_at": "2026-07-20T15:11:01.720Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "accounts.user",
-  "pk": 7,
-  "fields": {
-    "password": "pbkdf2_sha256$1200000$rPnRHORGF2rS5uY7psllsD$hHttdVO1GwsFG1HRdQMFl95A6OEAXbp7mMm/43Tc1cQ=",
-    "last_login": "2026-07-29T23:44:29.130Z",
-    "is_superuser": false,
-    "email": "mayokun@gmail.com",
-    "username": "Olamide",
-    "is_active": true,
-    "is_staff": false,
-    "created_at": "2026-07-28T10:43:13.845Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "accounts.user",
-  "pk": 9,
-  "fields": {
-    "password": "pbkdf2_sha256$1200000$TL0kHcuBXa6kIRFRzOAI5Y$nc25atuPsCksjFuSzOS7dvFMgf5L0JjteCVD5iZp8jk=",
+    "password": "pbkdf2_sha256$1200000$ZF7gp4Yy3QSXK4oWss9vDv$I6Wo02ic1nZ+UMGS/GYxgnHaIL1KdeEjiLloIy8pd/o=",
     "last_login": null,
     "is_superuser": true,
-    "email": "abfverify@abfverify.com",
-    "username": "abfadmin",
+    "email": "admin@abfverify.com",
+    "username": "siteadmin",
     "is_active": true,
     "is_staff": true,
-    "created_at": "2026-08-01T20:54:10.506Z",
+    "created_at": "2026-08-01T21:10:15.210Z",
     "groups": [],
     "user_permissions": []
   }
