@@ -252,3 +252,27 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
 });
+
+
+// Show notice modal on load
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('noticeModal');
+    const btnGotIt = document.getElementById('btnGotIt');
+    
+    if (!modal) return;
+    
+    // Check if user already dismissed this session
+    if (!sessionStorage.getItem('noticeDismissed')) {
+        modal.style.display = 'flex';
+    } else {
+        modal.style.display = 'none';
+    }
+    
+    // Dismiss button
+    if (btnGotIt) {
+        btnGotIt.addEventListener('click', function() {
+            modal.style.display = 'none';
+            sessionStorage.setItem('noticeDismissed', 'true');
+        });
+    }
+});

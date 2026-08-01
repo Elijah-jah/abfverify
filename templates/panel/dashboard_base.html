@@ -262,6 +262,124 @@ document.addEventListener("DOMContentLoaded", function () {
     <span class="support-tooltip">Support</span>
 </a>
 
+
+
+<!-- BIG NOTICE MODAL -->
+<div class="notice-modal" id="noticeModal" style="display:none;">
+    <div class="notice-box">
+        <div class="notice-header">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <h2>BIG NOTICE!!!</h2>
+        </div>
+        <div class="notice-body">
+            <p class="notice-subtitle">Must Read!!!!!</p>
+            <ul class="notice-list">
+                <li><i class="fa-solid fa-check-circle"></i> Set 2FA! ✅ (Two factor authentication)</li>
+                <li><i class="fa-solid fa-check-circle"></i> Don't rush text! ✅</li>
+                <li><i class="fa-solid fa-check-circle"></i> Don't rush to edit ✅</li>
+                <li><i class="fa-solid fa-check-circle"></i> Save every number! ✅</li>
+                <li><i class="fa-solid fa-check-circle"></i> Don't reply messages immediately! ✅</li>
+                <li><i class="fa-solid fa-check-circle"></i> Don't use number till one hour! ✅</li>
+            </ul>
+        </div>
+        <div class="notice-actions">
+            <a href="https://chat.whatsapp.com/BmQ5a2jKvTUArncgaIHr62?s=cl&p=a&ilr=1" target="_blank" class="btn btn-whatsapp">
+                <i class="fa-brands fa-whatsapp"></i>
+                Join ABFverify WhatsApp Community
+            </a>
+            <button type="button" class="btn btn-gotit" id="gotItBtn">
+                Got it, Thanks
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.notice-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+.notice-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+.notice-box {
+    width: 100%;
+    max-width: 480px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    overflow: hidden;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+    border: 2px solid #0d6efd;
+}
+.notice-modal.show .notice-box {
+    transform: scale(1);
+}
+.notice-header {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    color: #fff;
+    text-align: center;
+    padding: 1.5rem;
+}
+.notice-header i { font-size: 2.5rem; margin-bottom: 0.5rem; display: block; animation: np 1.5s infinite; }
+.notice-header h2 { margin: 0; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; }
+.notice-body { padding: 1.5rem; }
+.notice-subtitle { text-align: center; font-weight: 700; font-size: 1.1rem; color: #dc3545; margin-bottom: 1rem; text-transform: uppercase; }
+.notice-list { list-style: none; padding: 0; margin: 0; }
+.notice-list li { padding: 0.6rem 0; font-size: 0.95rem; color: #333; display: flex; align-items: flex-start; gap: 0.5rem; border-bottom: 1px solid #f0f0f0; }
+.notice-list li:last-child { border-bottom: none; }
+.notice-list li i { color: #0d6efd; margin-top: 2px; flex-shrink: 0; }
+.notice-actions { padding: 0 1.5rem 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.btn-whatsapp { background: #25d366; color: #fff !important; border: none; padding: 0.85rem; border-radius: 10px; font-weight: 600; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; }
+.btn-whatsapp:hover { background: #128c7e; }
+.btn-gotit { background: #0d6efd; color: #fff; border: none; padding: 0.85rem; border-radius: 10px; font-weight: 600; cursor: pointer; }
+.btn-gotit:hover { background: #0b5ed7; }
+@keyframes np { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+
+/* Dark mode */
+body.dark .notice-box, html[data-theme="dark"] .notice-box { background: #1e1e2f; border-color: #3b82f6; }
+body.dark .notice-subtitle, html[data-theme="dark"] .notice-subtitle { color: #ff6b6b; }
+body.dark .notice-list li, html[data-theme="dark"] .notice-list li { color: #e0e0e0; border-bottom-color: #2a2a3f; }
+body.dark .notice-list li i, html[data-theme="dark"] .notice-list li i { color: #3b82f6; }
+body.dark .btn-gotit, html[data-theme="dark"] .btn-gotit { background: #2563eb; }
+
+@media (max-width: 576px) {
+    .notice-box { margin: 0.5rem; }
+    .notice-header h2 { font-size: 1.2rem; }
+}
+</style>
+
+<script>
+(function(){
+    var m = document.getElementById('noticeModal');
+    var b = document.getElementById('gotItBtn');
+    if(m){
+        m.style.display = 'flex';
+        setTimeout(function(){ m.classList.add('show'); }, 500);
+    }
+    if(b && m){
+        b.onclick = function(){
+            m.classList.remove('show');
+            localStorage.setItem('abfNoticeDismissed','true');
+        };
+    }
+    if(m){
+        m.onclick = function(e){ if(e.target === m) m.classList.remove('show'); };
+    }
+})();
+</script>
 {% block extra_js %}
 {% endblock %}
 
