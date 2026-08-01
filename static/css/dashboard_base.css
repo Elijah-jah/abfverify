@@ -1734,3 +1734,211 @@ html[data-theme="dark"] .support-tooltip {
         display: none;
     }
 }
+
+
+/* ==========================================
+   BIG NOTICE MODAL
+========================================== */
+
+.notice-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.notice-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.notice-box {
+    width: 100%;
+    max-width: 480px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+    border: 2px solid #0d6efd;
+}
+
+.notice-modal.show .notice-box {
+    transform: scale(1);
+}
+
+/* Header */
+.notice-header {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    color: #fff;
+    text-align: center;
+    padding: 1.5rem 1rem;
+}
+
+.notice-header i {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+    animation: noticePulse 1.5s infinite;
+}
+
+.notice-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Body */
+.notice-body {
+    padding: 1.5rem;
+}
+
+.notice-subtitle {
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #dc3545;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.notice-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.notice-list li {
+    padding: 0.6rem 0;
+    font-size: 0.95rem;
+    color: #333;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.notice-list li:last-child {
+    border-bottom: none;
+}
+
+.notice-list li i {
+    color: #0d6efd;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+/* Actions */
+.notice-actions {
+    padding: 0 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.btn-whatsapp {
+    background: #25d366;
+    color: #fff !important;
+    border: none;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-whatsapp:hover {
+    background: #128c7e;
+    transform: translateY(-1px);
+}
+
+.btn-gotit {
+    background: #0d6efd;
+    color: #fff;
+    border: none;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+}
+
+.btn-gotit:hover {
+    background: #0b5ed7;
+    transform: translateY(-1px);
+}
+
+/* Pulse animation for header icon */
+@keyframes noticePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* ==========================================
+   DARK MODE - BIG NOTICE MODAL
+========================================== */
+
+body.dark .notice-box,
+html[data-theme="dark"] .notice-box {
+    background: #1e1e2f;
+    border-color: #3b82f6;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+body.dark .notice-subtitle,
+html[data-theme="dark"] .notice-subtitle {
+    color: #ff6b6b;
+}
+
+body.dark .notice-list li,
+html[data-theme="dark"] .notice-list li {
+    color: #e0e0e0;
+    border-bottom-color: #2a2a3f;
+}
+
+body.dark .notice-list li i,
+html[data-theme="dark"] .notice-list li i {
+    color: #3b82f6;
+}
+
+body.dark .btn-gotit,
+html[data-theme="dark"] .btn-gotit {
+    background: #2563eb;
+}
+
+body.dark .btn-gotit:hover,
+html[data-theme="dark"] .btn-gotit:hover {
+    background: #1d4ed8;
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+    .notice-box {
+        margin: 0.5rem;
+    }
+    .notice-header h2 {
+        font-size: 1.2rem;
+    }
+    .notice-list li {
+        font-size: 0.85rem;
+    }
+}
