@@ -1632,6 +1632,11 @@ body.dashboard.light .stat-icon{
 /* ==========================================
    FLOATING SUPPORT BUTTON
 ========================================== */
+.support-float i {
+    display: block !important;
+    color: #0d6efd !important;
+    font-size: 1.5rem;
+}
 
 .support-float {
     position: fixed;
