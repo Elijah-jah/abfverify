@@ -121,7 +121,8 @@ Dashboard
 
 </section>
 
-<!-- BIG NOTICE MODAL — DASHBOARD ONLY -->
+{% if show_notice %}
+<!-- BIG NOTICE MODAL — CONTROLLED BY VIEW -->
 <div class="notice-modal" id="noticeModal">
     <div class="notice-box">
         <div class="notice-header">
@@ -144,9 +145,10 @@ Dashboard
                 <i class="fa-brands fa-whatsapp"></i>
                 Join ABFverify WhatsApp Community
             </a>
-            <button type="button" class="btn btn-gotit" id="gotItBtn">
-                Got it, Thanks
-            </button>
+            <form action="{% url 'dismiss_notice' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-gotit">Got it, Thanks</button>
+            </form>
         </div>
     </div>
 </div>
@@ -201,7 +203,7 @@ Dashboard
 .notice-actions { padding: 0 1.5rem 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
 .btn-whatsapp { background: #25d366; color: #fff !important; border: none; padding: 0.85rem; border-radius: 10px; font-weight: 600; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; transition: all 0.2s ease; }
 .btn-whatsapp:hover { background: #128c7e; transform: translateY(-1px); }
-.btn-gotit { background: #0d6efd; color: #fff; border: none; padding: 0.85rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+.btn-gotit { background: #0d6efd; color: #fff; border: none; padding: 0.85rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; width: 100%; }
 .btn-gotit:hover { background: #0b5ed7; transform: translateY(-1px); }
 @keyframes np { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
 
@@ -222,24 +224,15 @@ body.dark .btn-gotit, html[data-theme="dark"] .btn-gotit { background: #2563eb; 
 <script>
 (function(){
     var m = document.getElementById('noticeModal');
-    var b = document.getElementById('gotItBtn');
-    var storage = localStorage;
-    var userKey = 'abfNoticeDismissed_{{ user.id|default:"0" }}';
-    var dismissed = storage.getItem(userKey);
-
-    if(m && !dismissed){
-        setTimeout(function(){ m.classList.add('show'); }, 500);
+    if(m){
+        setTimeout(function(){ m.classList.add('show'); }, 300);
     }
-    if(b && m){
-        b.onclick = function(){
-            m.classList.remove('show');
-            storage.setItem(userKey, 'true');
-        };
-    }
+    // Click outside to close (optional)
     if(m){
         m.onclick = function(e){ if(e.target === m) m.classList.remove('show'); };
     }
 })();
 </script>
+{% endif %}
 
 {% endblock %}

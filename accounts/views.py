@@ -651,3 +651,11 @@ def privacy_policy(request):
 
 def terms_of_service(request):
     return render(request, "website/termsofservice.html")
+
+
+@login_required
+def dismiss_notice(request):
+    """Called when user clicks 'Got it, Thanks'"""
+    if request.method == 'POST':
+        request.session['dashboard_notice_dismissed'] = True
+    return redirect('dashboard')
