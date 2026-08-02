@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.urls import reverse
+from django_ratelimit.decorators import ratelimit
 from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from countries.models import Country
@@ -23,6 +24,7 @@ from .models import User, UserSettings
 logger = logging.getLogger(__name__)
 
 
+@ratelimit(key='user', rate='10/m', method='POST', block=True)
 @login_required
 def cancel_order_view(request):
     if request.method != "POST":
@@ -68,6 +70,7 @@ def cancel_order_view(request):
     messages.success(request, "Your order has been cancelled. No charge was made.")
     return redirect("sms")
 
+
 @login_required
 def orders_view(request):
 
@@ -89,6 +92,7 @@ def orders_view(request):
     )
 
 
+@ratelimit(key='user', rate='10/m', method='POST', block=True)
 @login_required
 def sms_view(request):
 
@@ -244,6 +248,7 @@ def sms_view(request):
     )
 
 
+@ratelimit(key='ip', rate='3/m', method='POST', block=True)
 def register_view(request):
 
     if request.user.is_authenticated:
@@ -333,6 +338,7 @@ def register_view(request):
     )
 
 
+
 @login_required
 def settings_view(request):
 
@@ -382,6 +388,7 @@ def logout_view(request):
 
 
 
+@ratelimit(key='ip', rate='5/m', method='POST', block=True)
 def login_view(request):
 
     if request.user.is_authenticated:
@@ -439,7 +446,6 @@ def login_view(request):
         request,
         "accounts/login.html"
     )
-
 
 
 # ==========================
@@ -582,6 +588,7 @@ def landing_view(request):
     return render(request, "website/home.html")
 
 
+@ratelimit(key='ip', rate='3/m', method='POST', block=True)
 def forgot_password_view(request):
     if request.user.is_authenticated:
         logger.info("Authenticated user %s tried to access forgot password", request.user.id)
@@ -594,6 +601,7 @@ def forgot_password_view(request):
     return render(request, "accounts/forgot_password.html")
 
 
+@ratelimit(key='user', rate='5/m', method='POST', block=True)
 @login_required
 def change_password_view(request):
 
@@ -664,5 +672,3 @@ def privacy_policy(request):
 
 def terms_of_service(request):
     return render(request, "website/termsofservice.html")
-
-
