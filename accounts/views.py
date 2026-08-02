@@ -448,6 +448,8 @@ def login_view(request):
 
 @login_required
 def dashboard(request):
+    # --- POPUP NOTICE LOGIC ---
+    show_notice = not request.session.get('dashboard_notice_dismissed', False)
 
     wallet, created = Wallet.objects.get_or_create(
         user=request.user
@@ -482,6 +484,9 @@ def dashboard(request):
         # Temporary values until Orders/SMS backend
         "active_orders": 0,
         "total_sms": 0,
+
+        # --- POPUP FLAG ---
+        "show_notice": show_notice,
     }
 
     return render(
@@ -489,6 +494,14 @@ def dashboard(request):
         "panel/dashboard.html",
         context
     )
+
+
+@login_required
+def dismiss_notice(request):
+    """Called when user clicks 'Got it, Thanks' on the popup"""
+    if request.method == 'POST':
+        request.session['dashboard_notice_dismissed'] = True
+    return redirect('dashboard')
 
 # ==========================
 # WALLET PAGE
@@ -653,9 +666,3 @@ def terms_of_service(request):
     return render(request, "website/termsofservice.html")
 
 
-@login_required
-def dismiss_notice(request):
-    """Called when user clicks 'Got it, Thanks'"""
-    if request.method == 'POST':
-        request.session['dashboard_notice_dismissed'] = True
-    return redirect('dashboard')
