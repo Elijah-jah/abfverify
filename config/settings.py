@@ -62,7 +62,6 @@ CACHES = {
 }
 
 
-RATELIMIT_VIEW = 'accounts.views.ratelimited_error'
 
 ROOT_URLCONF = 'config.urls'
 
