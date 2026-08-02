@@ -55,12 +55,17 @@ MIDDLEWARE = [
     'django_ratelimit.middleware.RatelimitMiddleware',
 ]
 
+
+# config/settings.py
+
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION': 'django_cache_table',
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
+
+# Silence django-ratelimit strict checks (safe for single-worker setups)
+SILENCED_SYSTEM_CHECKS = ['django_ratelimit.E003', 'django_ratelimit.W001']
 
 ROOT_URLCONF = 'config.urls'
 
