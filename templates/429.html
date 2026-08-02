@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Too Many Requests | ABFverify</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f0f4ff; color: #1a1a2e; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .box { text-align: center; background: #fff; padding: 3rem 2rem; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); max-width: 400px; }
+        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; color: #dc3545; }
+        p { color: #64748b; margin-bottom: 1.5rem; }
+        a { display: inline-block; background: #0d6efd; color: #fff; padding: 0.75rem 1.5rem; border-radius: 10px; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>Too Many Requests</h1>
+        <p>You've made too many requests in a short time. Please wait a few minutes and try again.</p>
+        <a href="{% url 'login' %}">Back to Login</a>
+    </div>
+</body>
+</html>

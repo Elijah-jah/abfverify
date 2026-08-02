@@ -672,3 +672,6 @@ def privacy_policy(request):
 
 def terms_of_service(request):
     return render(request, "website/termsofservice.html")
+
+def ratelimited_error(request, exception=None):
+    return render(request, '429.html', status=429)

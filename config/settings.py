@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "orders",
     "providers",
     'django_apscheduler',
+    'django_ratelimit',
 ]
 
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
@@ -51,7 +52,17 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_ratelimit.middleware.RatelimitMiddleware',
 ]
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
+
+RATELIMIT_VIEW = 'accounts.views.ratelimited_error'
 
 ROOT_URLCONF = 'config.urls'
 
