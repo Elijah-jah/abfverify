@@ -268,3 +268,5 @@ CACHES = {
 }
 
 SILENCED_SYSTEM_CHECKS = ['django_ratelimit.E003', 'django_ratelimit.W001']
+
+RATELIMIT_VIEW = 'accounts.views.ratelimited_error'
