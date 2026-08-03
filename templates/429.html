@@ -1,22 +1,105 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Too Many Requests | ABFverify</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; background: #f0f4ff; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-        .box { text-align: center; background: #fff; padding: 3rem 2rem; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.1); max-width: 400px; }
-        h1 { color: #dc3545; font-size: 1.5rem; margin-bottom: 0.5rem; }
-        p { color: #64748b; margin-bottom: 1.5rem; }
-        a { display: inline-block; background: #0d6efd; color: #fff; padding: 0.75rem 1.5rem; border-radius: 10px; text-decoration: none; font-weight: 600; }
+        :root {
+            --bg: #f0f4ff;
+            --card: #ffffff;
+            --text: #1a1a2e;
+            --text-secondary: #64748b;
+            --blue: #0d6efd;
+            --blue-dark: #0b5ed7;
+            --danger: #dc3545;
+            --shadow: 0 20px 60px rgba(13, 110, 253, 0.12);
+            --border: #0d6efd;
+        }
+        body.dark, html[data-theme="dark"] body {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            --border: #3b82f6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        .box {
+            background: var(--card);
+            padding: 3rem 2.5rem;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: var(--shadow);
+            border: 2px solid var(--border);
+            animation: popIn 0.4s ease;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #dc3545 0%, #ff6b6b 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 8px 35px rgba(220, 53, 69, 0.5); }
+        }
+        h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 0.5rem; }
+        p { color: var(--text-secondary); margin-bottom: 1.75rem; line-height: 1.6; font-size: 0.95rem; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
+            color: #fff;
+            padding: 0.85rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(13, 110, 253, 0.3);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4); }
+        .logo { margin-bottom: 1.5rem; }
+        .logo img { width: 50px; height: 50px; object-fit: contain; }
     </style>
 </head>
 <body>
     <div class="box">
+        <div class="icon"><i class="fa-solid fa-shield-halved"></i></div>
         <h1>Too Many Requests</h1>
-        <p>Please wait a few minutes and try again.</p>
-        <a href="/login/">Back to Login</a>
+        <p>You've made too many requests in a short time. Please wait a few minutes and try again.</p>
+        <a href="{% url 'login' %}" class="btn"><i class="fa-solid fa-arrow-left"></i> Back to Login</a>
     </div>
 </body>
 </html>
