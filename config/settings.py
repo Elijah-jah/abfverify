@@ -67,6 +67,14 @@ CACHES = {
 # Silence django-ratelimit strict checks (safe for single-worker setups)
 SILENCED_SYSTEM_CHECKS = ['django_ratelimit.E003', 'django_ratelimit.W001']
 
+
+from django.shortcuts import render
+
+def ratelimited_error(request, exception=None):
+    return render(request, '429.html', status=429)
+
+RATELIMIT_VIEW = ratelimited_error
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
