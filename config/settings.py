@@ -25,9 +25,9 @@ SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = config("DEBUG", cast=bool, default=False)
 
-# With this:
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='abfverify.onrender.com,localhost,127.0.0.1').split(',')
+import ast
 
+ALLOWED_HOSTS = ast.literal_eval(config('ALLOWED_HOSTS', default="['abfverify.onrender.com', 'localhost', '127.0.0.1']"))
 
 # Application definition
 
