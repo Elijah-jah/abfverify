@@ -8,11 +8,11 @@ class AccountsConfig(AppConfig):
     name = 'accounts'
 
     def ready(self):
-        # Prevent scheduler from starting in Django's auto-reloader process
-        if os.environ.get('RUN_MAIN') != 'true':
+        # Prevent scheduler from starting in Django's auto-reloader process (local dev only)
+        if 'runserver' in sys.argv and os.environ.get('RUN_MAIN') != 'true':
             return
 
-        # Only start scheduler during runserver, not migrate/collectstatic/etc
+        # Skip during migrations, collectstatic, shell, test, etc.
         if len(sys.argv) > 1 and sys.argv[1] in ('migrate', 'makemigrations', 'collectstatic', 'shell', 'test'):
             return
 
