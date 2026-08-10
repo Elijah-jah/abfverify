@@ -20,6 +20,13 @@ from pricing.models import Pricing
 from providers.factory import get_provider
 from orders.models import Order
 from .models import User, UserSettings
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.contrib.auth.forms import SetPasswordForm
 
 logger = logging.getLogger(__name__)
 
@@ -590,16 +597,110 @@ def landing_view(request):
 
 @ratelimit(key='ip', rate='3/m', method='POST', block=True)
 def forgot_password_view(request):
+    """Show forgot password form and send reset email via Brevo."""
     if request.user.is_authenticated:
         logger.info("Authenticated user %s tried to access forgot password", request.user.id)
         return redirect("dashboard")
 
     if request.method == "POST":
-        email = request.POST.get("email", "").strip()
-        logger.info("Password reset requested for email: %s", email)
+        email = request.POST.get("email", "").strip().lower()
 
-    return render(request, "accounts/forgot_password.html")
+        if not email:
+            return render(request, "forgot_password.html", {
+                "error": "Please enter your email address."
+            })
 
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # Security: don't reveal whether the email exists
+            return render(request, "reset_email_sent.html")
+
+        # Generate token and UID
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+        # Build reset URL (Render/proxy aware)
+        domain = request.get_host()
+        if request.META.get('HTTP_X_FORWARDED_PROTO') == 'https':
+            protocol = 'https'
+        else:
+            protocol = 'https' if request.is_secure() else 'http'
+
+        reset_url = f"{protocol}://{domain}/password-reset-confirm/{uid}/{token}/"
+
+        # Render email body
+        subject = "Password reset for your ABFverify account"
+        message = render_to_string("password_reset_email.html", {
+            "user": user,
+            "reset_url": reset_url,
+            "protocol": protocol,
+            "domain": domain,
+        })
+
+        try:
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            logger.info("Password reset email sent to %s", email)
+        except Exception as e:
+            logger.error("Failed to send reset email to %s: %s", email, str(e))
+            return render(request, "forgot_password.html", {
+                "error": "Failed to send email. Please try again later."
+            })
+
+        return render(request, "reset_email_sent.html")
+
+    return render(request, "forgot_password.html")
+
+
+
+
+def reset_email_sent_view(request):
+    """Show 'check your email' confirmation page."""
+    return render(request, "reset_email_sent.html")
+
+
+@ratelimit(key='ip', rate='5/m', method='POST', block=True)
+def reset_password_confirm_view(request, uidb64, token):
+    """Validate token and let user set a new password."""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is None or not default_token_generator.check_token(user, token):
+        return render(request, "reset_password.html", {
+            "validlink": False,
+            "error": "This password reset link is invalid or has expired."
+        })
+
+    if request.method == "POST":
+        form = SetPasswordForm(user, request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("password_reset_complete")
+        else:
+            return render(request, "reset_password.html", {
+                "validlink": True,
+                "form": form,
+            })
+
+    form = SetPasswordForm(user)
+    return render(request, "reset_password.html", {
+        "validlink": True,
+        "form": form,
+    })
+
+
+def reset_password_complete_view(request):
+    """Password successfully changed."""
+    return render(request, "password_reset_complete.html")
 
 @ratelimit(key='user', rate='5/m', method='POST', block=True)
 @login_required

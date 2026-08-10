@@ -19,4 +19,8 @@ urlpatterns = [
     path("terms-of-service/", views.terms_of_service, name="terms_of_service"),
     path('dismiss-notice/', views.dismiss_notice, name='dismiss_notice'),
     path('429/', views.ratelimited_error, name='ratelimit_error'),
+    path('password-reset/', views.forgot_password_view, name='password_reset'),
+    path('password-reset/done/', views.reset_email_sent_view, name='password_reset_done'),
+    path('password-reset-confirm/<uidb64>/<token>/', views.reset_password_confirm_view, name='password_reset_confirm'),
+    path('password-reset-complete/', views.reset_password_complete_view, name='password_reset_complete'),
 ]
