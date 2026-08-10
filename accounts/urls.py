@@ -19,7 +19,7 @@ urlpatterns = [
     path("terms-of-service/", views.terms_of_service, name="terms_of_service"),
     path('dismiss-notice/', views.dismiss_notice, name='dismiss_notice'),
     path('429/', views.ratelimited_error, name='ratelimit_error'),
-     path('password-reset/', auth_views.PasswordResetView.as_view(
+    path('password-reset/', auth_views.PasswordResetView.as_view(
         template_name='forgot_password.html',
         email_template_name='password_reset_email.html',
         subject_template_name='password_reset_subject.txt',
