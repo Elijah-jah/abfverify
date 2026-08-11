@@ -596,6 +596,10 @@ def landing_view(request):
 
 
 
+# ============================================================
+# PASSWORD RESET VIEWS
+# ============================================================
+
 def forgot_password_view(request):
     """Show forgot password form and send reset email via Brevo."""
     if request.user.is_authenticated:
@@ -606,7 +610,7 @@ def forgot_password_view(request):
         email = request.POST.get("email", "").strip().lower()
 
         if not email:
-            return render(request, "forgot_password.html", {
+            return render(request, "accounts/forgot_password.html", {
                 "error": "Please enter your email address."
             })
 
@@ -614,24 +618,24 @@ def forgot_password_view(request):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             # Security: don't reveal whether the email exists
-            return render(request, "reset_email_sent.html")
+            return render(request, "accounts/reset_email_sent.html")
 
         # Generate token and UID
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
 
-        # Build reset URL (Render/proxy aware)
+        # Build reset URL
         domain = request.get_host()
         if request.META.get('HTTP_X_FORWARDED_PROTO') == 'https':
             protocol = 'https'
         else:
             protocol = 'https' if request.is_secure() else 'http'
 
-        reset_url = f"{protocol}://{domain}/password-reset-confirm/{uid}/{token}/"
+        reset_url = f"{protocol}://{domain}/accounts/password-reset-confirm/{uid}/{token}/"
 
         # Render email body
         subject = "Password reset for your ABFverify account"
-        message = render_to_string("password_reset_email.html", {
+        message = render_to_string("accounts/password_reset_email.html", {
             "user": user,
             "reset_url": reset_url,
             "protocol": protocol,
@@ -649,21 +653,18 @@ def forgot_password_view(request):
             logger.info("Password reset email sent to %s", email)
         except Exception as e:
             logger.error("Failed to send reset email to %s: %s", email, str(e))
-            return render(request, "forgot_password.html", {
+            return render(request, "accounts/forgot_password.html", {
                 "error": "Failed to send email. Please try again later."
             })
 
-        return render(request, "reset_email_sent.html")
+        return render(request, "accounts/reset_email_sent.html")
 
-    return render(request, "forgot_password.html")
-
-
+    return render(request, "accounts/forgot_password.html")
 
 
 def reset_email_sent_view(request):
     """Show 'check your email' confirmation page."""
-    return render(request, "reset_email_sent.html")
-
+    return render(request, "accounts/reset_email_sent.html")
 
 
 def reset_password_confirm_view(request, uidb64, token):
@@ -675,7 +676,7 @@ def reset_password_confirm_view(request, uidb64, token):
         user = None
 
     if user is None or not default_token_generator.check_token(user, token):
-        return render(request, "reset_password.html", {
+        return render(request, "accounts/reset_password.html", {
             "validlink": False,
             "error": "This password reset link is invalid or has expired."
         })
@@ -686,13 +687,13 @@ def reset_password_confirm_view(request, uidb64, token):
             form.save()
             return redirect("password_reset_complete")
         else:
-            return render(request, "reset_password.html", {
+            return render(request, "accounts/reset_password.html", {
                 "validlink": True,
                 "form": form,
             })
 
     form = SetPasswordForm(user)
-    return render(request, "reset_password.html", {
+    return render(request, "accounts/reset_password.html", {
         "validlink": True,
         "form": form,
     })
@@ -700,7 +701,7 @@ def reset_password_confirm_view(request, uidb64, token):
 
 def reset_password_complete_view(request):
     """Password successfully changed."""
-    return render(request, "password_reset_complete.html")
+    return render(request, "accounts/password_reset_complete.html")
 
 @ratelimit(key='user', rate='5/m', method='POST', block=True)
 @login_required
