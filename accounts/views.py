@@ -617,14 +617,11 @@ def forgot_password_view(request):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            # Security: don't reveal whether the email exists
             return render(request, "accounts/reset_email_sent.html")
 
-        # Generate token and UID
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
 
-        # Build reset URL
         domain = request.get_host()
         if request.META.get('HTTP_X_FORWARDED_PROTO') == 'https':
             protocol = 'https'
@@ -633,7 +630,6 @@ def forgot_password_view(request):
 
         reset_url = f"{protocol}://{domain}/accounts/password-reset-confirm/{uid}/{token}/"
 
-        # Render email body
         subject = "Password reset for your ABFverify account"
         message = render_to_string("accounts/password_reset_email.html", {
             "user": user,
@@ -642,24 +638,24 @@ def forgot_password_view(request):
             "domain": domain,
         })
 
+        # Debug: log what settings we're using
+        logger.info("SMTP Settings: HOST=%s, PORT=%s, USER=%s, FROM=%s", 
+                    settings.EMAIL_HOST, settings.EMAIL_PORT, 
+                    settings.EMAIL_HOST_USER, settings.DEFAULT_FROM_EMAIL)
+
         try:
             sent = send_mail(
                 subject=subject,
                 message=message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email],
-                fail_silently=True,  # Don't crash the server if SMTP fails
+                fail_silently=False,  # Let us catch the real error
             )
-            if sent == 0:
-                logger.error("Email backend failed to send to %s — check SMTP settings", email)
-                return render(request, "accounts/forgot_password.html", {
-                    "error": "Unable to send email. Please contact support."
-                })
-            logger.info("Password reset email sent to %s", email)
+            logger.info("Password reset email sent to %s (sent=%s)", email, sent)
         except Exception as e:
-            logger.error("Failed to send reset email to %s: %s", email, str(e))
+            logger.error("SMTP ERROR for %s: %s", email, str(e))
             return render(request, "accounts/forgot_password.html", {
-                "error": "Failed to send email. Please try again later."
+                "error": f"Email failed: {str(e)}"
             })
 
         return render(request, "accounts/reset_email_sent.html")
