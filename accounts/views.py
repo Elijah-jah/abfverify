@@ -602,6 +602,7 @@ def landing_view(request):
 
 import requests
 
+@ratelimit(key='ip', rate='3/m', method='POST', block=True)
 def forgot_password_view(request):
     """Show forgot password form and send reset email via Brevo HTTP API."""
     if request.user.is_authenticated:
@@ -698,6 +699,7 @@ def reset_email_sent_view(request):
     return render(request, "accounts/reset_email_sent.html")
 
 
+@ratelimit(key='ip', rate='5/m', method='POST', block=True)
 def reset_password_confirm_view(request, uidb64, token):
     """Validate token and let user set a new password."""
     try:
