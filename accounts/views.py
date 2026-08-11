@@ -635,7 +635,6 @@ def forgot_password_view(request):
         reset_url = f"{protocol}://{domain}/accounts/password-reset-confirm/{uid}/{token}/"
 
         # Render email body
-        subject = "Password reset for your ABFverify account"
         html_content = render_to_string("accounts/password_reset_email.html", {
             "user": user,
             "reset_url": reset_url,
@@ -643,8 +642,11 @@ def forgot_password_view(request):
             "domain": domain,
         })
 
-        # Send via Brevo HTTP API (no SMTP, no IP blocks)
+        # Send via Brevo HTTP API
         brevo_api_key = getattr(settings, 'BREVO_API_KEY', None)
+        
+        logger.info("Brevo API Key present: %s", bool(brevo_api_key))
+        
         if not brevo_api_key:
             logger.error("BREVO_API_KEY is not set in settings")
             return render(request, "accounts/forgot_password.html", {
@@ -656,8 +658,8 @@ def forgot_password_view(request):
                 "name": "ABFverify",
                 "email": settings.DEFAULT_FROM_EMAIL or "noreply@abfverify.com"
             },
-            "to": [{"email": email, "name": user.username}],
-            "subject": subject,
+            "to": [{"email": email, "name": user.username or email}],
+            "subject": "Password reset for your ABFverify account",
             "htmlContent": html_content
         }
 
@@ -673,12 +675,15 @@ def forgot_password_view(request):
                 timeout=10
             )
             
+            logger.info("Brevo API status: %s, response: %s", response.status_code, response.text[:500])
+            
             if response.status_code in (200, 201, 202):
                 logger.info("Password reset email sent to %s via Brevo API", email)
+                return render(request, "accounts/reset_email_sent.html")
             else:
                 logger.error("Brevo API error %s: %s", response.status_code, response.text)
                 return render(request, "accounts/forgot_password.html", {
-                    "error": "Unable to send email. Please contact support."
+                    "error": f"Email service error {response.status_code}. Please contact support."
                 })
                 
         except Exception as e:
@@ -686,8 +691,6 @@ def forgot_password_view(request):
             return render(request, "accounts/forgot_password.html", {
                 "error": "Failed to send email. Please try again later."
             })
-
-        return render(request, "accounts/reset_email_sent.html")
 
     return render(request, "accounts/forgot_password.html")
 
