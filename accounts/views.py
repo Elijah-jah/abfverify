@@ -645,18 +645,16 @@ def forgot_password_view(request):
         # Send via Brevo HTTP API
         brevo_api_key = getattr(settings, 'BREVO_API_KEY', None)
         
-        logger.info("Brevo API Key present: %s", bool(brevo_api_key))
-        
         if not brevo_api_key:
-            logger.error("BREVO_API_KEY is not set in settings")
+            logger.error("BREVO_API_KEY is not set")
             return render(request, "accounts/forgot_password.html", {
-                "error": "Email service not configured. Please contact support."
+                "error": "Email service not configured."
             })
 
         payload = {
             "sender": {
                 "name": "ABFverify",
-                "email": settings.DEFAULT_FROM_EMAIL or "noreply@abfverify.com"
+                "email": "noreply@abfverify.com"  # Your verified sender
             },
             "to": [{"email": email, "name": user.username or email}],
             "subject": "Password reset for your ABFverify account",
@@ -675,19 +673,19 @@ def forgot_password_view(request):
                 timeout=10
             )
             
-            logger.info("Brevo API status: %s, response: %s", response.status_code, response.text[:500])
+            logger.info("Brevo API status: %s", response.status_code)
             
             if response.status_code in (200, 201, 202):
-                logger.info("Password reset email sent to %s via Brevo API", email)
+                logger.info("Password reset email sent to %s", email)
                 return render(request, "accounts/reset_email_sent.html")
             else:
                 logger.error("Brevo API error %s: %s", response.status_code, response.text)
                 return render(request, "accounts/forgot_password.html", {
-                    "error": f"Email service error {response.status_code}. Please contact support."
+                    "error": "Unable to send email. Please contact support."
                 })
                 
         except Exception as e:
-            logger.error("Brevo API request failed for %s: %s", email, str(e))
+            logger.error("Brevo API request failed: %s", str(e))
             return render(request, "accounts/forgot_password.html", {
                 "error": "Failed to send email. Please try again later."
             })
