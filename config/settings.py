@@ -177,7 +177,6 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 BREVO_API_KEY = config('BREVO_API_KEY', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='webmaster@localhost')
 EMAIL_TIMEOUT = 10  # seconds — fail fast instead of hanging
-RATELIMIT_IP_META_KEY = 'HTTP_X_FORWARDED_FOR'
 
 # Security settings
 SECURE_BROWSER_XSS_FILTER = True
