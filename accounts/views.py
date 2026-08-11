@@ -600,8 +600,10 @@ def landing_view(request):
 # PASSWORD RESET VIEWS
 # ============================================================
 
+import requests
+
 def forgot_password_view(request):
-    """Show forgot password form and send reset email via Brevo."""
+    """Show forgot password form and send reset email via Brevo HTTP API."""
     if request.user.is_authenticated:
         logger.info("Authenticated user %s tried to access forgot password", request.user.id)
         return redirect("dashboard")
@@ -619,9 +621,11 @@ def forgot_password_view(request):
         except User.DoesNotExist:
             return render(request, "accounts/reset_email_sent.html")
 
+        # Generate token and UID
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
 
+        # Build reset URL
         domain = request.get_host()
         if request.META.get('HTTP_X_FORWARDED_PROTO') == 'https':
             protocol = 'https'
@@ -630,32 +634,57 @@ def forgot_password_view(request):
 
         reset_url = f"{protocol}://{domain}/accounts/password-reset-confirm/{uid}/{token}/"
 
+        # Render email body
         subject = "Password reset for your ABFverify account"
-        message = render_to_string("accounts/password_reset_email.html", {
+        html_content = render_to_string("accounts/password_reset_email.html", {
             "user": user,
             "reset_url": reset_url,
             "protocol": protocol,
             "domain": domain,
         })
 
-        # Debug: log what settings we're using
-        logger.info("SMTP Settings: HOST=%s, PORT=%s, USER=%s, FROM=%s", 
-                    settings.EMAIL_HOST, settings.EMAIL_PORT, 
-                    settings.EMAIL_HOST_USER, settings.DEFAULT_FROM_EMAIL)
+        # Send via Brevo HTTP API (no SMTP, no IP blocks)
+        brevo_api_key = getattr(settings, 'BREVO_API_KEY', None)
+        if not brevo_api_key:
+            logger.error("BREVO_API_KEY is not set in settings")
+            return render(request, "accounts/forgot_password.html", {
+                "error": "Email service not configured. Please contact support."
+            })
+
+        payload = {
+            "sender": {
+                "name": "ABFverify",
+                "email": settings.DEFAULT_FROM_EMAIL or "noreply@abfverify.com"
+            },
+            "to": [{"email": email, "name": user.username}],
+            "subject": subject,
+            "htmlContent": html_content
+        }
 
         try:
-            sent = send_mail(
-                subject=subject,
-                message=message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=False,  # Let us catch the real error
+            response = requests.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={
+                    "accept": "application/json",
+                    "api-key": brevo_api_key,
+                    "content-type": "application/json"
+                },
+                json=payload,
+                timeout=10
             )
-            logger.info("Password reset email sent to %s (sent=%s)", email, sent)
+            
+            if response.status_code in (200, 201, 202):
+                logger.info("Password reset email sent to %s via Brevo API", email)
+            else:
+                logger.error("Brevo API error %s: %s", response.status_code, response.text)
+                return render(request, "accounts/forgot_password.html", {
+                    "error": "Unable to send email. Please contact support."
+                })
+                
         except Exception as e:
-            logger.error("SMTP ERROR for %s: %s", email, str(e))
+            logger.error("Brevo API request failed for %s: %s", email, str(e))
             return render(request, "accounts/forgot_password.html", {
-                "error": f"Email failed: {str(e)}"
+                "error": "Failed to send email. Please try again later."
             })
 
         return render(request, "accounts/reset_email_sent.html")
