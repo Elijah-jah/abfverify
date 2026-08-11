@@ -643,13 +643,18 @@ def forgot_password_view(request):
         })
 
         try:
-            send_mail(
+            sent = send_mail(
                 subject=subject,
                 message=message,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email],
-                fail_silently=False,
+                fail_silently=True,  # Don't crash the server if SMTP fails
             )
+            if sent == 0:
+                logger.error("Email backend failed to send to %s — check SMTP settings", email)
+                return render(request, "accounts/forgot_password.html", {
+                    "error": "Unable to send email. Please contact support."
+                })
             logger.info("Password reset email sent to %s", email)
         except Exception as e:
             logger.error("Failed to send reset email to %s: %s", email, str(e))
