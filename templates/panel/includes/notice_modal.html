@@ -1,32 +1,33 @@
 {% load static %}
 
 {% if show_notice %}
-<!-- BIG NOTICE MODAL -->
+<!-- NEW UPDATE MODAL -->
 <div class="notice-modal" id="noticeModal">
     <div class="notice-box">
         <div class="notice-header">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <h2>BIG NOTICE!!!</h2>
+            <div class="notice-icon-wrap">
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
+            <h2>New Update</h2>
         </div>
         <div class="notice-body">
-            <p class="notice-subtitle">Must Read!!!!!</p>
-            <ul class="notice-list">
-                <li><i class="fa-solid fa-check-circle"></i> Set 2FA! ✅ (Two factor authentication)</li>
-                <li><i class="fa-solid fa-check-circle"></i> Don't rush text! ✅</li>
-                <li><i class="fa-solid fa-check-circle"></i> Don't rush to edit ✅</li>
-                <li><i class="fa-solid fa-check-circle"></i> Save every number! ✅</li>
-                <li><i class="fa-solid fa-check-circle"></i> Don't reply messages immediately! ✅</li>
-                <li><i class="fa-solid fa-check-circle"></i> Don't use number till one hour! ✅</li>
-            </ul>
+            <p class="notice-message">
+                Join our Telegram channel to receive the latest updates, announcements, and fast notifications about ABFverify. Stay ahead and never miss important news — click the link below to join now!
+            </p>
         </div>
         <div class="notice-actions">
-            <a href="https://chat.whatsapp.com/JLnEebQOswWAs2GYj3TaUk" target="_blank" class="btn btn-whatsapp">
-                <i class="fa-brands fa-whatsapp"></i>
-                Join ABFverify WhatsApp Community
+            <a href="https://t.me/abflogs091" target="_blank" class="btn btn-telegram">
+                <i class="fa-brands fa-telegram"></i>
+                Join New Channel
+                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i>
             </a>
+            <button type="button" class="btn btn-copy" onclick="copyTelegramLink()">
+                <i class="fa-regular fa-copy"></i>
+                Copy Link
+            </button>
             <form action="{% url 'dismiss_notice' %}" method="post" style="display:inline; width:100%;">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-gotit">Got it, Thanks</button>
+                <button type="submit" class="btn btn-gotit">Got it, thanks!</button>
             </form>
         </div>
     </div>
@@ -53,7 +54,7 @@
 }
 .notice-box {
     width: 100%;
-    max-width: 480px;
+    max-width: 420px;
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.2);
@@ -69,34 +70,96 @@
     background: linear-gradient(135deg, #0d6efd, #0b5ed7);
     color: #fff;
     text-align: center;
-    padding: 1.5rem;
+    padding: 1.5rem 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
-.notice-header i { font-size: 2.5rem; margin-bottom: 0.5rem; display: block; animation: np 1.5s infinite; }
-.notice-header h2 { margin: 0; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; }
-.notice-body { padding: 1.5rem; }
-.notice-subtitle { text-align: center; font-weight: 700; font-size: 1.1rem; color: #dc3545; margin-bottom: 1rem; text-transform: uppercase; }
-.notice-list { list-style: none; padding: 0; margin: 0; }
-.notice-list li { padding: 0.6rem 0; font-size: 0.95rem; color: #333; display: flex; align-items: flex-start; gap: 0.5rem; border-bottom: 1px solid #f0f0f0; }
-.notice-list li:last-child { border-bottom: none; }
-.notice-list li i { color: #0d6efd; margin-top: 2px; flex-shrink: 0; }
-.notice-actions { padding: 0 1.5rem 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
-.btn-whatsapp { background: #25d366; color: #fff !important; border: none; padding: 0.85rem; border-radius: 10px; font-weight: 600; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; transition: all 0.2s ease; }
-.btn-whatsapp:hover { background: #128c7e; transform: translateY(-1px); }
-.btn-gotit { background: #0d6efd; color: #fff; border: none; padding: 0.85rem; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; width: 100%; }
+.notice-icon-wrap {
+    width: 56px;
+    height: 56px;
+    background: #dc3545;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+.notice-icon-wrap i { font-size: 1.6rem; color: #fff; }
+.notice-header h2 { margin: 0; font-size: 1.4rem; font-weight: 700; }
+.notice-body { padding: 1.25rem 1.5rem; }
+.notice-message {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #444;
+    line-height: 1.6;
+    margin: 0;
+}
+.notice-actions {
+    padding: 0 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.btn-telegram {
+    background: #0088cc;
+    color: #fff !important;
+    border: none;
+    padding: 0.85rem;
+    border-radius: 10px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-telegram:hover { background: #0077b3; transform: translateY(-1px); }
+.btn-copy {
+    background: transparent;
+    color: #666;
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    border-radius: 10px;
+    font-weight: 500;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    font-size: 0.9rem;
+}
+.btn-copy:hover { background: #f8f9fa; border-color: #ccc; }
+.btn-gotit {
+    background: #0d6efd;
+    color: #fff;
+    border: none;
+    padding: 0.85rem;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    font-size: 0.95rem;
+}
 .btn-gotit:hover { background: #0b5ed7; transform: translateY(-1px); }
 @keyframes np { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
-
-/* Dark mode */
 body.dark .notice-box, html[data-theme="dark"] .notice-box { background: #1e1e2f; border-color: #3b82f6; }
-body.dark .notice-subtitle, html[data-theme="dark"] .notice-subtitle { color: #ff6b6b; }
-body.dark .notice-list li, html[data-theme="dark"] .notice-list li { color: #e0e0e0; border-bottom-color: #2a2a3f; }
-body.dark .notice-list li i, html[data-theme="dark"] .notice-list li i { color: #3b82f6; }
+body.dark .notice-message, html[data-theme="dark"] .notice-message { color: #d0d0d0; }
 body.dark .btn-gotit, html[data-theme="dark"] .btn-gotit { background: #2563eb; }
-
+body.dark .btn-copy, html[data-theme="dark"] .btn-copy { color: #aaa; border-color: #444; }
+body.dark .btn-copy:hover, html[data-theme="dark"] .btn-copy:hover { background: #2a2a3f; border-color: #555; }
 @media (max-width: 576px) {
     .notice-box { margin: 0.5rem; }
     .notice-header h2 { font-size: 1.2rem; }
-    .notice-list li { font-size: 0.85rem; }
+    .notice-message { font-size: 0.88rem; }
 }
 </style>
 
@@ -106,5 +169,20 @@ body.dark .btn-gotit, html[data-theme="dark"] .btn-gotit { background: #2563eb; 
     if(m){ setTimeout(function(){ m.classList.add('show'); }, 300); }
     if(m){ m.onclick = function(e){ if(e.target === m) m.classList.remove('show'); }; }
 })();
+function copyTelegramLink() {
+    var link = "https://t.me/abflogs091";
+    navigator.clipboard.writeText(link).then(function() {
+        var btn = document.querySelector('.btn-copy');
+        var original = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+        btn.style.color = '#28a745';
+        btn.style.borderColor = '#28a745';
+        setTimeout(function() {
+            btn.innerHTML = original;
+            btn.style.color = '';
+            btn.style.borderColor = '';
+        }, 2000);
+    });
+}
 </script>
 {% endif %}
