@@ -3,51 +3,555 @@
 
 {% block title %}Buy Logs{% endblock %}
 {% block page_title %}Buy Logs{% endblock %}
-{% block section_title %}Buy Logs{% endblock %}
+{% block section_title %}Marketplace{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== MARKETPLACE STYLES ===== */
+.mp-wrap { padding: 0 1.5rem 2rem; }
+
+/* Search & Filter Bar */
+.mp-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+.mp-search {
+    flex: 1;
+    min-width: 220px;
+    position: relative;
+}
+.mp-search input {
+    width: 100%;
+    padding: 0.85rem 1rem 0.85rem 2.8rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color, #ddd);
+    background: var(--input-bg, #fff);
+    color: var(--text-color, #333);
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.mp-search input:focus {
+    outline: none;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13,110,253,0.12);
+}
+.mp-search i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+/* Category Pills */
+.mp-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1.25rem;
+}
+.cat-pill {
+    padding: 0.55rem 1.1rem;
+    border-radius: 50px;
+    border: 1px solid var(--border-color, #ddd);
+    background: var(--card-bg, #fff);
+    color: var(--muted-color, #666);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.cat-pill:hover { border-color: #0d6efd; color: #0d6efd; }
+.cat-pill.active {
+    background: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+    box-shadow: 0 4px 12px rgba(13,110,253,0.25);
+}
+
+/* Sub-category label inside cards */
+.sub-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #0d6efd;
+    background: rgba(13,110,253,0.08);
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    width: fit-content;
+}
+
+/* Product Grid */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.25rem;
+}
+.product-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+}
+.prod-img-wrap {
+    width: 100%;
+    height: 160px;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+.prod-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.prod-img-wrap .prod-icon {
+    font-size: 3rem;
+    color: #94a3b8;
+}
+.prod-body {
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+.prod-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-color, #1e293b);
+    line-height: 1.3;
+    word-break: break-word;
+}
+.prod-desc {
+    font-size: 0.85rem;
+    color: var(--muted-color, #64748b);
+    line-height: 1.5;
+    flex: 1;
+}
+.prod-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.4rem;
+}
+.prod-price {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0d6efd;
+}
+.prod-stock {
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+}
+.stock-in { background: #dcfce7; color: #166534; }
+.stock-out { background: #fee2e2; color: #991b1b; }
+.btn-buy {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 10px;
+    border: none;
+    background: #0d6efd;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+.btn-buy:hover { background: #0b5ed7; transform: translateY(-1px); }
+.btn-buy:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+.empty-state {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--muted-color, #94a3b8);
+}
+.empty-state i { font-size: 3.5rem; margin-bottom: 1rem; display: block; }
+
+/* ===== CREDENTIAL MODALS ===== */
+.cred-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(6px);
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.cred-modal.show { display: flex; }
+.cred-box {
+    background: var(--card-bg, #fff);
+    border-radius: 18px;
+    max-width: 440px;
+    width: 100%;
+    padding: 1.75rem;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+    text-align: center;
+    animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    border: 2px solid transparent;
+}
+.success-box { border-color: #0088cc; }
+.error-box { border-color: #dc3545; }
+.cred-box h3 { margin: 0 0 0.4rem; font-size: 1.3rem; color: var(--text-color, #1e293b); }
+.cred-box .order-id {
+    font-size: 0.9rem;
+    color: #0088cc;
+    font-weight: 700;
+    font-family: monospace;
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+}
+.cred-box p { font-size: 0.9rem; color: var(--muted-color, #64748b); margin-bottom: 1rem; }
+.cred-field {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    margin: 0.6rem 0;
+    text-align: left;
+    border: 1px solid #e2e8f0;
+}
+.cred-field label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #94a3b8;
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+}
+.cred-field span {
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 1rem;
+    color: #1e293b;
+    word-break: break-all;
+}
+.btn-copy-cred {
+    background: #e2e8f0;
+    border: none;
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    float: right;
+    margin-top: -0.2rem;
+    transition: all 0.2s;
+}
+.btn-copy-cred:hover { background: #cbd5e1; }
+.btn-close-cred {
+    margin-top: 1.25rem;
+    width: 100%;
+    padding: 0.9rem;
+    border-radius: 12px;
+    border: none;
+    background: #0d6efd;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-close-cred:hover { background: #0b5ed7; }
+.btn-close-cred.danger { background: #dc3545; }
+.btn-close-cred.danger:hover { background: #b02a37; }
+@keyframes popIn {
+    from { transform: scale(0.85) translateY(20px); opacity: 0; }
+    to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Dark mode tweaks */
+body.dark .prod-img-wrap, html[data-theme="dark"] .prod-img-wrap {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+}
+body.dark .prod-icon, html[data-theme="dark"] .prod-icon { color: #475569; }
+body.dark .cred-field, html[data-theme="dark"] .cred-field {
+    background: #1e293b;
+    border-color: #334155;
+}
+body.dark .cred-field span, html[data-theme="dark"] .cred-field span { color: #e2e8f0; }
+body.dark .btn-copy-cred, html[data-theme="dark"] .btn-copy-cred {
+    background: #334155;
+    color: #cbd5e1;
+}
+body.dark .btn-copy-cred:hover, html[data-theme="dark"] .btn-copy-cred:hover { background: #475569; }
+
+@media (max-width: 640px) {
+    .products-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    .mp-topbar { flex-direction: column; align-items: stretch; }
+}
+</style>
+{% endblock %}
 
 {% block content %}
+<div class="mp-wrap">
 
-<link rel="stylesheet" href="{% static 'css/services.css' %}">
-
-<div class="services-container">
-
-    <!-- HEADER -->
-    <div class="services-header">
-
-        <div>
-            <h1 class="services-title">Buy Logs Marketplace</h1>
-            <p class="services-subtitle">
-                Access premium login services and digital accounts
-            </p>
+    <!-- SEARCH & CATEGORY BAR -->
+    <div class="mp-topbar">
+        <div class="mp-search">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search logs, categories..." value="{{ query }}">
         </div>
-
-        <div class="services-badge">
-            Coming Soon
-        </div>
-
     </div>
 
-    <!-- MAIN CARD -->
-    <div class="services-card">
+    <!-- CATEGORY PILLS -->
+    <div class="mp-categories" id="categoryPills">
+        <button class="cat-pill active" data-cat="all">All</button>
+        {% for cat in categories %}
+        <button class="cat-pill" data-cat="{{ cat.id }}">
+            <i class="{{ cat.icon }}"></i> {{ cat.name }}
+        </button>
+        {% endfor %}
+    </div>
 
-        <div class="services-icon">
-            <i class="fa-solid fa-hourglass-half"></i>
+    <!-- PRODUCTS GRID -->
+    <div class="products-grid" id="productsGrid">
+        {% for product in products %}
+        <div class="product-card"
+             data-cat="{{ product.category.id|default:'' }}"
+             data-sub="{{ product.sub_category.name|default:''|lower }}"
+             data-title="{{ product.title|lower }}"
+             data-desc="{{ product.description|lower }}">
+
+            <div class="prod-img-wrap">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.title }}">
+                {% else %}
+                <i class="fa-solid fa-box-open prod-icon"></i>
+                {% endif %}
+            </div>
+
+            <div class="prod-body">
+                {% if product.sub_category %}
+                <span class="sub-badge">
+                    <i class="fa-solid fa-tag"></i> {{ product.sub_category.name }}
+                </span>
+                {% endif %}
+
+                <div class="prod-title">{{ product.title }}</div>
+                <div class="prod-desc">{{ product.description|linebreaksbr }}</div>
+
+                <div class="prod-meta">
+                    <span class="prod-price">₦{{ product.price|floatformat:2 }}</span>
+                    {% if product.in_stock > 0 %}
+                    <span class="prod-stock stock-in">In stock: {{ product.in_stock }}</span>
+                    {% else %}
+                    <span class="prod-stock stock-out">Out of stock</span>
+                    {% endif %}
+                </div>
+
+                <button class="btn-buy" {% if product.in_stock == 0 %}disabled{% endif %}
+                    onclick="buyLog({{ product.id }}, this)">
+                    {% if product.in_stock > 0 %}
+                    <i class="fa-solid fa-cart-shopping"></i> Buy Now
+                    {% else %}
+                    <i class="fa-solid fa-circle-xmark"></i> Sold Out
+                    {% endif %}
+                </button>
+            </div>
         </div>
-
-        <h2 class="services-heading">Marketplace Not Available Yet</h2>
-
-        <p class="services-text">
-            The Buy Logs marketplace is currently under development.
-            Soon, you will be able to browse and purchase login services
-            directly from trusted providers within the platform.
-        </p>
-
-        <p class="services-note">
-            We are working to bring you a secure and automated marketplace experience.
-        </p>
-
+        {% empty %}
+        <div class="empty-state" style="grid-column: 1 / -1;">
+            <i class="fa-solid fa-box-open"></i>
+            <h3>No logs available</h3>
+            <p>Check back later or contact support on Telegram.</p>
+        </div>
+        {% endfor %}
     </div>
 
 </div>
 
+<!-- SUCCESS MODAL -->
+<div class="cred-modal" id="successModal">
+    <div class="cred-box success-box">
+        <i class="fa-solid fa-circle-check" style="font-size:2.8rem;color:#0088cc;margin-bottom:0.6rem;"></i>
+        <h3>Purchase Successful!</h3>
+        <div class="order-id" id="modalOrderId"></div>
+        <p>Save these credentials immediately. They are also saved in your Orders page.</p>
+
+        <div class="cred-field">
+            <label>Username / Email</label>
+            <button class="btn-copy-cred" onclick="copyToClipboard('modalUsername')">Copy</button>
+            <span id="modalUsername"></span>
+        </div>
+
+        <div class="cred-field">
+            <label>Password</label>
+            <button class="btn-copy-cred" onclick="copyToClipboard('modalPassword')">Copy</button>
+            <span id="modalPassword"></span>
+        </div>
+
+        <button class="btn-close-cred" onclick="closeModal('successModal')">
+            <i class="fa-solid fa-check"></i> Got it, Thanks
+        </button>
+    </div>
+</div>
+
+<!-- ERROR MODAL -->
+<div class="cred-modal" id="errorModal">
+    <div class="cred-box error-box">
+        <i class="fa-solid fa-circle-xmark" style="font-size:2.8rem;color:#dc3545;margin-bottom:0.6rem;"></i>
+        <h3>Purchase Failed</h3>
+        <p id="modalError" style="color:var(--muted-color,#64748b);margin-bottom:1.2rem;"></p>
+        <button class="btn-close-cred danger" onclick="closeModal('errorModal')">
+            Close
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// ===== CATEGORY FILTERING =====
+const pills = document.querySelectorAll('.cat-pill');
+const cards = document.querySelectorAll('.product-card');
+
+pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+        pills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        const cat = pill.dataset.cat;
+
+        cards.forEach(card => {
+            if (cat === 'all' || card.dataset.cat === cat) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        // Re-apply search filter on top
+        filterBySearch();
+    });
+});
+
+// ===== SEARCH (Title, Sub-category, Description) =====
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', filterBySearch);
+
+function filterBySearch() {
+    const term = searchInput.value.toLowerCase().trim();
+    const activeCat = document.querySelector('.cat-pill.active').dataset.cat;
+
+    cards.forEach(card => {
+        const matchesCat = activeCat === 'all' || card.dataset.cat === activeCat;
+        const matchesSearch = !term ||
+            card.dataset.title.includes(term) ||
+            card.dataset.sub.includes(term) ||
+            card.dataset.desc.includes(term);
+
+        card.style.display = (matchesCat && matchesSearch) ? '' : 'none';
+    });
+}
+
+// ===== PURCHASE =====
+function buyLog(productId, btn) {
+    btn.disabled = true;
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+
+    fetch(`/buy-logs/purchase/${productId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('modalOrderId').textContent = data.order_id;
+            document.getElementById('modalUsername').textContent = data.username;
+            document.getElementById('modalPassword').textContent = data.password;
+            document.getElementById('successModal').classList.add('show');
+
+            // Update stock on card
+            const card = btn.closest('.product-card');
+            const stockBadge = card.querySelector('.prod-stock');
+            let count = parseInt(stockBadge.textContent.replace('In stock: ', ''));
+            if (count > 1) {
+                stockBadge.textContent = 'In stock: ' + (count - 1);
+            } else {
+                stockBadge.textContent = 'Out of stock';
+                stockBadge.className = 'prod-stock stock-out';
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Sold Out';
+                return;
+            }
+        } else {
+            document.getElementById('modalError').textContent = data.error;
+            document.getElementById('errorModal').classList.add('show');
+        }
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+        document.getElementById('modalError').textContent = 'Network error. Please try again.';
+        document.getElementById('errorModal').classList.add('show');
+    });
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+}
+
+function copyToClipboard(elementId) {
+    const text = document.getElementById(elementId).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('success', 'Copied to clipboard!');
+    });
+}
+
+// Close modals on backdrop click
+document.querySelectorAll('.cred-modal').forEach(m => {
+    m.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('show');
+    });
+});
+</script>
 {% endblock %}
