@@ -536,12 +536,8 @@ def wallet_view(request):
 
 
 
-# ==========================
-# TRANSACTIONS
-# ==========================
 @login_required
 def transactions_page(request):
-
     transactions = Transaction.objects.filter(
         user=request.user
     ).order_by("-created_at")
@@ -550,20 +546,21 @@ def transactions_page(request):
         user=request.user
     )
 
-    # Calculate total spent from payment transactions (new way) and orders (old way)
+    # Buy Logs purchases
     total_spent_transactions = Transaction.objects.filter(
         user=request.user,
         transaction_type="payment",
         status="successful",
     ).aggregate(total=Sum("amount"))["total"] or 0
 
+    # SMS number orders
     total_spent_orders = Order.objects.filter(
         user=request.user,
         status__in=["completed", "received"],
     ).aggregate(total=Sum("price"))["total"] or 0
 
-    # Use the higher value to catch all deductions
-    total_spent = max(total_spent_transactions, total_spent_orders)
+    # ADD both so everything counts
+    total_spent = total_spent_transactions + total_spent_orders
 
     return render(
         request,

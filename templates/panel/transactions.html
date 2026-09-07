@@ -1,6 +1,7 @@
 {% extends 'panel/dashboard_base.html' %}
 {% load static %}
 
+{% block title %}Transactions{% endblock %}
 {% block page_title %}Transactions{% endblock %}
 {% block section_title %}Transactions{% endblock %}
 
@@ -12,122 +13,70 @@
 
     <!-- HEADER -->
     <div class="transactions-header">
-
         <div>
             <p class="transactions-subtitle">All your deposits, purchases, and refunds</p>
         </div>
-
         <div class="transactions-badge">
-    Total: {{ transactions.count }}
-</div>
-
+            Total: {{ transactions.count }}
+        </div>
     </div>
 
-    <!-- QUICK FILTER -->
-    <div class="transactions-filter">
-
-        <input type="text" class="transactions-input" placeholder="Search...">
-
-        <select class="transactions-select">
-            <option>All Types</option>
-            <option>Deposit</option>
-            <option>Purchase</option>
-            <option>Refund</option>
-        </select>
-
-    </div>
-
-    <!-- SUMMARY (ONLY 2 CARDS NOW) -->
+    <!-- SUMMARY -->
     <div class="transactions-summary">
-
         <div class="transactions-card">
             <h3>Wallet Balance</h3>
             <p>₦{{ user_wallet.balance|floatformat:2 }}</p>
         </div>
-
         <div class="transactions-card">
             <h3>Total Spent</h3>
-            <p>₦{{ total_spent }}</p>
+            <p>₦{{ total_spent|floatformat:2 }}</p>
         </div>
-
     </div>
 
     <!-- TABLE -->
     <div class="transactions-table-wrap">
-
         <table class="transactions-table">
-
             <thead>
-<tr>
-    <th>ID</th>
-    <th>Amount</th>
-    <th>Status</th>
-    <th>Date</th>
-</tr>
-</thead>
-
-           <tbody>
-
-{% for transaction in transactions %}
-
-<tr>
-
-<td>
-    {{ forloop.counter }}
-</td>
-
-
-<td>
-    ₦{{ transaction.amount }}
-</td>
-
-
-<td>
-
-{% if transaction.status == "successful" %}
-
-<span class="success">
-Successful
-</span>
-
-{% else %}
-
-<span class="failed">
-Failed
-</span>
-
-{% endif %}
-</td>
-
-
-<td>
-{{ transaction.created_at|date:"d M Y, H:i" }}
-</td>
-
-
-</tr>
-
-
-{% empty %}
-
-<tr>
-
-<td colspan="4" class="transactions-empty">
-
-No transactions yet
-
-</td>
-
-</tr>
-
-
-{% endfor %}
-
-
-</tbody>
-
+                <tr>
+                    <th>#</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        {% if transaction.transaction_type == "deposit" %}
+                            <span style="color:#10b981;font-weight:600;">Deposit</span>
+                        {% elif transaction.transaction_type == "payment" %}
+                            <span style="color:#0d6efd;font-weight:600;">Purchase</span>
+                        {% elif transaction.transaction_type == "refund" %}
+                            <span style="color:#f59e0b;font-weight:600;">Refund</span>
+                        {% else %}
+                            <span style="color:#64748b;">{{ transaction.transaction_type|title }}</span>
+                        {% endif %}
+                    </td>
+                    <td>₦{{ transaction.amount|floatformat:2 }}</td>
+                    <td>
+                        {% if transaction.status == "successful" %}
+                            <span class="success">Successful</span>
+                        {% else %}
+                            <span class="failed">Failed</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ transaction.created_at|date:"d M Y, H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="transactions-empty">No transactions yet</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
-
     </div>
 
 </div>
