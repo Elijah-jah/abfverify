@@ -37,10 +37,17 @@
 }
 
 /* Search */
-.mp-topbar { margin-bottom: 1.25rem; }
+.mp-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
 .mp-search {
+    flex: 1;
+    min-width: 220px;
     position: relative;
-    max-width: 480px;
 }
 .mp-search input {
     width: 100%;
@@ -50,7 +57,7 @@
     background: var(--input-bg, #fff);
     color: var(--text-color, #333);
     font-size: 0.95rem;
-    transition: all 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 .mp-search input:focus {
     outline: none;
@@ -92,112 +99,121 @@
     box-shadow: 0 4px 12px rgba(13,110,253,0.25);
 }
 
-/* ===== PRODUCT ROWS (Horizontal like screenshot) ===== */
-.products-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+.sub-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #0d6efd;
+    background: rgba(13,110,253,0.08);
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    width: fit-content;
 }
-.product-row {
+
+/* ===== VERTICAL PRODUCT CARDS ===== */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.25rem;
+}
+.product-card {
     background: var(--card-bg, #fff);
     border: 1px solid var(--border-color, #e5e7eb);
     border-radius: 16px;
-    padding: 1rem 1.25rem;
+    overflow: hidden;
     display: flex;
-    align-items: center;
-    gap: 1rem;
-    transition: all 0.2s ease;
+    flex-direction: column;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
 }
-.product-row:hover {
-    transform: translateX(4px);
-    border-color: #0d6efd;
-    box-shadow: 0 4px 16px rgba(13,110,253,0.08);
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.1);
 }
-
-/* Rounded icon image */
-.prod-icon-wrap {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
+.prod-img-wrap {
+    width: 100%;
+    height: 160px;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
+    position: relative;
     overflow: hidden;
-    background: var(--icon-bg, #f1f5f9);
-    border: 1px solid var(--border-color, #e2e8f0);
 }
-.prod-icon-wrap img {
+.prod-img-wrap img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
-.prod-icon-wrap .prod-fallback {
-    font-size: 1.4rem;
+.prod-img-wrap .prod-fallback {
+    font-size: 3rem;
     color: #94a3b8;
 }
-
-.prod-info {
+.prod-body {
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
     flex: 1;
-    min-width: 0;
 }
 .prod-title {
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: var(--text-color, #1e293b);
-    margin-bottom: 0.2rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.3;
+    word-break: break-word;
 }
-.prod-sub {
-    font-size: 0.8rem;
+.prod-desc {
+    font-size: 0.85rem;
     color: var(--muted-color, #64748b);
+    line-height: 1.5;
+    flex: 1;
 }
-
-.prod-actions {
+.prod-meta {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    flex-shrink: 0;
+    justify-content: space-between;
+    margin-top: 0.4rem;
+}
+/* LIGHT MODE: ABFverify blue price */
+.prod-price {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #0d6efd;
 }
 .prod-stock {
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     font-weight: 700;
-    color: #10b981;
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
 }
-.prod-stock.out {
-    color: #ef4444;
-}
-.prod-price-pill {
-    background: var(--pill-bg, #1e293b);
-    color: var(--pill-text, #f1f5f9);
-    padding: 0.5rem 1rem;
+.stock-in { background: #dcfce7; color: #166534; }
+.stock-out { background: #fee2e2; color: #991b1b; }
+.btn-buy {
+    width: 100%;
+    padding: 0.8rem;
     border-radius: 10px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    white-space: nowrap;
-}
-.btn-buy-row {
+    border: none;
     background: #0d6efd;
     color: #fff;
-    border: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 10px;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
+    transition: all 0.2s ease;
+    margin-top: 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
 }
-.btn-buy-row:hover { background: #0b5ed7; transform: translateY(-1px); }
-.btn-buy-row:disabled {
+.btn-buy:hover { background: #0b5ed7; transform: translateY(-1px); }
+.btn-buy:disabled {
     background: #9ca3af;
-    color: #e5e7eb;
     cursor: not-allowed;
     transform: none;
 }
-
 .empty-state {
     text-align: center;
     padding: 4rem 1rem;
@@ -328,7 +344,6 @@
     line-height: 1.5;
 }
 
-/* Order ID display */
 .order-id-badge {
     display: inline-block;
     background: rgba(13,110,253,0.08);
@@ -342,7 +357,6 @@
     letter-spacing: 0.5px;
 }
 
-/* Credential fields in modal */
 .cred-field {
     background: var(--creds-bg, #f8fafc);
     border-radius: 12px;
@@ -383,7 +397,6 @@
 }
 .btn-copy-cred:hover { background: #0d6efd; color: #fff; }
 
-/* Modal buttons */
 .mp-modal-actions {
     display: flex;
     gap: 0.75rem;
@@ -414,7 +427,6 @@
     margin-top: 1rem;
 }
 
-/* Confirm price highlight */
 .confirm-price {
     font-size: 1.5rem;
     font-weight: 800;
@@ -428,24 +440,21 @@
 }
 
 /* ===== DARK MODE ===== */
-body.dark .product-row, html[data-theme="dark"] .product-row {
+body.dark .product-card, html[data-theme="dark"] .product-card {
     background: #1e1e2f;
     border-color: #2a2a3f;
 }
-body.dark .product-row:hover, html[data-theme="dark"] .product-row:hover {
+body.dark .product-card:hover, html[data-theme="dark"] .product-card:hover {
     border-color: #3b82f6;
-    box-shadow: 0 4px 16px rgba(59,130,246,0.15);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.3);
 }
+body.dark .prod-img-wrap, html[data-theme="dark"] .prod-img-wrap {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+}
+body.dark .prod-fallback, html[data-theme="dark"] .prod-fallback { color: #475569; }
 body.dark .prod-title, html[data-theme="dark"] .prod-title { color: #f1f5f9; }
-body.dark .prod-sub, html[data-theme="dark"] .prod-sub { color: #94a3b8; }
-body.dark .prod-price-pill, html[data-theme="dark"] .prod-price-pill {
-    background: #2a2a3f;
-    color: #f1f5f9;
-}
-body.dark .prod-icon-wrap, html[data-theme="dark"] .prod-icon-wrap {
-    background: #2a2a3f;
-    border-color: #3f3f5f;
-}
+body.dark .prod-desc, html[data-theme="dark"] .prod-desc { color: #94a3b8; }
+body.dark .prod-price, html[data-theme="dark"] .prod-price { color: #3b82f6; }
 body.dark .mp-search input, html[data-theme="dark"] .mp-search input {
     background: #1e1e2f;
     border-color: #2a2a3f;
@@ -497,11 +506,8 @@ body.dark .mp-modal-icon.error, html[data-theme="dark"] .mp-modal-icon.error {
 body.dark .confirm-price, html[data-theme="dark"] .confirm-price { color: #3b82f6; }
 
 @media (max-width: 640px) {
-    .product-row { padding: 0.85rem; gap: 0.75rem; }
-    .prod-icon-wrap { width: 44px; height: 44px; }
-    .prod-title { font-size: 0.9rem; }
-    .prod-price-pill { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
-    .btn-buy-row { padding: 0.5rem 0.9rem; }
+    .products-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    .mp-topbar { flex-direction: column; align-items: stretch; }
     .mp-modal-actions { flex-direction: column; }
 }
 </style>
@@ -528,7 +534,7 @@ body.dark .confirm-price, html[data-theme="dark"] .confirm-price { color: #3b82f
         <div class="mp-topbar">
             <div class="mp-search">
                 <i class="fa-solid fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Search logs..." value="{{ query }}">
+                <input type="text" id="searchInput" placeholder="Search logs, categories..." value="{{ query }}">
             </div>
         </div>
 
@@ -541,9 +547,9 @@ body.dark .confirm-price, html[data-theme="dark"] .confirm-price { color: #3b82f
             {% endfor %}
         </div>
 
-        <div class="products-list" id="productsList">
+        <div class="products-grid" id="productsGrid">
             {% for product in products %}
-            <div class="product-row"
+            <div class="product-card"
                  data-cat="{{ product.category.id|default:'' }}"
                  data-sub="{{ product.sub_category.name|default:''|lower }}"
                  data-title="{{ product.title|lower }}"
@@ -552,7 +558,7 @@ body.dark .confirm-price, html[data-theme="dark"] .confirm-price { color: #3b82f
                  data-name="{{ product.title }}"
                  data-price="{{ product.price }}">
 
-                <div class="prod-icon-wrap">
+                <div class="prod-img-wrap">
                     {% if product.image %}
                     <img src="{{ product.image.url }}" alt="{{ product.title }}">
                     {% else %}
@@ -560,28 +566,37 @@ body.dark .confirm-price, html[data-theme="dark"] .confirm-price { color: #3b82f
                     {% endif %}
                 </div>
 
-                <div class="prod-info">
-                    <div class="prod-title">{{ product.title }}</div>
+                <div class="prod-body">
                     {% if product.sub_category %}
-                    <div class="prod-sub">{{ product.sub_category.name }}</div>
+                    <span class="sub-badge">
+                        <i class="fa-solid fa-tag"></i> {{ product.sub_category.name }}
+                    </span>
                     {% endif %}
-                </div>
 
-                <div class="prod-actions">
-                    {% if product.in_stock > 0 %}
-                    <span class="prod-stock">{{ product.in_stock }} pcs.</span>
-                    {% else %}
-                    <span class="prod-stock out">0 pcs.</span>
-                    {% endif %}
-                    <span class="prod-price-pill">₦{{ product.price|floatformat:2 }}</span>
-                    <button class="btn-buy-row" {% if product.in_stock == 0 %}disabled{% endif %}
+                    <div class="prod-title">{{ product.title }}</div>
+                    <div class="prod-desc">{{ product.description|linebreaksbr }}</div>
+
+                    <div class="prod-meta">
+                        <span class="prod-price">₦{{ product.price|floatformat:2 }}</span>
+                        {% if product.in_stock > 0 %}
+                        <span class="prod-stock stock-in">In stock: {{ product.in_stock }}</span>
+                        {% else %}
+                        <span class="prod-stock stock-out">Out of stock</span>
+                        {% endif %}
+                    </div>
+
+                    <button class="btn-buy" {% if product.in_stock == 0 %}disabled{% endif %}
                         onclick="confirmBuy({{ product.id }}, '{{ product.title|escapejs }}', {{ product.price }}, this)">
-                        {% if product.in_stock > 0 %}Buy{% else %}Sold Out{% endif %}
+                        {% if product.in_stock > 0 %}
+                        <i class="fa-solid fa-cart-shopping"></i> Buy Now
+                        {% else %}
+                        <i class="fa-solid fa-circle-xmark"></i> Sold Out
+                        {% endif %}
                     </button>
                 </div>
             </div>
             {% empty %}
-            <div class="empty-state">
+            <div class="empty-state" style="grid-column: 1 / -1;">
                 <i class="fa-solid fa-box-open"></i>
                 <h3>No logs available</h3>
                 <p>Check back later or contact support on Telegram.</p>
@@ -710,15 +725,15 @@ function switchTab(tabName, btn) {
 }
 
 const pills = document.querySelectorAll('.cat-pill');
-const rows = document.querySelectorAll('.product-row');
+const cards = document.querySelectorAll('.product-card');
 
 pills.forEach(pill => {
     pill.addEventListener('click', () => {
         pills.forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
         const cat = pill.dataset.cat;
-        rows.forEach(row => {
-            row.style.display = (cat === 'all' || row.dataset.cat === cat) ? '' : 'none';
+        cards.forEach(card => {
+            card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
         });
         filterBySearch();
     });
@@ -730,13 +745,13 @@ searchInput.addEventListener('input', filterBySearch);
 function filterBySearch() {
     const term = searchInput.value.toLowerCase().trim();
     const activeCat = document.querySelector('.cat-pill.active').dataset.cat;
-    rows.forEach(row => {
-        const matchesCat = activeCat === 'all' || row.dataset.cat === activeCat;
+    cards.forEach(card => {
+        const matchesCat = activeCat === 'all' || card.dataset.cat === activeCat;
         const matchesSearch = !term ||
-            row.dataset.title.includes(term) ||
-            row.dataset.sub.includes(term) ||
-            row.dataset.desc.includes(term);
-        row.style.display = (matchesCat && matchesSearch) ? '' : 'none';
+            card.dataset.title.includes(term) ||
+            card.dataset.sub.includes(term) ||
+            card.dataset.desc.includes(term);
+        card.style.display = (matchesCat && matchesSearch) ? '' : 'none';
     });
 }
 
@@ -767,7 +782,7 @@ function closeConfirmModal() {
 function buyLog(productId, btn) {
     btn.disabled = true;
     const originalHTML = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
 
     fetch(`/buy-logs/purchase/${productId}/`, {
         method: 'POST',
@@ -789,16 +804,16 @@ function buyLog(productId, btn) {
                 walletEl.textContent = '₦' + parseFloat(data.new_balance).toLocaleString('en-US', {minimumFractionDigits: 2});
             }
 
-            const row = btn.closest('.product-row');
-            const stockBadge = row.querySelector('.prod-stock');
-            let count = parseInt(stockBadge.textContent.replace(' pcs.', ''));
+            const card = btn.closest('.product-card');
+            const stockBadge = card.querySelector('.prod-stock');
+            let count = parseInt(stockBadge.textContent.replace('In stock: ', ''));
             if (count > 1) {
-                stockBadge.textContent = (count - 1) + ' pcs.';
+                stockBadge.textContent = 'In stock: ' + (count - 1);
             } else {
-                stockBadge.textContent = '0 pcs.';
-                stockBadge.classList.add('out');
+                stockBadge.textContent = 'Out of stock';
+                stockBadge.className = 'prod-stock stock-out';
                 btn.disabled = true;
-                btn.textContent = 'Sold Out';
+                btn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Sold Out';
                 return;
             }
         } else {
