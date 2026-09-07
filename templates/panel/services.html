@@ -10,6 +10,32 @@
 /* ===== MARKETPLACE STYLES ===== */
 .mp-wrap { padding: 0 1.5rem 2rem; }
 
+/* Tabs */
+.mp-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color, #e5e7eb);
+    padding-bottom: 0.5rem;
+}
+.mp-tab {
+    padding: 0.6rem 1.2rem;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--muted-color, #64748b);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.mp-tab:hover { color: #0d6efd; background: rgba(13,110,253,0.05); }
+.mp-tab.active {
+    background: #0d6efd;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(13,110,253,0.2);
+}
+
 /* Search & Filter Bar */
 .mp-topbar {
     display: flex;
@@ -73,7 +99,6 @@
     box-shadow: 0 4px 12px rgba(13,110,253,0.25);
 }
 
-/* Sub-category label inside cards */
 .sub-badge {
     display: inline-flex;
     align-items: center;
@@ -87,7 +112,6 @@
     width: fit-content;
 }
 
-/* Product Grid */
 .products-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -195,8 +219,73 @@
 }
 .empty-state i { font-size: 3.5rem; margin-bottom: 1rem; display: block; }
 
-/* ===== CREDENTIAL MODALS ===== */
-.cred-modal {
+/* My Purchases Tab */
+.purchases-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.purchase-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 14px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border-left: 4px solid #0088cc;
+}
+.purchase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.purchase-id {
+    font-family: monospace;
+    font-weight: 700;
+    color: #0088cc;
+    font-size: 0.95rem;
+}
+.purchase-status {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    background: #dcfce7;
+    color: #166534;
+}
+.purchase-product {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-color, #1e293b);
+}
+.purchase-creds {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: #334155;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.purchase-creds div span {
+    color: #64748b;
+    font-family: sans-serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 0.5rem;
+}
+.purchase-date {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+/* ===== MODALS ===== */
+.cred-modal, .confirm-modal {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.65);
@@ -207,11 +296,11 @@
     justify-content: center;
     padding: 1rem;
 }
-.cred-modal.show { display: flex; }
-.cred-box {
+.cred-modal.show, .confirm-modal.show { display: flex; }
+.cred-box, .confirm-box {
     background: var(--card-bg, #fff);
     border-radius: 18px;
-    max-width: 440px;
+    max-width: 420px;
     width: 100%;
     padding: 1.75rem;
     box-shadow: 0 24px 60px rgba(0,0,0,0.3);
@@ -221,7 +310,17 @@
 }
 .success-box { border-color: #0088cc; }
 .error-box { border-color: #dc3545; }
-.cred-box h3 { margin: 0 0 0.4rem; font-size: 1.3rem; color: var(--text-color, #1e293b); }
+.confirm-box { border-color: #0d6efd; }
+.cred-box h3, .confirm-box h3 { margin: 0 0 0.4rem; font-size: 1.3rem; color: var(--text-color, #1e293b); }
+.confirm-box p { color: var(--muted-color, #64748b); margin-bottom: 1.5rem; font-size: 0.95rem; }
+.confirm-box .confirm-price { font-size: 1.4rem; font-weight: 800; color: #0d6efd; margin: 0.5rem 0; }
+.confirm-actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
+.confirm-actions button { flex: 1; padding: 0.85rem; border-radius: 12px; border: none; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; }
+.btn-yes { background: #0d6efd; color: #fff; }
+.btn-yes:hover { background: #0b5ed7; }
+.btn-no { background: #e2e8f0; color: #475569; }
+.btn-no:hover { background: #cbd5e1; }
+
 .cred-box .order-id {
     font-size: 0.9rem;
     color: #0088cc;
@@ -289,7 +388,7 @@
     to   { transform: scale(1) translateY(0); opacity: 1; }
 }
 
-/* Dark mode tweaks */
+/* Dark mode */
 body.dark .prod-img-wrap, html[data-theme="dark"] .prod-img-wrap {
     background: linear-gradient(135deg, #1e293b, #0f172a);
 }
@@ -304,10 +403,16 @@ body.dark .btn-copy-cred, html[data-theme="dark"] .btn-copy-cred {
     color: #cbd5e1;
 }
 body.dark .btn-copy-cred:hover, html[data-theme="dark"] .btn-copy-cred:hover { background: #475569; }
+body.dark .purchase-creds, html[data-theme="dark"] .purchase-creds {
+    background: #1e293b;
+    color: #e2e8f0;
+}
+body.dark .purchase-creds div span, html[data-theme="dark"] .purchase-creds div span { color: #94a3b8; }
 
 @media (max-width: 640px) {
     .products-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
     .mp-topbar { flex-direction: column; align-items: stretch; }
+    .confirm-actions { flex-direction: column; }
 }
 </style>
 {% endblock %}
@@ -315,79 +420,143 @@ body.dark .btn-copy-cred:hover, html[data-theme="dark"] .btn-copy-cred:hover { b
 {% block content %}
 <div class="mp-wrap">
 
-    <!-- SEARCH & CATEGORY BAR -->
-    <div class="mp-topbar">
-        <div class="mp-search">
-            <i class="fa-solid fa-search"></i>
-            <input type="text" id="searchInput" placeholder="Search logs, categories..." value="{{ query }}">
-        </div>
-    </div>
-
-    <!-- CATEGORY PILLS -->
-    <div class="mp-categories" id="categoryPills">
-        <button class="cat-pill active" data-cat="all">All</button>
-        {% for cat in categories %}
-        <button class="cat-pill" data-cat="{{ cat.id }}">
-            <i class="{{ cat.icon }}"></i> {{ cat.name }}
+    <!-- TABS -->
+    <div class="mp-tabs">
+        <button class="mp-tab active" onclick="switchTab('marketplace', this)">
+            <i class="fa-solid fa-store"></i> Browse Logs
         </button>
-        {% endfor %}
+        <button class="mp-tab" onclick="switchTab('purchases', this)">
+            <i class="fa-solid fa-box-open"></i> My Purchases
+            {% if log_purchases.count > 0 %}
+            <span style="background:#dc3545;color:#fff;font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:10px;margin-left:0.4rem;">{{ log_purchases.count }}</span>
+            {% endif %}
+        </button>
     </div>
 
-    <!-- PRODUCTS GRID -->
-    <div class="products-grid" id="productsGrid">
-        {% for product in products %}
-        <div class="product-card"
-             data-cat="{{ product.category.id|default:'' }}"
-             data-sub="{{ product.sub_category.name|default:''|lower }}"
-             data-title="{{ product.title|lower }}"
-             data-desc="{{ product.description|lower }}">
-
-            <div class="prod-img-wrap">
-                {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.title }}">
-                {% else %}
-                <i class="fa-solid fa-box-open prod-icon"></i>
-                {% endif %}
+    <!-- MARKETPLACE TAB -->
+    <div id="tab-marketplace">
+        <div class="mp-topbar">
+            <div class="mp-search">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search logs, categories..." value="{{ query }}">
             </div>
+        </div>
 
-            <div class="prod-body">
-                {% if product.sub_category %}
-                <span class="sub-badge">
-                    <i class="fa-solid fa-tag"></i> {{ product.sub_category.name }}
-                </span>
-                {% endif %}
+        <div class="mp-categories" id="categoryPills">
+            <button class="cat-pill active" data-cat="all">All</button>
+            {% for cat in categories %}
+            <button class="cat-pill" data-cat="{{ cat.id }}">
+                <i class="{{ cat.icon }}"></i> {{ cat.name }}
+            </button>
+            {% endfor %}
+        </div>
 
-                <div class="prod-title">{{ product.title }}</div>
-                <div class="prod-desc">{{ product.description|linebreaksbr }}</div>
+        <div class="products-grid" id="productsGrid">
+            {% for product in products %}
+            <div class="product-card"
+                 data-cat="{{ product.category.id|default:'' }}"
+                 data-sub="{{ product.sub_category.name|default:''|lower }}"
+                 data-title="{{ product.title|lower }}"
+                 data-desc="{{ product.description|lower }}"
+                 data-id="{{ product.id }}"
+                 data-name="{{ product.title }}"
+                 data-price="{{ product.price }}">
 
-                <div class="prod-meta">
-                    <span class="prod-price">₦{{ product.price|floatformat:2 }}</span>
-                    {% if product.in_stock > 0 %}
-                    <span class="prod-stock stock-in">In stock: {{ product.in_stock }}</span>
+                <div class="prod-img-wrap">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.title }}">
                     {% else %}
-                    <span class="prod-stock stock-out">Out of stock</span>
+                    <i class="fa-solid fa-box-open prod-icon"></i>
                     {% endif %}
                 </div>
 
-                <button class="btn-buy" {% if product.in_stock == 0 %}disabled{% endif %}
-                    onclick="buyLog({{ product.id }}, this)">
-                    {% if product.in_stock > 0 %}
-                    <i class="fa-solid fa-cart-shopping"></i> Buy Now
-                    {% else %}
-                    <i class="fa-solid fa-circle-xmark"></i> Sold Out
+                <div class="prod-body">
+                    {% if product.sub_category %}
+                    <span class="sub-badge">
+                        <i class="fa-solid fa-tag"></i> {{ product.sub_category.name }}
+                    </span>
                     {% endif %}
-                </button>
+
+                    <div class="prod-title">{{ product.title }}</div>
+                    <div class="prod-desc">{{ product.description|linebreaksbr }}</div>
+
+                    <div class="prod-meta">
+                        <span class="prod-price">₦{{ product.price|floatformat:2 }}</span>
+                        {% if product.in_stock > 0 %}
+                        <span class="prod-stock stock-in">In stock: {{ product.in_stock }}</span>
+                        {% else %}
+                        <span class="prod-stock stock-out">Out of stock</span>
+                        {% endif %}
+                    </div>
+
+                    <button class="btn-buy" {% if product.in_stock == 0 %}disabled{% endif %}
+                        onclick="confirmBuy({{ product.id }}, '{{ product.title|escapejs }}', {{ product.price }}, this)">
+                        {% if product.in_stock > 0 %}
+                        <i class="fa-solid fa-cart-shopping"></i> Buy Now
+                        {% else %}
+                        <i class="fa-solid fa-circle-xmark"></i> Sold Out
+                        {% endif %}
+                    </button>
+                </div>
             </div>
+            {% empty %}
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <i class="fa-solid fa-box-open"></i>
+                <h3>No logs available</h3>
+                <p>Check back later or contact support on Telegram.</p>
+            </div>
+            {% endfor %}
         </div>
-        {% empty %}
-        <div class="empty-state" style="grid-column: 1 / -1;">
-            <i class="fa-solid fa-box-open"></i>
-            <h3>No logs available</h3>
-            <p>Check back later or contact support on Telegram.</p>
-        </div>
-        {% endfor %}
     </div>
 
+    <!-- MY PURCHASES TAB -->
+    <div id="tab-purchases" style="display:none;">
+        {% if log_purchases %}
+        <div class="purchases-list">
+            {% for lp in log_purchases %}
+            <div class="purchase-card">
+                <div class="purchase-header">
+                    <span class="purchase-id">{{ lp.order_id }}</span>
+                    <span class="purchase-status">Completed</span>
+                </div>
+                <div class="purchase-product">{{ lp.product_title }}</div>
+                <div class="purchase-creds">
+                    <div><span>User:</span> {{ lp.username }}</div>
+                    <div><span>Pass:</span> {{ lp.password }}</div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
+                    <span class="purchase-date">
+                        <i class="fa-regular fa-clock"></i> {{ lp.created_at|date:"M d, Y H:i" }}
+                    </span>
+                    <span style="font-weight:700; color:#0d6efd;">₦{{ lp.price|floatformat:2 }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-bag-shopping"></i>
+            <h3>No purchases yet</h3>
+            <p>Your purchased logs will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- CONFIRMATION MODAL -->
+<div class="confirm-modal" id="confirmModal">
+    <div class="confirm-box">
+        <i class="fa-solid fa-circle-question" style="font-size:2.5rem;color:#0d6efd;margin-bottom:0.5rem;"></i>
+        <h3>Confirm Purchase</h3>
+        <p>Are you sure you want to buy this item?</p>
+        <div id="confirmProductName" style="font-weight:700; color:var(--text-color,#1e293b); margin-bottom:0.3rem;"></div>
+        <div class="confirm-price" id="confirmProductPrice"></div>
+        <div class="confirm-actions">
+            <button class="btn-yes" id="btnConfirmYes">Yes, Continue</button>
+            <button class="btn-no" onclick="closeModal('confirmModal')">No, Cancel</button>
+        </div>
+    </div>
 </div>
 
 <!-- SUCCESS MODAL -->
@@ -446,6 +615,15 @@ function getCookie(name) {
     return cookieValue;
 }
 
+// ===== TAB SWITCHING =====
+function switchTab(tabName, btn) {
+    document.querySelectorAll('.mp-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    
+    document.getElementById('tab-marketplace').style.display = tabName === 'marketplace' ? '' : 'none';
+    document.getElementById('tab-purchases').style.display = tabName === 'purchases' ? '' : 'none';
+}
+
 // ===== CATEGORY FILTERING =====
 const pills = document.querySelectorAll('.cat-pill');
 const cards = document.querySelectorAll('.product-card');
@@ -463,12 +641,11 @@ pills.forEach(pill => {
                 card.style.display = 'none';
             }
         });
-        // Re-apply search filter on top
         filterBySearch();
     });
 });
 
-// ===== SEARCH (Title, Sub-category, Description) =====
+// ===== SEARCH =====
 const searchInput = document.getElementById('searchInput');
 searchInput.addEventListener('input', filterBySearch);
 
@@ -487,6 +664,25 @@ function filterBySearch() {
     });
 }
 
+// ===== CONFIRMATION MODAL =====
+let pendingProductId = null;
+let pendingBtn = null;
+
+function confirmBuy(productId, productName, productPrice, btn) {
+    pendingProductId = productId;
+    pendingBtn = btn;
+    document.getElementById('confirmProductName').textContent = productName;
+    document.getElementById('confirmProductPrice').textContent = '₦' + parseFloat(productPrice).toLocaleString('en-US', {minimumFractionDigits: 2});
+    document.getElementById('confirmModal').classList.add('show');
+}
+
+document.getElementById('btnConfirmYes').addEventListener('click', function() {
+    closeModal('confirmModal');
+    if (pendingProductId && pendingBtn) {
+        buyLog(pendingProductId, pendingBtn);
+    }
+});
+
 // ===== PURCHASE =====
 function buyLog(productId, btn) {
     btn.disabled = true;
@@ -503,12 +699,19 @@ function buyLog(productId, btn) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
+            // 1. Show success modal
             document.getElementById('modalOrderId').textContent = data.order_id;
             document.getElementById('modalUsername').textContent = data.username;
             document.getElementById('modalPassword').textContent = data.password;
             document.getElementById('successModal').classList.add('show');
 
-            // Update stock on card
+            // 2. INSTANT WALLET UPDATE in topbar
+            const walletEl = document.querySelector('.wallet');
+            if (walletEl && data.new_balance) {
+                walletEl.textContent = '₦' + parseFloat(data.new_balance).toLocaleString('en-US', {minimumFractionDigits: 2});
+            }
+
+            // 3. Update stock on card
             const card = btn.closest('.product-card');
             const stockBadge = card.querySelector('.prod-stock');
             let count = parseInt(stockBadge.textContent.replace('In stock: ', ''));
@@ -538,6 +741,10 @@ function buyLog(productId, btn) {
 
 function closeModal(id) {
     document.getElementById(id).classList.remove('show');
+    if (id === 'confirmModal') {
+        pendingProductId = null;
+        pendingBtn = null;
+    }
 }
 
 function copyToClipboard(elementId) {
@@ -548,7 +755,7 @@ function copyToClipboard(elementId) {
 }
 
 // Close modals on backdrop click
-document.querySelectorAll('.cred-modal').forEach(m => {
+document.querySelectorAll('.cred-modal, .confirm-modal').forEach(m => {
     m.addEventListener('click', function(e) {
         if (e.target === this) this.classList.remove('show');
     });

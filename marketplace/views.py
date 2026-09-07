@@ -8,15 +8,15 @@ from .models import (
     LogOrderCounter
 )
 from wallet.models import Wallet, Transaction
-from orders.models import Order
 
 
 @login_required
 def services_view(request):
-    """Buy Logs marketplace page."""
+    """Buy Logs marketplace page with My Purchases tab."""
     query = request.GET.get("q", "").strip().lower()
     products = LogProduct.objects.select_related("category", "sub_category").all()
     categories = LogCategory.objects.prefetch_related("subcategories").all()
+    log_purchases = LogPurchase.objects.filter(user=request.user).select_related("log_item")
 
     if query:
         products = products.filter(
@@ -34,6 +34,7 @@ def services_view(request):
         {
             "products": products,
             "categories": categories,
+            "log_purchases": log_purchases,
             "query": request.GET.get("q", ""),
             "user_wallet": wallet,
         },
@@ -43,7 +44,7 @@ def services_view(request):
 @login_required
 @require_POST
 def purchase_log(request, product_id):
-    """Atomic purchase endpoint."""
+    """Atomic purchase endpoint with confirmation."""
     try:
         with transaction.atomic():
             wallet = Wallet.objects.select_for_update().get(user=request.user)
@@ -110,6 +111,7 @@ def purchase_log(request, product_id):
                     "username": purchase.username,
                     "password": purchase.password,
                     "price": str(purchase.price),
+                    "new_balance": str(wallet.balance),
                 }
             )
 
