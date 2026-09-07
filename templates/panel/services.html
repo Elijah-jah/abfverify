@@ -7,10 +7,8 @@
 
 {% block extra_css %}
 <style>
-/* ===== MARKETPLACE STYLES ===== */
 .mp-wrap { padding: 0 1.5rem 2rem; }
 
-/* Tabs */
 .mp-tabs {
     display: flex;
     gap: 0.5rem;
@@ -36,7 +34,6 @@
     box-shadow: 0 4px 12px rgba(13,110,253,0.2);
 }
 
-/* Search & Filter Bar */
 .mp-topbar {
     display: flex;
     flex-wrap: wrap;
@@ -72,7 +69,6 @@
     color: #94a3b8;
 }
 
-/* Category Pills */
 .mp-categories {
     display: flex;
     flex-wrap: wrap;
@@ -219,7 +215,6 @@
 }
 .empty-state i { font-size: 3.5rem; margin-bottom: 1rem; display: block; }
 
-/* My Purchases Tab */
 .purchases-list {
     display: flex;
     flex-direction: column;
@@ -284,7 +279,6 @@
     color: #94a3b8;
 }
 
-/* ===== MODALS ===== */
 .cred-modal, .confirm-modal {
     position: fixed;
     inset: 0;
@@ -388,7 +382,6 @@
     to   { transform: scale(1) translateY(0); opacity: 1; }
 }
 
-/* Dark mode */
 body.dark .prod-img-wrap, html[data-theme="dark"] .prod-img-wrap {
     background: linear-gradient(135deg, #1e293b, #0f172a);
 }
@@ -554,7 +547,7 @@ body.dark .purchase-creds div span, html[data-theme="dark"] .purchase-creds div 
         <div class="confirm-price" id="confirmProductPrice"></div>
         <div class="confirm-actions">
             <button class="btn-yes" id="btnConfirmYes">Yes, Continue</button>
-            <button class="btn-no" onclick="closeModal('confirmModal')">No, Cancel</button>
+            <button class="btn-no" onclick="closeConfirmModal()">No, Cancel</button>
         </div>
     </div>
 </div>
@@ -664,7 +657,7 @@ function filterBySearch() {
     });
 }
 
-// ===== CONFIRMATION MODAL =====
+// ===== CONFIRMATION MODAL (FIXED) =====
 let pendingProductId = null;
 let pendingBtn = null;
 
@@ -677,11 +670,21 @@ function confirmBuy(productId, productName, productPrice, btn) {
 }
 
 document.getElementById('btnConfirmYes').addEventListener('click', function() {
-    closeModal('confirmModal');
-    if (pendingProductId && pendingBtn) {
-        buyLog(pendingProductId, pendingBtn);
+    // Store locally BEFORE closing modal
+    const pid = pendingProductId;
+    const pbtn = pendingBtn;
+    closeConfirmModal();
+    
+    if (pid && pbtn) {
+        buyLog(pid, pbtn);
     }
 });
+
+function closeConfirmModal() {
+    document.getElementById('confirmModal').classList.remove('show');
+    pendingProductId = null;
+    pendingBtn = null;
+}
 
 // ===== PURCHASE =====
 function buyLog(productId, btn) {
@@ -699,19 +702,19 @@ function buyLog(productId, btn) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            // 1. Show success modal
+            // Show credentials
             document.getElementById('modalOrderId').textContent = data.order_id;
             document.getElementById('modalUsername').textContent = data.username;
             document.getElementById('modalPassword').textContent = data.password;
             document.getElementById('successModal').classList.add('show');
 
-            // 2. INSTANT WALLET UPDATE in topbar
+            // Instant wallet update in topbar
             const walletEl = document.querySelector('.wallet');
             if (walletEl && data.new_balance) {
                 walletEl.textContent = '₦' + parseFloat(data.new_balance).toLocaleString('en-US', {minimumFractionDigits: 2});
             }
 
-            // 3. Update stock on card
+            // Update stock on card
             const card = btn.closest('.product-card');
             const stockBadge = card.querySelector('.prod-stock');
             let count = parseInt(stockBadge.textContent.replace('In stock: ', ''));
@@ -725,6 +728,7 @@ function buyLog(productId, btn) {
                 return;
             }
         } else {
+            // Show error (insufficient funds, out of stock, etc.)
             document.getElementById('modalError').textContent = data.error;
             document.getElementById('errorModal').classList.add('show');
         }
@@ -741,10 +745,6 @@ function buyLog(productId, btn) {
 
 function closeModal(id) {
     document.getElementById(id).classList.remove('show');
-    if (id === 'confirmModal') {
-        pendingProductId = null;
-        pendingBtn = null;
-    }
 }
 
 function copyToClipboard(elementId) {
@@ -757,7 +757,13 @@ function copyToClipboard(elementId) {
 // Close modals on backdrop click
 document.querySelectorAll('.cred-modal, .confirm-modal').forEach(m => {
     m.addEventListener('click', function(e) {
-        if (e.target === this) this.classList.remove('show');
+        if (e.target === this) {
+            if (this.id === 'confirmModal') {
+                closeConfirmModal();
+            } else {
+                this.classList.remove('show');
+            }
+        }
     });
 });
 </script>
