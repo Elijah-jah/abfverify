@@ -576,22 +576,14 @@ body.dark .confirm-price, html[data-theme="dark"] .confirm-price { color: #3b82f
                     <div class="prod-title">{{ product.title }}</div>
                     <div class="prod-desc">{{ product.description|linebreaksbr }}</div>
 
-                    <div class="prod-meta">
+                                        <div class="prod-meta">
                         <span class="prod-price">₦{{ product.price|floatformat:2 }}</span>
-                        {% if product.in_stock > 0 %}
-                        <span class="prod-stock stock-in">In stock: {{ product.in_stock }}</span>
-                        {% else %}
-                        <span class="prod-stock stock-out">Out of stock</span>
-                        {% endif %}
+                        <span class="prod-stock stock-in">In stock: {{ product.stock }}</span>
                     </div>
 
-                    <button class="btn-buy" {% if product.in_stock == 0 %}disabled{% endif %}
+                    <button class="btn-buy"
                         onclick="confirmBuy({{ product.id }}, '{{ product.title|escapejs }}', {{ product.price }}, this)">
-                        {% if product.in_stock > 0 %}
                         <i class="fa-solid fa-cart-shopping"></i> Buy Now
-                        {% else %}
-                        <i class="fa-solid fa-circle-xmark"></i> Sold Out
-                        {% endif %}
                     </button>
                 </div>
             </div>

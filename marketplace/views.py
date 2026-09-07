@@ -10,11 +10,17 @@ from .models import (
 from wallet.models import Wallet, Transaction
 
 
+from django.db.models import Count, Q
+
 @login_required
 def services_view(request):
-    """Buy Logs marketplace page with My Purchases tab."""
     query = request.GET.get("q", "").strip().lower()
-    products = LogProduct.objects.select_related("category", "sub_category").all()
+    
+    # Only show products that have at least 1 available log
+    products = LogProduct.objects.annotate(
+        stock=Count('items', filter=Q(items__status='available'))
+    ).filter(stock__gt=0).select_related("category", "sub_category")
+    
     categories = LogCategory.objects.prefetch_related("subcategories").all()
     log_purchases = LogPurchase.objects.filter(user=request.user).select_related("log_item")
 
