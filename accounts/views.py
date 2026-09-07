@@ -27,6 +27,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.contrib.auth.forms import SetPasswordForm
+from marketplace.models import LogPurchase  # ← Add this import
 
 logger = logging.getLogger(__name__)
 
@@ -78,24 +79,21 @@ def cancel_order_view(request):
     return redirect("sms")
 
 
+
 @login_required
 def orders_view(request):
-
-    user_orders = Order.objects.filter(
-        user=request.user
-    ).order_by("-created_at")
-
-    wallet, created = Wallet.objects.get_or_create(
-        user=request.user
-    )
+    user_orders = Order.objects.filter(user=request.user).order_by("-created_at")
+    log_purchases = LogPurchase.objects.filter(user=request.user).order_by("-created_at")
+    wallet, _ = Wallet.objects.get_or_create(user=request.user)
 
     return render(
         request,
         "panel/orders.html",
         {
             "orders": user_orders,
+            "log_purchases": log_purchases,
             "user_wallet": wallet,
-        }
+        },
     )
 
 

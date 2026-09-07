@@ -1,14 +1,19 @@
-from django.db import models
+from django.db import models, transaction
 from django.conf import settings
 import uuid
+import os
 
+
+# ============================
+# YOUR EXISTING ORDER MODEL
+# ============================
 
 class Order(models.Model):
 
     STATUS_CHOICES = (
         ("pending", "Pending"),
         ("waiting", "Waiting for SMS"),
-        ("received", "SMS Received"),  # NEW
+        ("received", "SMS Received"),
         ("completed", "Completed"),
         ("cancelled", "Cancelled"),
         ("expired", "Expired"),
@@ -66,15 +71,10 @@ class Order(models.Model):
         null=True,
     )
 
-    full_sms = models.TextField(  # NEW
+    full_sms = models.TextField(
         blank=True,
         null=True,
     )
-
-    # Prevents an order from being refunded more than once
-    # refund_processed = models.BooleanField(
-    #     default=False,
-    # )
 
     status = models.CharField(
         max_length=20,
@@ -90,7 +90,7 @@ class Order(models.Model):
         auto_now=True,
     )
 
-    sms_received_at = models.DateTimeField(  # NEW
+    sms_received_at = models.DateTimeField(
         null=True,
         blank=True,
     )
@@ -102,3 +102,4 @@ class Order(models.Model):
 
     def __str__(self):
         return f"{self.order_id} - {self.phone_number or 'No Number'}"
+

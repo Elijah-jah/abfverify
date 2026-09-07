@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "orders",
     "providers",
     'django_apscheduler',
+    "marketplace",
 ]
 
 # APScheduler settings

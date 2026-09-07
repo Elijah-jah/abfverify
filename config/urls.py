@@ -8,6 +8,8 @@ urlpatterns = [
 
     path("", include("website.urls")),
 
+    path("", include("marketplace.urls")),
+
     path("accounts/", include("accounts.urls")),
 
     path("api/", include("api_v1.urls")),
