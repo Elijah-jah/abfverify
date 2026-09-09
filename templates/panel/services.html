@@ -78,6 +78,7 @@
     flex-wrap: wrap;
     gap: 0.6rem;
     margin-bottom: 1.25rem;
+    align-items: center;
 }
 .cat-pill {
     padding: 0.55rem 1.1rem;
@@ -97,6 +98,27 @@
     color: #fff;
     border-color: #0d6efd;
     box-shadow: 0 4px 12px rgba(13,110,253,0.25);
+}
+
+/* See More button */
+.btn-see-more {
+    padding: 0.55rem 1.1rem;
+    border-radius: 50px;
+    border: 1px dashed var(--border-color, #cbd5e1);
+    background: transparent;
+    color: #0d6efd;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.btn-see-more:hover {
+    background: rgba(13,110,253,0.08);
+    border-style: solid;
+}
+.cat-hidden {
+    display: none !important;
 }
 
 .sub-badge {
@@ -538,13 +560,19 @@ body.dark .confirm-price, html[data-theme="dark"] .confirm-price { color: #3b82f
             </div>
         </div>
 
+        <!-- CATEGORY PILLS WITH SEE MORE -->
         <div class="mp-categories" id="categoryPills">
             <button class="cat-pill active" data-cat="all">All</button>
             {% for cat in categories %}
-            <button class="cat-pill" data-cat="{{ cat.id }}">
+            <button class="cat-pill {% if forloop.counter > 3 %}cat-hidden{% endif %}" data-cat="{{ cat.id }}">
                 <i class="{{ cat.icon }}"></i> {{ cat.name }}
             </button>
             {% endfor %}
+            {% if categories.count > 3 %}
+            <button class="btn-see-more" id="btnSeeMore" onclick="toggleCategories()">
+                <i class="fa-solid fa-ellipsis"></i> See More
+            </button>
+            {% endif %}
         </div>
 
         <div class="products-grid" id="productsGrid">
@@ -576,14 +604,22 @@ body.dark .confirm-price, html[data-theme="dark"] .confirm-price { color: #3b82f
                     <div class="prod-title">{{ product.title }}</div>
                     <div class="prod-desc">{{ product.description|linebreaksbr }}</div>
 
-                                        <div class="prod-meta">
+                    <div class="prod-meta">
                         <span class="prod-price">₦{{ product.price|floatformat:2 }}</span>
+                        {% if product.stock > 0 %}
                         <span class="prod-stock stock-in">In stock: {{ product.stock }}</span>
+                        {% else %}
+                        <span class="prod-stock stock-out">In stock: 0</span>
+                        {% endif %}
                     </div>
 
-                    <button class="btn-buy"
+                    <button class="btn-buy" {% if product.stock == 0 %}disabled{% endif %}
                         onclick="confirmBuy({{ product.id }}, '{{ product.title|escapejs }}', {{ product.price }}, this)">
+                        {% if product.stock > 0 %}
                         <i class="fa-solid fa-cart-shopping"></i> Buy Now
+                        {% else %}
+                        <i class="fa-solid fa-circle-xmark"></i> Sold Out
+                        {% endif %}
                     </button>
                 </div>
             </div>
@@ -716,6 +752,25 @@ function switchTab(tabName, btn) {
     document.getElementById('tab-purchases').style.display = tabName === 'purchases' ? '' : 'none';
 }
 
+/* ===== SEE MORE CATEGORIES ===== */
+let categoriesExpanded = false;
+
+function toggleCategories() {
+    const hidden = document.querySelectorAll('.cat-hidden');
+    const btn = document.getElementById('btnSeeMore');
+    categoriesExpanded = !categoriesExpanded;
+    
+    hidden.forEach(pill => {
+        pill.style.display = categoriesExpanded ? '' : 'none';
+    });
+    
+    if (categoriesExpanded) {
+        btn.innerHTML = '<i class="fa-solid fa-chevron-up"></i> See Less';
+    } else {
+        btn.innerHTML = '<i class="fa-solid fa-ellipsis"></i> See More';
+    }
+}
+
 const pills = document.querySelectorAll('.cat-pill');
 const cards = document.querySelectorAll('.product-card');
 
@@ -802,7 +857,7 @@ function buyLog(productId, btn) {
             if (count > 1) {
                 stockBadge.textContent = 'In stock: ' + (count - 1);
             } else {
-                stockBadge.textContent = 'Out of stock';
+                stockBadge.textContent = 'In stock: 0';
                 stockBadge.className = 'prod-stock stock-out';
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Sold Out';
