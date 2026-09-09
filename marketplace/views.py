@@ -16,10 +16,10 @@ from django.db.models import Count, Q
 def services_view(request):
     query = request.GET.get("q", "").strip().lower()
     
-    # Only show products that have at least 1 available log
+    # Show ALL products, annotate stock count
     products = LogProduct.objects.annotate(
         stock=Count('items', filter=Q(items__status='available'))
-    ).filter(stock__gt=0).select_related("category", "sub_category")
+    ).select_related("category", "sub_category")
     
     categories = LogCategory.objects.prefetch_related("subcategories").all()
     log_purchases = LogPurchase.objects.filter(user=request.user).select_related("log_item")
@@ -45,6 +45,7 @@ def services_view(request):
             "user_wallet": wallet,
         },
     )
+
 
 
 @login_required
