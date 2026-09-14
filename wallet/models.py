@@ -40,6 +40,12 @@ class Transaction(models.Model):
         blank=True,
     )
 
+    payment_id = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+    )
+
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,

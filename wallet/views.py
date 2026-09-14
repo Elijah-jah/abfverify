@@ -1,3 +1,4 @@
+import uuid
 import requests
 from decimal import Decimal
 from django.utils import timezone
@@ -41,48 +42,53 @@ def fund_wallet(request):
                 "error": "Amount is required"
             })
 
-        amount_kobo = int(float(amount) * 100)
+        # PocketFi takes NAIRA directly - no kobo conversion needed
+        reference = uuid.uuid4().hex[:20]
 
-        url = "https://api.paystack.co/transaction/initialize"
+        url = f"{settings.POCKETFI_BASE_URL}/api/v1/checkout/request"
 
         headers = {
-            "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
-            "Content-Type": "application/json"
+            "Authorization": f"Bearer {settings.POCKETFI_SECRET_KEY}",
+            "Content-Type": "application/json",
         }
 
         data = {
+            "first_name": request.user.first_name or "Customer",
+            "last_name": request.user.last_name or "Customer",
+            "phone": request.POST.get("phone", "0000000000"),  # required by PocketFi
+            "business_id": settings.POCKETFI_BUSINESS_ID,
             "email": request.user.email,
-            "amount": amount_kobo,
-            "callback_url": settings.PAYSTACK_CALLBACK_URL
+            # carry our own reference through the redirect
+            "redirect_link": f"{settings.POCKETFI_CALLBACK_URL}?reference={reference}",
+            "amount": str(amount),
         }
 
         response = requests.post(
             url,
             json=data,
-            headers=headers
+            headers=headers,
         )
 
         result = response.json()
 
-        if result.get("status"):
-
-            reference = result["data"]["reference"]
+        if result.get("status") == "success" and result.get("payment_link"):
 
             Transaction.objects.create(
                 user=request.user,
                 amount=Decimal(amount),
                 transaction_type="deposit",
                 reference=reference,
+                payment_id=result["payment_id"],
                 status="pending",
-                description="Wallet funding via Paystack"
+                description="Wallet funding via PocketFi",
             )
 
             return JsonResponse({
-                "payment_url": result["data"]["authorization_url"]
+                "payment_url": result["payment_link"]
             })
 
         return JsonResponse({
-            "error": result.get("message")
+            "error": result.get("message") or "Could not initialize payment"
         })
 
     return JsonResponse({
@@ -106,45 +112,44 @@ def verify_payment(request):
     if not transaction:
         return redirect("wallet")
 
-    url = f"https://api.paystack.co/transaction/verify/{reference}"
+    # prevents double-crediting if user refreshes the callback page
+    if transaction.status == "successful":
+        return redirect("wallet")
+
+    url = f"{settings.POCKETFI_BASE_URL}/api/v1/checkout/confirm"
 
     headers = {
-        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"
+        "Authorization": f"Bearer {settings.POCKETFI_SECRET_KEY}",
+        "Content-Type": "application/json",
     }
 
-    response = requests.get(
+    response = requests.post(
         url,
-        headers=headers
+        json={"payment_id": transaction.payment_id},
+        headers=headers,
     )
 
     result = response.json()
 
-    if result.get("status") and result["data"]["status"] == "success":
+    if result.get("status") == "success":
 
-        amount = Decimal(
-            result["data"]["amount"]
-        ) / Decimal(100)
+        # PocketFi returns amount in naira (e.g. "100.00") - no /100 needed
+        amount = Decimal(result["amount"])
 
         wallet, created = Wallet.objects.get_or_create(
             user=request.user
         )
 
-        old_balance = wallet.balance
-
         wallet.balance += amount
         wallet.save()
 
-        if wallet.balance > old_balance:
-            transaction.status = "successful"
-        else:
-            transaction.status = "failed"
-
-        transaction.save()
+        transaction.status = "successful"
 
     else:
 
         transaction.status = "failed"
-        transaction.save()
+
+    transaction.save()
 
     return redirect("wallet")
 

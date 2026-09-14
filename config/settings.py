@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 from decouple import config
 
@@ -167,6 +168,12 @@ DAISYSMS_API_KEY = config("DAISYSMS_API_KEY", default="")
 PAYSTACK_PUBLIC_KEY = config("PAYSTACK_PUBLIC_KEY")
 PAYSTACK_SECRET_KEY = config("PAYSTACK_SECRET_KEY")
 PAYSTACK_CALLBACK_URL = config("PAYSTACK_CALLBACK_URL")
+
+# PocketFi
+POCKETFI_SECRET_KEY = os.getenv("POCKETFI_SECRET_KEY")
+POCKETFI_BUSINESS_ID = os.getenv("POCKETFI_BUSINESS_ID")
+POCKETFI_BASE_URL = os.getenv("POCKETFI_BASE_URL", "https://api.pocketfi.ng")
+POCKETFI_CALLBACK_URL = os.getenv("POCKETFI_CALLBACK_URL")
 
 
 # Email Settings
