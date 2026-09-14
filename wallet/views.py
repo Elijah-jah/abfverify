@@ -53,8 +53,8 @@ def fund_wallet(request):
         }
 
         data = {
-            "first_name": request.user.first_name or "Customer",
-            "last_name": request.user.last_name or "Customer",
+            "first_name": getattr(request.user, "first_name", "") or "Customer",
+            "last_name": getattr(request.user, "last_name", "") or "Customer",
             "phone": request.POST.get("phone", "0000000000"),  # required by PocketFi
             "business_id": settings.POCKETFI_BUSINESS_ID,
             "email": request.user.email,
