@@ -199,13 +199,10 @@ def transactions_page(request):
         }
     )
 
-
-
 @login_required
 def wallet_page(request):
     wallet = ensure_virtual_account(request.user)  # creates VA when details exist
     return render(request, "panel/wallet.html", {"wallet": wallet})
-
 
 @login_required
 def add_account_details(request):
@@ -234,7 +231,6 @@ def add_account_details(request):
         "panel/add_account_details.html",
         {"error": error},
     )
-
 
 @csrf_exempt
 def pocketfi_webhook(request):
