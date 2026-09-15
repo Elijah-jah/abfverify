@@ -13,7 +13,9 @@ from orders.models import Order
 from .services import ensure_virtual_account
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
-
+import hmac
+import hashlib
+from django.db import models, transaction as db_transaction
 
 def update_pending_transactions(user):
 
@@ -234,9 +236,58 @@ def add_account_details(request):
 
 @csrf_exempt
 def pocketfi_webhook(request):
-    # PHASE 1: just log the raw payload so we can see its real structure
-    print("=== POCKETFI WEBHOOK ===")
-    print(json.dumps(json.loads(request.body), indent=2))
-    print("========================")
+    raw_body = request.body
 
-    return HttpResponse(status=200)
+    # --- Verify the webhook signature (HMAC-SHA512 with your Secret Key) ---
+    signature = request.headers.get("X-PocketFi-Signature", "")
+    expected = hmac.new(
+        settings.POCKETFI_WEBHOOK_SECRET.encode("utf-8"),
+        raw_body,
+        hashlib.sha512,
+    ).hexdigest()
+
+    if not hmac.compare_digest(expected, signature):
+        print("POCKETFI WEBHOOK: invalid signature")
+        return JsonResponse({"error": "invalid signature"}, status=401)
+
+    payload = json.loads(raw_body)
+
+    account_number = payload.get("account_number")
+    amount = payload.get("order", {}).get("amount")
+    reference = payload.get("transaction", {}).get("reference")
+
+    if not (account_number and amount and reference):
+        return JsonResponse({"error": "incomplete payload"}, status=400)
+
+    # Find the wallet that owns this virtual account
+    wallet = Wallet.objects.filter(
+        virtual_account_number=account_number
+    ).first()
+
+    if not wallet:
+        print("POCKETFI WEBHOOK: unknown account", account_number)
+        return HttpResponse(status=200)  # acknowledge so they stop retrying
+
+    # Idempotency: already processed this exact event? Skip it
+    if Transaction.objects.filter(reference=reference).exists():
+        return JsonResponse({"status": "already processed"}, status=200)
+
+    amount = Decimal(str(amount))
+
+    with db_transaction.atomic():
+        # F() expression = safe against double-crediting even if two
+        # identical webhooks arrive at the exact same moment
+        Wallet.objects.filter(pk=wallet.pk).update(
+            balance=models.F("balance") + amount
+        )
+        Transaction.objects.create(
+            user=wallet.user,
+            amount=amount,
+            transaction_type="deposit",
+            reference=reference,
+            status="successful",
+            description="Wallet funding via bank transfer",
+        )
+
+    print(f"POCKETFI WEBHOOK: credited {wallet.user.email} ₦{amount}")
+    return JsonResponse({"status": "success"}, status=200)
