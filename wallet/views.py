@@ -13,9 +13,7 @@ from orders.models import Order
 from .services import ensure_virtual_account
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
-import hmac
-import hashlib
-from django.db import models, transaction as db_transaction
+
 
 def update_pending_transactions(user):
 
@@ -233,6 +231,16 @@ def add_account_details(request):
         "panel/add_account_details.html",
         {"error": error},
     )
+
+import json
+import hmac
+import hashlib
+from decimal import Decimal
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse, JsonResponse
+from django.conf import settings
+from django.db import models, transaction as db_transaction
+from .models import Wallet, Transaction
 
 @csrf_exempt
 def pocketfi_webhook(request):
