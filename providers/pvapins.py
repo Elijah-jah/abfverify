@@ -1,5 +1,6 @@
-import json
 import logging
+from decimal import Decimal, InvalidOperation
+
 import requests
 
 from django.conf import settings
@@ -13,9 +14,8 @@ class PVAPinsProvider:
     PVAPins adapter — drop-in replacement for InstantNumsProvider.
 
     - REST v1 (JSON, ISO country codes) for balance/catalog/price/stock/
-      purchase/poll.
-    - Classic /user/api endpoint for cancel and bulk rates only
-      (REST v1 has no cancel, and get_rates is classic-only).
+      purchase/poll and bulk operator rates.
+    - Classic /user/api endpoint for cancel only (REST v1 has no cancel).
     """
 
     REST_BASE = "https://api.pvapins.com/api/v1"
@@ -86,7 +86,7 @@ class PVAPinsProvider:
             logger.exception("PVAPins classic request failed: %s", endpoint)
             raise Exception("Provider request failed. Please try again.")
 
-    # ---------- provider interface (same as InstantNums) ----------
+    # ---------- provider interface ----------
 
     def get_balance(self):
         data = self._rest("GET", "/account")
@@ -143,9 +143,50 @@ class PVAPinsProvider:
             "in_stock": data.get("price") is not None,
         }
 
+    def get_operator_rates(self, iso_code):
+        """
+        Bulk prices for one country via REST operators endpoint.
+        Paginates internally; returns {service_code_lower: min_price_Decimal}.
+        This is the same price pool POST /orders bills from.
+        """
+        rates = {}
+        page = 1
+
+        while True:
+            data = self._rest(
+                "GET",
+                "/operators",
+                params={
+                    "country": str(iso_code).upper(),
+                    "limit": 2000,
+                    "page": page,
+                },
+            )
+
+            rows = data.get("operators", [])
+            for row in rows:
+                code = row.get("service")
+                price = row.get("price")
+                if not code or price is None:
+                    continue
+                try:
+                    p = Decimal(str(price))
+                except InvalidOperation:
+                    continue
+                key = str(code).strip().lower()
+                if key not in rates or p < rates[key]:
+                    rates[key] = p
+
+            if not data.get("hasMore") or not rows or page >= 10:
+                break
+            page += 1
+
+        return rates
+
     def get_rates(self, country_name):
         """
         Bulk prices for one country (classic API, ONE call per country).
+        Kept for reference/debugging — pricing now uses get_operator_rates.
         Returns: {service_name_lower: price_usd_str}
         """
         data = self._classic("get_rates.php", {"country": country_name})
@@ -180,7 +221,6 @@ class PVAPinsProvider:
             if inner is not None:
                 absorb(inner)
             else:
-                # maybe a plain {"AppName": "0.50"} mapping
                 for k, v in data.items():
                     if isinstance(v, (str, int, float)):
                         rates[str(k).strip().lower()] = str(v)

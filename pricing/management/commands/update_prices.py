@@ -11,7 +11,7 @@ from providers.pvapins import PVAPinsProvider
 
 
 class Command(BaseCommand):
-    help = "Update all prices from providers (server3 uses PVAPins bulk rates)"
+    help = "Update all prices from providers (server3 uses PVAPins REST bulk rates)"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -62,7 +62,7 @@ class Command(BaseCommand):
                         "Failed: " + server + " | " + country.name + " | " + service.name + " | " + str(e)
                     ))
 
-    # ==================== server3 (PVAPins bulk) ====================
+    # ==================== server3 (PVAPins REST bulk) ====================
 
     def _update_server3(self, country_filter=None):
         server = "server3"
@@ -72,16 +72,17 @@ class Command(BaseCommand):
         if country_filter:
             countries = countries.filter(name__iexact=country_filter)
 
-        # Map of active services by lowercase name for fast matching
+        # Map of active services by PVAPins code for fast matching
         active_services = {
-            s.name.strip().lower(): s
+            s.code.strip().lower(): s
             for s in Service.objects.filter(status="active", server=server)
+            if s.code
         }
 
         for country in countries:
             try:
-                # ONE provider call for the whole country
-                rates = provider.get_rates(country.name)
+                # Paginated provider calls, one country at a time
+                rates = provider.get_operator_rates(country.iso_code)
             except Exception as e:
                 self.stdout.write(self.style.ERROR(
                     f"Rates failed: {country.name} | {e}"
@@ -91,13 +92,13 @@ class Command(BaseCommand):
             matched = 0
             unmatched_ids = []
 
-            for name_lower, service in active_services.items():
-                if name_lower in rates:
+            for code_lower, service in active_services.items():
+                if code_lower in rates:
                     if not self.dry_run:
                         PricingService.update_price_from_rate(
                             country=country,
                             service=service,
-                            price_usd=rates[name_lower],
+                            price_usd=str(rates[code_lower]),
                             server=server,
                         )
                     matched += 1
@@ -117,4 +118,3 @@ class Command(BaseCommand):
 
             # Stay well under the 60/min rate limit
             time.sleep(1)
-            
