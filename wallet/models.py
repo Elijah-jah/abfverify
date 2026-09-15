@@ -71,7 +71,6 @@ class Transaction(models.Model):
             f"₦{self.amount}"
         )
 
-
 class Wallet(models.Model):
 
     user = models.OneToOneField(
@@ -84,6 +83,26 @@ class Wallet(models.Model):
         max_digits=12,
         decimal_places=2,
         default=0,
+    )
+
+    # PocketFi dedicated virtual account
+    virtual_account_number = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True,
+    )
+
+    virtual_bank_name = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+    )
+
+    virtual_account_name = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
     )
 
     updated_at = models.DateTimeField(

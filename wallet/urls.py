@@ -12,4 +12,8 @@ urlpatterns = [
 
      path("transactions/", transactions_page, name="transactions_page"),
 
+     path("account-details/", views.add_account_details, name="add_account_details"),
+
+     path("webhook/pocketfi/", views.pocketfi_webhook, name="pocketfi_webhook"),
+
 ]

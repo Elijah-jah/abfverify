@@ -29,6 +29,60 @@
 
     </div>
 
+    <!-- DEDICATED VIRTUAL ACCOUNT -->
+    {% if wallet.virtual_account_number %}
+    <div class="wallet-card">
+
+        <h3>Your Dedicated Account Number</h3>
+
+        <p>
+            Transfer any amount from your bank app to the account
+            below. Your wallet is credited automatically.
+        </p>
+
+        <div>
+            <p>
+                <strong>Account Number:</strong>
+                <span id="vaNumber">{{ wallet.virtual_account_number }}</span>
+            </p>
+            <p>
+                <strong>Bank:</strong>
+                {{ wallet.virtual_bank_name|title }}
+            </p>
+            <p>
+                <strong>Account Name:</strong>
+                {{ wallet.virtual_account_name }}
+            </p>
+        </div>
+
+        <button
+            type="button"
+            class="wallet-chip"
+            onclick="copyVA()">
+            Copy Account Number
+        </button>
+
+    </div>
+
+    {% else %}
+    <div class="wallet-card">
+
+        <h3>Get Your Dedicated Account Number</h3>
+
+        <p>
+            Add your name and phone number to get a permanent
+            account number for instant wallet funding.
+        </p>
+
+        <a
+            href="{% url 'add_account_details' %}"
+            class="wallet-button">
+            Add Details
+        </a>
+
+    </div>
+    {% endif %}
+
     <!-- FUND CARD -->
     <div class="wallet-card">
 
@@ -126,5 +180,14 @@
 </div>
 
 <script src="{% static 'js/wallet.js' %}"></script>
+
+<script>
+function copyVA() {
+    const num = document.getElementById("vaNumber").innerText;
+    navigator.clipboard.writeText(num).then(
+        () => alert("Account number copied!")
+    );
+}
+</script>
 
 {% endblock %}

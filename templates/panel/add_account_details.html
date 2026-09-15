@@ -1,0 +1,73 @@
+{% extends "panel/dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Account Details{% endblock %}
+{% block page_title %}Account Details{% endblock %}
+{% block section_title %}Account Details{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/wallet.css' %}">
+
+<div class="wallet-container">
+
+    <div class="wallet-card">
+
+        <h3>Add Your Details</h3>
+
+        <p>
+            We need your legal name and phone number to generate
+            your dedicated account number.
+        </p>
+
+        {% if error %}
+        <p style="color: red;">{{ error }}</p>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="wallet-group">
+                <label>First Name</label>
+                <input
+                    type="text"
+                    name="first_name"
+                    class="wallet-input"
+                    required
+                >
+            </div>
+
+            <div class="wallet-group">
+                <label>Last Name</label>
+                <input
+                    type="text"
+                    name="last_name"
+                    class="wallet-input"
+                    required
+                >
+            </div>
+
+            <div class="wallet-group">
+                <label>Phone Number</label>
+                <input
+                    type="text"
+                    name="phone"
+                    class="wallet-input"
+                    placeholder="08012345678"
+                    required
+                >
+            </div>
+
+            <button
+                type="submit"
+                class="wallet-button">
+                Save &amp; Generate Account Number
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

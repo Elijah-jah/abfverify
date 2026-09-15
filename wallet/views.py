@@ -10,6 +10,9 @@ from django.conf import settings
 from django.db import models
 from .models import Wallet, Transaction
 from orders.models import Order
+from .services import ensure_virtual_account
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
 
 
 def update_pending_transactions(user):
@@ -197,17 +200,47 @@ def transactions_page(request):
     )
 
 
+
 @login_required
 def wallet_page(request):
+    wallet = ensure_virtual_account(request.user)  # creates VA when details exist
+    return render(request, "panel/wallet.html", {"wallet": wallet})
 
-    wallet, created = Wallet.objects.get_or_create(
-        user=request.user
-    )
+
+@login_required
+def add_account_details(request):
+    user = request.user
+    error = ""
+
+    if request.method == "POST":
+        first_name = request.POST.get("first_name", "").strip()
+        last_name = request.POST.get("last_name", "").strip()
+        phone = request.POST.get("phone", "").strip()
+
+        if not (first_name and last_name and phone):
+            error = "All fields are required."
+        elif not phone.isdigit() or len(phone) != 11:
+            error = "Enter a valid 11-digit phone number (e.g. 08012345678)."
+        else:
+            user.first_name = first_name
+            user.last_name = last_name
+            user.phone = phone
+            user.save()
+            ensure_virtual_account(user)  # creates the VA now that we have details
+            return redirect("wallet")
 
     return render(
         request,
-        "panel/wallet.html",
-        {
-            "wallet": wallet
-        }
+        "panel/add_account_details.html",
+        {"error": error},
     )
+
+
+@csrf_exempt
+def pocketfi_webhook(request):
+    # PHASE 1: just log the raw payload so we can see its real structure
+    print("=== POCKETFI WEBHOOK ===")
+    print(json.dumps(json.loads(request.body), indent=2))
+    print("========================")
+
+    return HttpResponse(status=200)
