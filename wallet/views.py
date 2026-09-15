@@ -104,6 +104,10 @@ def verify_payment(request):
     if not reference:
         return redirect("wallet")
 
+    # PocketFi appends "?payment_id=..." to our redirect_link using a
+    # second "?", so the reference arrives polluted - strip it
+    reference = reference.split("?")[0]
+
     transaction = Transaction.objects.filter(
         reference=reference,
         user=request.user
