@@ -97,7 +97,7 @@ def orders_view(request):
     )
 
 
-@ratelimit(key='user', rate='10/m', method='POST', block=True)
+
 @login_required
 def sms_view(request):
 
