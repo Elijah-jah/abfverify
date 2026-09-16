@@ -266,19 +266,27 @@ class PVAPinsProvider:
         status = data.get("status")
         otp = data.get("otpCode")
 
-        result = {
+        # Normalize to the status strings the order flow expects
+        # ("finished" = SMS arrived — InstantNums convention)
+        if status == "completed" and otp:
+            result_status = "finished"
+        elif status in ("expired", "cancelled"):
+            result_status = "expired"
+        else:
+            result_status = "waiting"
+
+        return {
             "success": True,
-            "status": status,
-            "sms": otp,
-            "code": otp,
-            "otp": otp,
-            "full_sms": data.get("message"),
-            "message": data.get("message"),
+            "status": result_status,
+            "sms": otp or "",
+            "code": otp or "",
+            "otp": otp or "",
+            "full_sms": data.get("message") or "",
+            "message": data.get("message") or "",
             "phone_number": data.get("phoneNumber"),
-            "received": bool(status == "completed" and otp),
-            "finished": status in ("expired", "cancelled"),
+            "received": result_status == "finished",
+            "finished": result_status == "expired",
         }
-        return result
 
     def cancel_order(self, order_id):
         # Classic API needs number + country name + app name (not order id),

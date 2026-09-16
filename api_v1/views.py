@@ -249,28 +249,25 @@ def check_stock(request):
         if server == "server2":
             service_identifier = service.code
             country_identifier = 187
+        elif server == "server3":
+            service_identifier = service.code       # PVAPins: wa, tg...
+            country_identifier = country.iso_code   # PVAPins: US, GB...
         else:
             service_identifier = service.provider_id
             country_identifier = country.provider_id
-
-        print(f"[InstantNums] Checking stock: service={service_identifier}, country={country_identifier}")
 
         result = provider.check_stock(
             service=service_identifier,
             country=country_identifier,
         )
 
-        available = result.get("available", 0)
-        print(f"[InstantNums] Stock result: {available} available")
-
         return JsonResponse({
             "success": True,
-            "available": available,
+            "available": result.get("available", 0),
         })
 
     except Exception as e:
-        print(f"[InstantNums] Check stock error: {e}")
-        # Return success=False so frontend knows it was an error, not actually 0 stock
+        logger.error("Check stock error: %s", e)
         return JsonResponse({
             "success": False,
             "available": 0,
