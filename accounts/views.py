@@ -152,7 +152,7 @@ def sms_view(request):
             messages.error(request, "This service is currently unavailable.")
             return redirect("sms")
 
-                # Check wallet balance including pending orders
+        # Check wallet balance including pending orders
         pending_total = Order.objects.filter(
             user=request.user,
             status__in=["waiting", "pending"],
@@ -190,6 +190,9 @@ def sms_view(request):
         if server == "server2":
             service_identifier = service.code
             country_identifier = 187
+        elif server == "server3":
+            service_identifier = service.code       # PVAPins: wa, tg...
+            country_identifier = country.iso_code   # PVAPins: US, GB...
         else:
             service_identifier = service.provider_id
             country_identifier = country.provider_id
