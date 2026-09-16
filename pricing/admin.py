@@ -38,9 +38,3 @@ class PricingConfigurationAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
-
-        # The moment profit (or any config) is saved in admin,
-        # recompute every selling price instantly
-        Pricing.objects.update(
-            selling_price=F("provider_cost") + obj.fixed_profit
-        )
