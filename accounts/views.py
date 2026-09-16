@@ -217,7 +217,7 @@ def sms_view(request):
         except Exception as e:
             logger.exception("Provider purchase failed for user %s, country %s, service %s, server %s: %s",
                              request.user.id, country.name, service.name, server, str(e))
-            messages.error(request, f"Purchase failed: {str(e)}")
+            messages.error(request, "Unable to complete your request. Please try again later.")
             return redirect("sms")
 
         # Create order — NO wallet deduction yet
