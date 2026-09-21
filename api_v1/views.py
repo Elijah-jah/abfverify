@@ -10,6 +10,7 @@ from wallet.models import Wallet, Transaction
 from orders.models import Order
 from providers.factory import get_provider
 from pricing.models import Pricing
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -189,23 +190,35 @@ def get_price(request):
         country = Country.objects.get(id=country_id)
         service = Service.objects.get(id=service_id)
 
-        # === INSTANT: Use cached price from database ===
         try:
             pricing = Pricing.objects.get(
                 country=country,
                 service=service,
                 status="active",
             )
+
+            # === Daisy changes prices often — refresh if cache is older than 6h ===
+            if server == "server2":
+                age = timezone.now() - pricing.updated_at
+                if age > timedelta(hours=6):
+                    try:
+                        pricing = PricingService.update_price(
+                            country=country,
+                            service=service,
+                            server=server,
+                        )
+                    except Exception as e:
+                        logger.warning("Daisy price refresh failed for %s, serving cached: %s", service.code, e)
+
             return JsonResponse({
                 "success": True,
                 "selling_price": str(pricing.selling_price),
                 "provider_cost": str(pricing.provider_cost),
-                "available": True,  # Price exists, so we assume available until stock check says otherwise
+                "available": pricing.is_available,
             })
 
         except Pricing.DoesNotExist:
-            # === First time only: fetch live from InstantNums and cache it ===
-            print(f"[InstantNums] No cached price for {service.name}/{country.name}, fetching live...")
+            # First time only: fetch live from provider and cache it
             pricing = PricingService.update_price(
                 country=country,
                 service=service,
@@ -219,7 +232,7 @@ def get_price(request):
             })
 
     except Exception as e:
-        print(f"[InstantNums] Get price error: {e}")
+        logger.error("Get price error: %s", e)
         return JsonResponse({
             "success": False,
             "price": 0,
@@ -244,8 +257,6 @@ def check_stock(request):
         country = Country.objects.get(id=country_id)
         service = Service.objects.get(id=service_id)
 
-        provider = get_provider(server=server)
-
         if server == "server2":
             service_identifier = service.code
             country_identifier = 187
@@ -256,6 +267,24 @@ def check_stock(request):
             service_identifier = service.provider_id
             country_identifier = country.provider_id
 
+        # === ANTI-BLOCK: serve cached Daisy stock for 2 minutes ===
+        # Your frontend polls this every few seconds per user — hitting Daisy
+        # live that often is exactly what gets you blocked.
+        if server == "server2":
+            try:
+                pricing = Pricing.objects.get(
+                    country=country, service=service, status="active"
+                )
+                age = timezone.now() - pricing.updated_at
+                if age < timedelta(minutes=2):
+                    return JsonResponse({
+                        "success": True,
+                        "available": 999 if pricing.is_available else 0,
+                    })
+            except Pricing.DoesNotExist:
+                pass
+
+        provider = get_provider(server=server)
         result = provider.check_stock(
             service=service_identifier,
             country=country_identifier,
