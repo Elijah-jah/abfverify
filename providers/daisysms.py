@@ -1,13 +1,18 @@
 import json
 import logging
 import os
+import time
 
 import requests
+from requests.exceptions import ConnectionError, ProxyError, Timeout
 
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://daisysms.io/stubs/handler_api.php"
 COUNTRY_USA = 187  # USA code in sms-activate compatible API
+
+MAX_RETRIES = 3          # total attempts per request
+RETRY_WAIT = 2           # seconds between attempts
 
 # Raw provider errors -> friendly messages
 ERRORS = {
@@ -39,19 +44,36 @@ class DaisySMSProvider:
     # ------------------------------------------------------------------
 
     def _request(self, params):
-        """GET the API. Returns the raw response object (headers included)."""
+        """GET the API with automatic retries on transient proxy/network
+        failures (502 tunnel errors, dropped connections, timeouts).
+        Returns the raw response object (headers included)."""
         params = dict(params)
         params["api_key"] = self.api_key
-        response = requests.get(
-            BASE_URL,
-            params=params,
-            timeout=30,
-            proxies=self.proxies,
-        )
-        response.raise_for_status()
-        if response.text.strip() == "BAD_KEY":
-            raise PermissionError("DaisySMS rejected the API key (BAD_KEY)")
-        return response
+
+        last_exc = None
+        for attempt in range(1, MAX_RETRIES + 1):
+            try:
+                response = requests.get(
+                    BASE_URL,
+                    params=params,
+                    timeout=30,
+                    proxies=self.proxies,
+                )
+                response.raise_for_status()
+                if response.text.strip() == "BAD_KEY":
+                    raise PermissionError("DaisySMS rejected the API key (BAD_KEY)")
+                return response
+            except (ProxyError, ConnectionError, Timeout) as e:
+                last_exc = e
+                if attempt < MAX_RETRIES:
+                    logger.warning(
+                        f"DaisySMS attempt {attempt}/{MAX_RETRIES} failed "
+                        f"({type(e).__name__}). Retrying in {RETRY_WAIT}s..."
+                    )
+                    time.sleep(RETRY_WAIT)
+
+        # All attempts failed - raise the last error so callers handle it
+        raise last_exc
 
     def _get_price_map(self, country=COUNTRY_USA):
         """Return {service_code: {cost, count}} for a country."""
