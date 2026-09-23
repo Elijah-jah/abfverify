@@ -1,18 +1,22 @@
+"""DaisySMS provider - sms-activate compatible API.
+
+Docs: https://daisysms.io/docs/api
+"""
+
 import json
 import logging
-import os
 import time
 
 import requests
-from requests.exceptions import ConnectionError, ProxyError, Timeout
+from requests.exceptions import ConnectionError, Timeout
 
 logger = logging.getLogger(__name__)
 
-BASE_URL = "https://daisysms.io/stubs/handler_api.php"
+BASE_URL = "https://long-lake-89d0daisy-relay.semilorevictor72.workers.dev/stubs/handler_api.php"
 COUNTRY_USA = 187  # USA code in sms-activate compatible API
 
-MAX_RETRIES = 3          # total attempts per request
-RETRY_WAIT = 2           # seconds between attempts
+MAX_RETRIES = 3   # total attempts per request
+RETRY_WAIT = 2    # seconds between attempts
 
 # Raw provider errors -> friendly messages
 ERRORS = {
@@ -20,62 +24,55 @@ ERRORS = {
     "NO_NUMBERS": "No numbers available for this service right now",
     "NO_MONEY": "Insufficient DaisySMS balance - top up your account",
     "MAX_PRICE_EXCEEDED": "Current price is above the allowed max_price",
-    "TOO_MANY_ACTIVE_RENTALS": "Account limit reached (20 active rentals). Finish or cancel existing orders first",
+    "TOO_MANY_ACTIVE_RENTALS": (
+        "Account limit reached (20 active rentals). "
+        "Finish or cancel existing orders first"
+    ),
     "NO_ACTIVATION": "Order/rental not found",
     "ACCESS_READY": "Rental already completed",
 }
 
 
+class DaisySMSError(Exception):
+    """Raised when DaisySMS returns a business-logic error."""
+
+
+def _friendly_error(raw: str) -> str:
+    return ERRORS.get(raw.strip(), raw.strip())
+
+
 class DaisySMSProvider:
-    """DaisySMS provider - sms-activate compatible API.
-
-    Docs: https://daisysms.io/docs/api
-    Set DAISYSMS_PROXY env var (http://user:pass@ip:port) to route
-    requests through a proxy - needed if your server IP is blocked (403).
-    """
-
-    def __init__(self, api_key):
+    def __init__(self, api_key: str):
         self.api_key = api_key
-        proxy = os.environ.get("DAISYSMS_PROXY", "").strip()
-        self.proxies = {"http": proxy, "https": proxy} if proxy else None
 
     # ------------------------------------------------------------------
     # Low level
     # ------------------------------------------------------------------
 
-    def _request(self, params):
-        """GET the API with automatic retries on transient proxy/network
-        failures (502 tunnel errors, dropped connections, timeouts).
-        Returns the raw response object (headers included)."""
-        params = dict(params)
-        params["api_key"] = self.api_key
+    def _request(self, params: dict) -> requests.Response:
+        """GET the API with retries on transient network failures."""
+        params = {**params, "api_key": self.api_key}
 
         last_exc = None
         for attempt in range(1, MAX_RETRIES + 1):
             try:
-                response = requests.get(
-                    BASE_URL,
-                    params=params,
-                    timeout=30,
-                    proxies=self.proxies,
-                )
+                response = requests.get(BASE_URL, params=params, timeout=30)
                 response.raise_for_status()
                 if response.text.strip() == "BAD_KEY":
                     raise PermissionError("DaisySMS rejected the API key (BAD_KEY)")
                 return response
-            except (ProxyError, ConnectionError, Timeout) as e:
+            except (ConnectionError, Timeout) as e:
                 last_exc = e
                 if attempt < MAX_RETRIES:
                     logger.warning(
-                        f"DaisySMS attempt {attempt}/{MAX_RETRIES} failed "
-                        f"({type(e).__name__}). Retrying in {RETRY_WAIT}s..."
+                        "DaisySMS attempt %d/%d failed (%s). Retrying in %ds...",
+                        attempt, MAX_RETRIES, type(e).__name__, RETRY_WAIT,
                     )
                     time.sleep(RETRY_WAIT)
 
-        # All attempts failed - raise the last error so callers handle it
         raise last_exc
 
-    def _get_price_map(self, country=COUNTRY_USA):
+    def _get_price_map(self, country: int = COUNTRY_USA) -> dict:
         """Return {service_code: {cost, count}} for a country."""
         data = json.loads(
             self._request({"action": "getPrices", "country": country}).text
@@ -83,7 +80,7 @@ class DaisySMSProvider:
         if not isinstance(data, dict):
             return {}
 
-        # Shape A: {service: {cost, count}} (what getPrices returns with country param)
+        # Shape A: {service: {cost, count}}
         sample = next(iter(data.values()), None)
         if isinstance(sample, dict) and ("cost" in sample or "count" in sample):
             return data
@@ -96,19 +93,19 @@ class DaisySMSProvider:
     # Account
     # ------------------------------------------------------------------
 
-    def check_balance(self):
+    def check_balance(self) -> float:
         """Balance in dollars."""
         result = self._request({"action": "getBalance"}).text
         if result.startswith("ACCESS_BALANCE:"):
             return float(result.split(":")[1])
-        raise Exception(f"Unexpected balance response: {result}")
+        raise DaisySMSError(f"Unexpected balance response: {result}")
 
     # ------------------------------------------------------------------
     # Catalog / prices / stock
     # ------------------------------------------------------------------
 
-    def get_services(self):
-        """All services available for USA: [{"code": "whatsapp", "name": "Whatsapp"}, ...]"""
+    def get_services(self) -> list:
+        """All services available for USA: [{"code": ..., "name": ...}, ...]"""
         try:
             data = self._get_price_map(COUNTRY_USA)
             services = [
@@ -118,11 +115,12 @@ class DaisySMSProvider:
             if services:
                 return services
         except Exception as e:
-            logger.error(f"Failed to fetch DaisySMS services: {e}")
+            logger.error("Failed to fetch DaisySMS services: %s", e)
         return []
 
-    def check_stock(self, service, country=COUNTRY_USA, max_price=None):
-        """{"available": count, "price": cost} - count is capped at 100 by Daisy."""
+    def check_stock(self, service: str, country: int = COUNTRY_USA,
+                    max_price=None) -> dict:
+        """{"available": count, "price": cost} - count capped at 100 by Daisy."""
         try:
             info = self._get_price_map(country).get(service)
             if info:
@@ -132,34 +130,31 @@ class DaisySMSProvider:
                 }
             return {"available": 0, "price": 0}
         except Exception as e:
-            logger.error(f"Failed to check DaisySMS stock: {e}")
+            logger.error("Failed to check DaisySMS stock: %s", e)
             return {"available": 0, "error": "Unable to check stock"}
 
-    def get_price(self, service, country=COUNTRY_USA):
+    def get_price(self, service: str, country: int = COUNTRY_USA) -> dict:
         """{"success": bool, "price_usd": float}"""
         try:
             cost = self._get_price_map(country).get(service, {}).get("cost", 0)
             if cost:
                 return {"success": True, "price_usd": float(cost)}
         except Exception as e:
-            logger.error(f"Failed to get DaisySMS price: {e}")
+            logger.error("Failed to get DaisySMS price: %s", e)
         return {"success": False, "price_usd": 0}
 
     # ------------------------------------------------------------------
     # Orders
     # ------------------------------------------------------------------
 
-    def purchase(self, service, country=COUNTRY_USA, max_price=None, areas=None, carriers=None):
+    def purchase(self, service: str, country: int = COUNTRY_USA,
+                 max_price=None, areas=None, carriers=None) -> dict:
         """
         Rent a number.
         Returns: {"order_id", "phone_number", "status": "waiting", "price_usd"}
-        Raises Exception with a friendly message on NO_NUMBERS / NO_MONEY / etc.
+        Raises DaisySMSError with a friendly message on NO_NUMBERS / NO_MONEY etc.
         """
-        params = {
-            "action": "getNumber",
-            "service": service,
-            "country": country,
-        }
+        params = {"action": "getNumber", "service": service, "country": country}
         if max_price:
             params["max_price"] = max_price
         if areas:
@@ -176,14 +171,16 @@ class DaisySMSProvider:
                 "order_id": parts[1],
                 "phone_number": parts[2],
                 "status": "waiting",
-                "price_usd": float(response.headers["X-Price"])
-                if response.headers.get("X-Price")
-                else None,
+                "price_usd": (
+                    float(response.headers["X-Price"])
+                    if response.headers.get("X-Price")
+                    else None
+                ),
             }
 
-        raise Exception(f"DaisySMS purchase failed: {ERRORS.get(result.strip(), result.strip())}")
+        raise DaisySMSError(f"DaisySMS purchase failed: {_friendly_error(result)}")
 
-    def check_sms(self, order_id, full_text=True):
+    def check_sms(self, order_id: str, full_text: bool = True) -> dict:
         """
         Poll for the SMS code (every 3s+ recommended by Daisy).
         full_text=True also returns the entire message via the X-Text header.
@@ -201,32 +198,27 @@ class DaisySMSProvider:
                 "sms": result.split(":", 1)[1],
                 "full_sms": response.headers.get("X-Text"),
             }
-        elif result == "STATUS_WAIT_CODE":
+        if result == "STATUS_WAIT_CODE":
             return {"status": "waiting"}
-        elif result == "STATUS_CANCEL":
+        if result == "STATUS_CANCEL":
             return {"status": "cancelled"}
-        elif result == "NO_ACTIVATION":
+        if result == "NO_ACTIVATION":
             return {"status": "error", "message": "Invalid order ID"}
-        else:
-            return {"status": "waiting"}
+        return {"status": "waiting"}
 
-    def cancel_order(self, order_id):
+    def cancel_order(self, order_id: str) -> dict:
         """Cancel rental, refund to balance."""
         result = self._request({
-            "action": "setStatus",
-            "id": order_id,
-            "status": 8,
+            "action": "setStatus", "id": order_id, "status": 8,
         }).text
 
         if result == "ACCESS_CANCEL":
             return {"success": True}
-        return {"success": False, "error": ERRORS.get(result.strip(), result.strip())}
+        return {"success": False, "error": _friendly_error(result)}
 
-    def mark_done(self, order_id):
+    def mark_done(self, order_id: str) -> bool:
         """Mark rental done (frees up your 20-active-rental slot)."""
         result = self._request({
-            "action": "setStatus",
-            "id": order_id,
-            "status": 6,
+            "action": "setStatus", "id": order_id, "status": 6,
         }).text
         return result == "ACCESS_ACTIVATION"
