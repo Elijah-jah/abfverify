@@ -13,7 +13,7 @@ from requests.exceptions import ConnectionError, Timeout
 
 logger = logging.getLogger(__name__)
 
-BASE_URL = "https://long-lake-89d0daisy-relay.semilorevictor72.workers.dev/stubs/handler_api.php"
+BASE_URL = "https://daisysms.io/stubs/handler_api.php"
 COUNTRY_USA = 187  # USA code in sms-activate compatible API
 
 MAX_RETRIES = 3   # total attempts per request
