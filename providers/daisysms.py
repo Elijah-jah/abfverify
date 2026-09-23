@@ -5,6 +5,7 @@ Docs: https://daisysms.io/docs/api
 
 import json
 import logging
+import os
 import time
 
 import requests
@@ -17,6 +18,16 @@ COUNTRY_USA = 187  # USA code in sms-activate compatible API
 
 MAX_RETRIES = 3   # total attempts per request
 RETRY_WAIT = 2    # seconds between attempts
+
+# Browser-like User-Agent - the default "python-requests/x.y" UA is
+# blocked by Cloudflare / the origin WAF (returns 403 Forbidden).
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/131.0.0.0 Safari/537.36"
+    )
+}
 
 # Raw provider errors -> friendly messages
 ERRORS = {
@@ -42,8 +53,15 @@ def _friendly_error(raw: str) -> str:
 
 
 class DaisySMSProvider:
-    def __init__(self, api_key: str):
-        self.api_key = api_key
+    def __init__(self, api_key: str = None):
+        # Key can be passed explicitly, otherwise read from the environment.
+        # Set DAISYSMS_API_KEY in your Render dashboard / .env file.
+        self.api_key = api_key or os.environ.get("DAISYSMS_API_KEY")
+        if not self.api_key:
+            raise DaisySMSError(
+                "No DaisySMS API key provided. Set the DAISYSMS_API_KEY "
+                "environment variable or pass api_key= explicitly."
+            )
 
     # ------------------------------------------------------------------
     # Low level
@@ -56,7 +74,12 @@ class DaisySMSProvider:
         last_exc = None
         for attempt in range(1, MAX_RETRIES + 1):
             try:
-                response = requests.get(BASE_URL, params=params, timeout=30)
+                response = requests.get(
+                    BASE_URL,
+                    params=params,
+                    headers=HEADERS,
+                    timeout=30,
+                )
                 response.raise_for_status()
                 if response.text.strip() == "BAD_KEY":
                     raise PermissionError("DaisySMS rejected the API key (BAD_KEY)")
