@@ -68,10 +68,11 @@ class DaisySMSProvider:
     # ------------------------------------------------------------------
 
     def _request(self, params: dict) -> requests.Response:
-        """GET the API with retries on transient network failures."""
+        """GET the DaisySMS API with diagnostics and retries."""
         params = {**params, "api_key": self.api_key}
 
         last_exc = None
+
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 response = requests.get(
@@ -80,16 +81,46 @@ class DaisySMSProvider:
                     headers=HEADERS,
                     timeout=30,
                 )
+
+                # Log provider response before raise_for_status()
+                logger.warning(
+                    "DaisySMS response: status=%s, content_type=%s, body=%s",
+                    response.status_code,
+                    response.headers.get("Content-Type"),
+                    response.text[:1000],
+                )
+
+                # Specifically expose 403 details
+                if response.status_code == 403:
+                    logger.error(
+                        "DaisySMS 403 FORBIDDEN. "
+                        "URL=%s",
+                        response.url.replace(self.api_key, "***HIDDEN***"),
+                    )
+                    raise DaisySMSError(
+                        "DaisySMS rejected the server request with HTTP 403 Forbidden"
+                    )
+
                 response.raise_for_status()
+
                 if response.text.strip() == "BAD_KEY":
-                    raise PermissionError("DaisySMS rejected the API key (BAD_KEY)")
+                    raise PermissionError(
+                        "DaisySMS rejected the API key (BAD_KEY)"
+                    )
+
                 return response
+
             except (ConnectionError, Timeout) as e:
                 last_exc = e
+
                 if attempt < MAX_RETRIES:
                     logger.warning(
-                        "DaisySMS attempt %d/%d failed (%s). Retrying in %ds...",
-                        attempt, MAX_RETRIES, type(e).__name__, RETRY_WAIT,
+                        "DaisySMS attempt %d/%d failed (%s). "
+                        "Retrying in %ds...",
+                        attempt,
+                        MAX_RETRIES,
+                        type(e).__name__,
+                        RETRY_WAIT,
                     )
                     time.sleep(RETRY_WAIT)
 
