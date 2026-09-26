@@ -54,22 +54,16 @@ def _friendly_error(raw: str) -> str:
 
 class DaisySMSProvider:
     def __init__(self, api_key: str = None):
-        # Key can be passed explicitly, otherwise read from the environment.
-        # Set DAISYSMS_API_KEY in your Render dashboard / .env file.
-        self.api_key = api_key or os.environ.get("DAISYSMS_API_KEY")
-        if not self.api_key:
-            raise DaisySMSError(
-                "No DaisySMS API key provided. Set the DAISYSMS_API_KEY "
-                "environment variable or pass api_key= explicitly."
-            )
-
+    # The API key is stored securely inside the Cloudflare Worker.
+    # Render does not need to send it to the Worker.
+        self.api_key = None
     # ------------------------------------------------------------------
     # Low level
     # ------------------------------------------------------------------
 
     def _request(self, params: dict) -> requests.Response:
         """GET the DaisySMS API with diagnostics and retries."""
-        params = {**params, "api_key": self.api_key}
+        params = dict(params)
 
         last_exc = None
 
