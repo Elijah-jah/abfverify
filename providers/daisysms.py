@@ -87,9 +87,8 @@ class DaisySMSProvider:
                 # Specifically expose 403 details
                 if response.status_code == 403:
                     logger.error(
-                        "DaisySMS 403 FORBIDDEN. "
-                        "URL=%s",
-                        response.url.replace(self.api_key, "***HIDDEN***"),
+                        "DaisySMS 403 FORBIDDEN. URL=%s",
+                        response.url,
                     )
                     raise DaisySMSError(
                         "DaisySMS rejected the server request with HTTP 403 Forbidden"
