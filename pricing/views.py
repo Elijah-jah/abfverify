@@ -10,7 +10,7 @@ from .services import PricingService
 def get_live_price(request):
     country_id = request.GET.get("country")
     service_id = request.GET.get("service")
-    server = request.GET.get("server", "server3")  # ADD THIS
+    server = request.GET.get("server", "server2")
 
     if not country_id or not service_id:
         return JsonResponse(

@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 @login_required
 def get_countries(request):
     """Return countries for selected server."""
-    server = request.GET.get("server", "server3")
+    server = request.GET.get("server", "server2")
     
     countries = Country.objects.filter(
         status="active",
@@ -34,7 +34,7 @@ def get_countries(request):
 @login_required
 def get_services(request):
     """Return services for selected server."""
-    server = request.GET.get("server", "server3")
+    server = request.GET.get("server", "server2")
     
     services = Service.objects.filter(
         status="active",
@@ -177,7 +177,7 @@ def check_sms(request):
 def get_price(request):
     country_id = request.GET.get("country")
     service_id = request.GET.get("service")
-    server = request.GET.get("server", "server3")
+    server = request.GET.get("server", "server2")
 
     if not country_id or not service_id:
         return JsonResponse({
@@ -244,7 +244,7 @@ def get_price(request):
 def check_stock(request):
     country_id = request.GET.get("country")
     service_id = request.GET.get("service")
-    server = request.GET.get("server", "server3")
+    server = request.GET.get("server", "server2")
 
     if not country_id or not service_id:
         return JsonResponse({
@@ -261,11 +261,6 @@ def check_stock(request):
             # DaisySMS
             service_identifier = service.code
             country_identifier = 187
-
-        elif server == "server3":
-            # PVAPins
-            service_identifier = service.code
-            country_identifier = country.iso_code
 
         else:
             service_identifier = service.provider_id

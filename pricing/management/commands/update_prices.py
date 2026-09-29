@@ -1,5 +1,3 @@
-import time
-
 from django.core.management.base import BaseCommand
 
 from countries.models import Country
@@ -7,18 +5,12 @@ from services.models import Service
 from pricing.models import Pricing
 from pricing.services import PricingService
 from providers.factory import get_provider
-from providers.pvapins import PVAPinsProvider
 
 
 class Command(BaseCommand):
-    help = "Update all prices from providers (server3 uses PVAPins REST bulk rates)"
+    help = "Update all prices from providers (server2 uses DaisySMS bulk getPrices)"
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            "--country",
-            type=str,
-            help="Only update this country name, e.g. --country USA",
-        )
         parser.add_argument(
             "--dry-run",
             action="store_true",
@@ -29,11 +21,10 @@ class Command(BaseCommand):
         self.dry_run = options["dry_run"]
 
         self._update_server2()
-        self._update_server3(country_filter=options["country"])
 
         self.stdout.write(self.style.SUCCESS("Price update complete!"))
 
-    # ==================== server2 (unchanged) ====================
+    # ==================== server2 (DaisySMS bulk) ====================
 
     def _update_server2(self):
         server = "server2"
@@ -43,62 +34,46 @@ class Command(BaseCommand):
         except ValueError:
             return
 
-        countries = Country.objects.filter(status="active", server=server)
-        services = Service.objects.filter(status="active", server=server)
+        # ONE API call per country instead of one per service
+        try:
+            rates = provider.get_all_prices(187)  # USA
+        except PermissionError as e:
+            self.stdout.write(self.style.ERROR(
+                f"DaisySMS auth failed: {e}"
+            ))
+            return
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(
+                f"DaisySMS price fetch failed: {e}"
+            ))
+            return
 
-        for country in countries:
-            for service in services:
-                try:
-                    PricingService.update_price(
-                        country=country,
-                        service=service,
-                        server=server,
-                    )
-                    self.stdout.write(self.style.SUCCESS(
-                        "Updated: " + server + " | " + country.name + " | " + service.name
-                    ))
-                except Exception as e:
-                    self.stdout.write(self.style.ERROR(
-                        "Failed: " + server + " | " + country.name + " | " + service.name + " | " + str(e)
-                    ))
+        # rates = {"7eleven": {"cost": 0.45, "count": 38}, ...}
+        rates_by_code = {
+            code: info.get("cost", 0)
+            for code, info in rates.items()
+            if info.get("cost")
+        }
 
-    # ==================== server3 (PVAPins REST bulk) ====================
-
-    def _update_server3(self, country_filter=None):
-        server = "server3"
-        provider = PVAPinsProvider()
-
-        countries = Country.objects.filter(status="active", server=server)
-        if country_filter:
-            countries = countries.filter(name__iexact=country_filter)
-
-        # Map of active services by PVAPins code for fast matching
         active_services = {
             s.code.strip().lower(): s
             for s in Service.objects.filter(status="active", server=server)
             if s.code
         }
 
-        for country in countries:
-            try:
-                # Paginated provider calls, one country at a time
-                rates = provider.get_operator_rates(country.iso_code)
-            except Exception as e:
-                self.stdout.write(self.style.ERROR(
-                    f"Rates failed: {country.name} | {e}"
-                ))
-                continue
+        countries = Country.objects.filter(status="active", server=server)
 
+        for country in countries:
             matched = 0
             unmatched_ids = []
 
             for code_lower, service in active_services.items():
-                if code_lower in rates:
+                if code_lower in rates_by_code:
                     if not self.dry_run:
                         PricingService.update_price_from_rate(
                             country=country,
                             service=service,
-                            price_usd=str(rates[code_lower]),
+                            price_usd=str(rates_by_code[code_lower]),
                             server=server,
                         )
                     matched += 1
@@ -115,6 +90,3 @@ class Command(BaseCommand):
             self.stdout.write(
                 f"{country.name}: {matched}/{len(active_services)} services priced"
             )
-
-            # Stay well under the 60/min rate limit
-            time.sleep(1)

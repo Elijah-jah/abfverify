@@ -1,9 +1,9 @@
 from providers.instantnums import InstantNumsProvider
 from providers.daisysms import DaisySMSProvider
-from providers.pvapins import PVAPinsProvider
 
 
-def get_provider(server="server3"):
+
+def get_provider(server="server2"):
     """
     Servers:
     - server1: General (placeholder)
@@ -14,7 +14,6 @@ def get_provider(server="server3"):
     providers = {
         "server1": None,
         "server2": DaisySMSProvider,
-        "server3": PVAPinsProvider,
     }
 
     provider_class = providers.get(server.lower())

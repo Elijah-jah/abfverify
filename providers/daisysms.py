@@ -5,7 +5,6 @@ Docs: https://daisysms.io/docs/api
 
 import json
 import logging
-import os
 import time
 
 import requests
@@ -13,21 +12,11 @@ from requests.exceptions import ConnectionError, Timeout
 
 logger = logging.getLogger(__name__)
 
-BASE_URL = "https://rapid-flower-3ff8abfverify-daisy-proxy.semilorevictor72.workers.dev"
+BASE_URL = "https://daisysms.io/stubs/handler_api.php"
 COUNTRY_USA = 187  # USA code in sms-activate compatible API
 
 MAX_RETRIES = 3   # total attempts per request
 RETRY_WAIT = 2    # seconds between attempts
-
-# Browser-like User-Agent - the default "python-requests/x.y" UA is
-# blocked by Cloudflare / the origin WAF (returns 403 Forbidden).
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/131.0.0.0 Safari/537.36"
-    )
-}
 
 # Raw provider errors -> friendly messages
 ERRORS = {
@@ -53,17 +42,18 @@ def _friendly_error(raw: str) -> str:
 
 
 class DaisySMSProvider:
-    def __init__(self, api_key: str = None):
-    # The API key is stored securely inside the Cloudflare Worker.
-    # Render does not need to send it to the Worker.
-        self.api_key = None
+    def __init__(self, api_key: str):
+        # Your DaisySMS API key is required and sent with every request.
+        self.api_key = api_key
+
     # ------------------------------------------------------------------
     # Low level
     # ------------------------------------------------------------------
 
     def _request(self, params: dict) -> requests.Response:
-        """GET the DaisySMS API with diagnostics and retries."""
+        """GET the DaisySMS API with retries."""
         params = dict(params)
+        params["api_key"] = self.api_key
 
         last_exc = None
 
@@ -72,26 +62,19 @@ class DaisySMSProvider:
                 response = requests.get(
                     BASE_URL,
                     params=params,
-                    headers=HEADERS,
                     timeout=30,
                 )
 
-                # Log provider response before raise_for_status()
-                logger.warning(
-                    "DaisySMS response: status=%s, content_type=%s, body=%s",
+                logger.info(
+                    "DaisySMS response: status=%s body=%s",
                     response.status_code,
-                    response.headers.get("Content-Type"),
                     response.text[:1000],
                 )
 
-                # Specifically expose 403 details
-                if response.status_code == 403:
-                    logger.error(
-                        "DaisySMS 403 FORBIDDEN. URL=%s",
-                        response.url,
-                    )
-                    raise DaisySMSError(
-                        "DaisySMS rejected the server request with HTTP 403 Forbidden"
+                if response.status_code == 401:
+                    raise PermissionError(
+                        "DaisySMS rejected the API key (401 WRONG_API_KEY). "
+                        "Check your DaisySMS dashboard key."
                     )
 
                 response.raise_for_status()
@@ -189,6 +172,13 @@ class DaisySMSProvider:
         except Exception as e:
             logger.error("Failed to get DaisySMS price: %s", e)
         return {"success": False, "price_usd": 0}
+
+    def get_all_prices(self, country: int = COUNTRY_USA) -> dict:
+        """
+        One-shot price map: {"service_code": {"cost": float, "count": int}}.
+        Use this for bulk updates instead of calling get_price() per service.
+        """
+        return self._get_price_map(country)
 
     # ------------------------------------------------------------------
     # Orders

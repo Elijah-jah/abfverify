@@ -7,7 +7,7 @@ from providers.factory import get_provider
 class PricingService:
 
     @staticmethod
-    def update_price(country, service, server="server3"):
+    def update_price(country, service, server="server2"):
         """
         Fetch the latest provider price,
         convert it to NGN,
@@ -35,9 +35,7 @@ class PricingService:
         if server == "server2":
             service_identifier = service.code  # DaisySMS
             country_identifier = 187  # USA is always 187 for DaisySMS
-        elif server == "server3":
-            service_identifier = service.code       # PVAPins: wa, tg, go...
-            country_identifier = country.iso_code   # PVAPins REST: US, GB...
+
         else:
             service_identifier = service.provider_id
             country_identifier = country.provider_id
@@ -101,10 +99,10 @@ class PricingService:
         return pricing
 
     @staticmethod
-    def update_price_from_rate(country, service, price_usd, server="server3"):
+    def update_price_from_rate(country, service, price_usd, server="server2"):
         """
         Update a Pricing row when the USD price is already known
-        (used by the bulk PVAPins rates update).
+        (used by the bulk server2 and server3 rates updates).
 
         NOTE: when we add per-server profit, update this AND update_price
         together — the profit math is intentionally mirrored here.

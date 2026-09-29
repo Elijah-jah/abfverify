@@ -112,10 +112,10 @@ def sms_view(request):
     if request.method == "POST":
 
         # Get server selection
-        server = request.POST.get("server", "server3")
+        server = request.POST.get("server", "server2")
 
         # Validate server
-        if server not in ("server1", "server2", "server3"):
+        if server not in ("server1", "server2"):
             messages.error(request, "Invalid server selected.")
             return redirect("sms")
 
@@ -190,12 +190,6 @@ def sms_view(request):
         if server == "server2":
             service_identifier = service.code
             country_identifier = 187
-        elif server == "server3":
-            service_identifier = service.code       # PVAPins: wa, tg...
-            country_identifier = country.iso_code   # PVAPins: US, GB...
-        else:
-            service_identifier = service.provider_id
-            country_identifier = country.provider_id
 
         try:
             # Check provider stock
