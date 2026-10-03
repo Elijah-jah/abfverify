@@ -67,12 +67,7 @@ class DaisySMSProvider:
     # ------------------------------------------------------------------
 
     def _request(self, params: dict) -> requests.Response:
-        """GET the DaisySMS API with retries.
-
-        Retries on connection errors/timeouts AND on 403 responses, since
-        DaisySMS sits behind Cloudflare which intermittently challenges
-        datacenter IPs. Browser-like headers reduce how often that happens.
-        """
+        """GET the DaisySMS API with retries."""
         params = dict(params)
         params["api_key"] = self.api_key
 
