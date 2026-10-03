@@ -1,10 +1,13 @@
 """DaisySMS provider - sms-activate compatible API.
 
 Docs: https://daisysms.io/docs/api
+Rebuilt with: session persistence, exponential backoff + jitter,
+Cloudflare 403 detection/retry, and request rate limiting.
 """
 
 import json
 import logging
+import random
 import time
 
 import requests
@@ -15,23 +18,36 @@ logger = logging.getLogger(__name__)
 BASE_URL = "https://daisysms.io/stubs/handler_api.php"
 COUNTRY_USA = 187  # USA code in sms-activate compatible API
 
-MAX_RETRIES = 3   # total attempts per request
-RETRY_WAIT = 2    # seconds between attempts
+MAX_RETRIES = 4            # total attempts per request
+BASE_RETRY_WAIT = 2        # base seconds for exponential backoff
+JITTER_RANGE = (0, 1.5)    # random extra seconds to avoid thundering herd
+MIN_REQUEST_INTERVAL = 1.0  # min seconds between API calls (rate limit courtesy)
 
-# Browser-like headers so Cloudflare is less likely to flag datacenter traffic
-HEADERS = {
+# Realistic browser headers — datacenter requests with default python-requests
+# headers are the #1 thing Cloudflare's bot score flags.
+BROWSER_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/129.0.0.0 Safari/537.36"
     ),
-    "Accept": "*/*",
+    "Accept": "application/json, text/plain, */*",
     "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-origin",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+    "Referer": "https://daisysms.io/",
 }
 
 # Raw provider errors -> friendly messages
 ERRORS = {
     "BAD_KEY": "Invalid DaisySMS API key",
+    "WRONG_API_KEY": "Invalid DaisySMS API key",
     "NO_NUMBERS": "No numbers available for this service right now",
     "NO_MONEY": "Insufficient DaisySMS balance - top up your account",
     "MAX_PRICE_EXCEEDED": "Current price is above the allowed max_price",
@@ -43,9 +59,17 @@ ERRORS = {
     "ACCESS_READY": "Rental already completed",
 }
 
+# Errors that should NOT trigger a retry (permanent failures)
+NON_RETRYABLE = {"BAD_KEY", "WRONG_API_KEY", "NO_MONEY", "TOO_MANY_ACTIVE_RENTALS"}
+
 
 class DaisySMSError(Exception):
     """Raised when DaisySMS returns a business-logic error."""
+
+    def __init__(self, message: str, raw: str = "", retryable: bool = False):
+        super().__init__(message)
+        self.raw = raw
+        self.retryable = retryable
 
 
 def _friendly_error(raw: str) -> str:
@@ -54,54 +78,100 @@ def _friendly_error(raw: str) -> str:
 
 def _is_cloudflare_challenge(text: str) -> bool:
     """Detect Cloudflare 'Just a moment...' interstitial pages."""
-    return "<title>Just a moment" in text or "challenges.cloudflare.com" in text
+    return (
+        "<title>Just a moment" in text
+        or "challenges.cloudflare.com" in text
+        or "cf-mitigated" in text.lower()
+    )
+
+
+def _is_non_retryable(text: str) -> bool:
+    """True if the body is a known permanent-failure error code."""
+    return text.strip() in NON_RETRYABLE
 
 
 class DaisySMSProvider:
+    """DaisySMS API client.
+
+    Keeps a persistent requests.Session so Cloudflare sees consistent
+    cookies/headers across calls from the same process.
+    """
+
     def __init__(self, api_key: str):
-        # Your DaisySMS API key is required and sent with every request.
         self.api_key = api_key
+        self._session = requests.Session()
+        self._session.headers.update(BROWSER_HEADERS)
+        self._last_request_at = 0.0
 
     # ------------------------------------------------------------------
     # Low level
     # ------------------------------------------------------------------
 
+    def _wait_for_rate_limit(self):
+        """Enforce a minimum gap between requests."""
+        elapsed = time.monotonic() - self._last_request_at
+        if elapsed < MIN_REQUEST_INTERVAL:
+            time.sleep(MIN_REQUEST_INTERVAL - elapsed)
+        self._last_request_at = time.monotonic()
+
     def _request(self, params: dict) -> requests.Response:
-        """GET the DaisySMS API with retries."""
+        """GET the DaisySMS API with exponential backoff + jitter.
+
+        Retries on: connection errors, timeouts, HTTP 5xx, and 403
+        Cloudflare challenges (intermittent per-IP).
+        Does NOT retry: permanent business errors (BAD_KEY, NO_MONEY, etc.)
+        """
         params = dict(params)
         params["api_key"] = self.api_key
 
         last_exc = None
 
         for attempt in range(1, MAX_RETRIES + 1):
+            self._wait_for_rate_limit()
+
             try:
-                response = requests.get(
+                response = self._session.get(
                     BASE_URL,
                     params=params,
-                    headers=HEADERS,
                     timeout=30,
                 )
 
                 logger.info(
-                    "DaisySMS response: status=%s body=%s",
+                    "DaisySMS %s: status=%s body=%s",
+                    params.get("action"),
                     response.status_code,
-                    response.text[:1000],
+                    response.text[:500],
                 )
 
+                # --- Hard auth failures: never retry ---
                 if response.status_code == 401:
                     raise PermissionError(
-                        "DaisySMS rejected the API key (401 WRONG_API_KEY). "
+                        "DaisySMS rejected the API key (401). "
                         "Check your DaisySMS dashboard key."
                     )
 
-                # Cloudflare intermittently blocks datacenter IPs with a 403
-                # challenge page — retry instead of failing immediately.
+                body = response.text.strip()
+
+                if body in ("BAD_KEY", "WRONG_API_KEY"):
+                    raise PermissionError(
+                        "DaisySMS rejected the API key (BAD_KEY)"
+                    )
+
+                if _is_non_retryable(body):
+                    raise DaisySMSError(
+                        f"DaisySMS error: {_friendly_error(body)}",
+                        raw=body,
+                        retryable=False,
+                    )
+
+                # --- Cloudflare 403 challenge: retry with backoff ---
                 if response.status_code == 403:
                     if _is_cloudflare_challenge(response.text):
                         last_exc = DaisySMSError(
                             "DaisySMS blocked by Cloudflare (403). "
                             "Contact DaisySMS support to whitelist your "
-                            "server IP."
+                            "server IP.",
+                            retryable=True,
                         )
                     else:
                         last_exc = HTTPError(
@@ -109,40 +179,32 @@ class DaisySMSProvider:
                         )
 
                     if attempt < MAX_RETRIES:
+                        wait = BASE_RETRY_WAIT * (2 ** (attempt - 1)) + random.uniform(*JITTER_RANGE)
                         logger.warning(
-                            "DaisySMS attempt %d/%d blocked (403). "
-                            "Retrying in %ds...",
-                            attempt,
-                            MAX_RETRIES,
-                            RETRY_WAIT,
+                            "DaisySMS %s attempt %d/%d blocked (403). "
+                            "Retrying in %.1fs...",
+                            params.get("action"), attempt, MAX_RETRIES, wait,
                         )
-                        time.sleep(RETRY_WAIT)
+                        time.sleep(wait)
                         continue
 
                     raise last_exc
 
                 response.raise_for_status()
-
-                if response.text.strip() == "BAD_KEY":
-                    raise PermissionError(
-                        "DaisySMS rejected the API key (BAD_KEY)"
-                    )
-
                 return response
 
             except (ConnectionError, Timeout) as e:
                 last_exc = e
 
                 if attempt < MAX_RETRIES:
+                    wait = BASE_RETRY_WAIT * (2 ** (attempt - 1)) + random.uniform(*JITTER_RANGE)
                     logger.warning(
-                        "DaisySMS attempt %d/%d failed (%s). "
-                        "Retrying in %ds...",
-                        attempt,
-                        MAX_RETRIES,
-                        type(e).__name__,
-                        RETRY_WAIT,
+                        "DaisySMS %s attempt %d/%d failed (%s). "
+                        "Retrying in %.1fs...",
+                        params.get("action"), attempt, MAX_RETRIES,
+                        type(e).__name__, wait,
                     )
-                    time.sleep(RETRY_WAIT)
+                    time.sleep(wait)
 
         raise last_exc
 
