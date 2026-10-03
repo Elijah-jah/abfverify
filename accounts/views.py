@@ -192,16 +192,6 @@ def sms_view(request):
             country_identifier = 187
 
         try:
-            # Check provider stock
-            stock = provider.check_stock(
-                service=service_identifier,
-                country=country_identifier,
-            )
-
-            if stock.get("available", 0) <= 0:
-                messages.error(request, "This service is currently out of stock.")
-                return redirect("sms")
-
             # Purchase number from provider
             result = provider.purchase(
                 service=service_identifier,

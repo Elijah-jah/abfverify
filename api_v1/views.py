@@ -214,7 +214,6 @@ def get_price(request):
                 "success": True,
                 "selling_price": str(pricing.selling_price),
                 "provider_cost": str(pricing.provider_cost),
-                "available": pricing.is_available,
             })
 
         except Pricing.DoesNotExist:
@@ -228,7 +227,6 @@ def get_price(request):
                 "success": True,
                 "selling_price": str(pricing.selling_price),
                 "provider_cost": str(pricing.provider_cost),
-                "available": True,
             })
 
     except Exception as e:
@@ -237,62 +235,4 @@ def get_price(request):
             "success": False,
             "price": 0,
             "error": "Price temporarily unavailable",
-        })
-
-
-@login_required
-def check_stock(request):
-    country_id = request.GET.get("country")
-    service_id = request.GET.get("service")
-    server = request.GET.get("server", "server2")
-
-    if not country_id or not service_id:
-        return JsonResponse({
-            "success": False,
-            "available": 0,
-            "error": "Missing country or service",
-        })
-
-    try:
-        country = Country.objects.get(id=country_id)
-        service = Service.objects.get(id=service_id)
-
-        if server == "server2":
-            # DaisySMS
-            service_identifier = service.code
-            country_identifier = 187
-
-        else:
-            service_identifier = service.provider_id
-            country_identifier = country.provider_id
-
-        provider = get_provider(server=server)
-
-        result = provider.check_stock(
-            service=service_identifier,
-            country=country_identifier,
-        )
-
-        available = int(result.get("available", 0) or 0)
-
-        logger.info(
-            "Stock check: server=%s country=%s service=%s available=%s",
-            server,
-            country_identifier,
-            service_identifier,
-            available,
-        )
-
-        return JsonResponse({
-            "success": True,
-            "available": available,
-        })
-
-    except Exception as e:
-        logger.exception("Check stock error: %s", e)
-
-        return JsonResponse({
-            "success": False,
-            "available": 0,
-            "error": "Unable to check stock",
         })

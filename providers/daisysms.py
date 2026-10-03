@@ -131,7 +131,7 @@ class DaisySMSProvider:
         raise DaisySMSError(f"Unexpected balance response: {result}")
 
     # ------------------------------------------------------------------
-    # Catalog / prices / stock
+    # Catalog / prices
     # ------------------------------------------------------------------
 
     def get_services(self) -> list:
@@ -147,21 +147,6 @@ class DaisySMSProvider:
         except Exception as e:
             logger.error("Failed to fetch DaisySMS services: %s", e)
         return []
-
-    def check_stock(self, service: str, country: int = COUNTRY_USA,
-                    max_price=None) -> dict:
-        """{"available": count, "price": cost} - count capped at 100 by Daisy."""
-        try:
-            info = self._get_price_map(country).get(service)
-            if info:
-                return {
-                    "available": int(info.get("count", 0)),
-                    "price": float(info.get("cost", 0) or 0),
-                }
-            return {"available": 0, "price": 0}
-        except Exception as e:
-            logger.error("Failed to check DaisySMS stock: %s", e)
-            return {"available": 0, "error": "Unable to check stock"}
 
     def get_price(self, service: str, country: int = COUNTRY_USA) -> dict:
         """{"success": bool, "price_usd": float}"""

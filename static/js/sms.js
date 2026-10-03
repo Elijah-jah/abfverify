@@ -2,7 +2,6 @@ const countrySelect = document.getElementById("countrySelect");
 const serviceSelect = document.getElementById("serviceSelect");
 const serverSelect = document.getElementById("serverSelect");
 const priceDisplay = document.getElementById("priceDisplay");
-const stockDisplay = document.getElementById("stockDisplay");
 const requestBtn = document.getElementById("requestBtn");
 
 
@@ -87,8 +86,6 @@ async function loadServices() {
 if (serverSelect) {
     serverSelect.addEventListener("change", async () => {
         priceDisplay.innerText = "₦0.00";
-        stockDisplay.innerText = "--";
-        requestBtn.disabled = true;
         
         await loadCountries();
         await loadServices();
@@ -133,67 +130,17 @@ async function updatePrice() {
 }
 
 
-// ======================
-// UPDATE STOCK (LIVE - WITH PROPER LOADING & ERROR STATES)
-// ======================
-
-async function updateStock() {
-    const country = countrySelect.value;
-    const service = serviceSelect.value;
-    const server = serverSelect ? serverSelect.value : "server3";
-
-    if (!country || !service) {
-        stockDisplay.innerText = "--";
-        requestBtn.disabled = true;
-        return;
-    }
-
-    // Show "Checking..." while waiting — NOT "Out of Stock"
-    stockDisplay.innerText = "Checking...";
-    requestBtn.disabled = true;
-
-    try {
-        const response = await fetch(
-            `/api/check-stock/?country=${country}&service=${service}&server=${server}`
-        );
-
-        const data = await response.json();
-
-        if (data.success === false) {
-            // API error (timeout, connection issue, provider down)
-            stockDisplay.innerText = "Check failed";
-            requestBtn.disabled = true;
-        } else if (data.available > 0) {
-            // In stock
-            stockDisplay.innerText = `${data.available} Available`;
-            requestBtn.disabled = false;
-        } else {
-            // Genuinely out of stock
-            stockDisplay.innerText = "Out of Stock";
-            requestBtn.disabled = true;
-        }
-
-    } catch (error) {
-        console.error(error);
-        stockDisplay.innerText = "Unavailable";
-        requestBtn.disabled = true;
-    }
-}
-
-
-// Only update price/stock when BOTH country and service are selected
+// Only update price when BOTH country and service are selected
 if (countrySelect && serviceSelect) {
     countrySelect.addEventListener("change", () => {
         if (serviceSelect.value) {
             updatePrice();
-            updateStock();
         }
     });
 
     serviceSelect.addEventListener("change", () => {
         if (countrySelect.value) {
             updatePrice();
-            updateStock();
         }
     });
 }

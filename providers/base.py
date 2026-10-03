@@ -12,9 +12,6 @@ class BaseProvider:
     def get_price(self, service, country):
         raise NotImplementedError
 
-    def check_stock(self, service, country):
-        raise NotImplementedError
-
     def purchase(self, service, country):
         raise NotImplementedError
 
