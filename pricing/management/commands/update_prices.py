@@ -2,13 +2,12 @@ from django.core.management.base import BaseCommand
 
 from countries.models import Country
 from services.models import Service
-from pricing.models import Pricing
 from pricing.services import PricingService
 from providers.factory import get_provider
 
 
 class Command(BaseCommand):
-    help = "Update all prices from providers (server2 uses DaisySMS bulk getPrices)"
+    help = "Update all prices from DaisySMS bulk getPrices and save to database"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -32,9 +31,11 @@ class Command(BaseCommand):
         try:
             provider = get_provider(server=server)
         except ValueError:
+            self.stdout.write(self.style.WARNING("No provider configured for server2"))
             return
 
-        # ONE API call per country instead of one per service
+        # ONE API call for the whole country — the only DaisySMS request
+        # this command ever makes.
         try:
             rates = provider.get_all_prices(187)  # USA
         except PermissionError as e:
@@ -50,7 +51,7 @@ class Command(BaseCommand):
 
         # rates = {"7eleven": {"cost": 0.45, "count": 38}, ...}
         rates_by_code = {
-            code: info.get("cost", 0)
+            code.strip().lower(): info.get("cost", 0)
             for code, info in rates.items()
             if info.get("cost")
         }
@@ -65,7 +66,7 @@ class Command(BaseCommand):
 
         for country in countries:
             matched = 0
-            unmatched_ids = []
+            unmatched = []
 
             for code_lower, service in active_services.items():
                 if code_lower in rates_by_code:
@@ -78,15 +79,14 @@ class Command(BaseCommand):
                         )
                     matched += 1
                 else:
-                    unmatched_ids.append(service.id)
-
-            # One bulk write marks everything not in the rates as unavailable
-            if unmatched_ids and not self.dry_run:
-                Pricing.objects.filter(
-                    country=country,
-                    service_id__in=unmatched_ids,
-                ).update(is_available=False)
+                    unmatched.append(service.code)
 
             self.stdout.write(
                 f"{country.name}: {matched}/{len(active_services)} services priced"
             )
+
+            if unmatched:
+                self.stdout.write(self.style.WARNING(
+                    f"  not in Daisy rates: {', '.join(unmatched[:10])}"
+                    + (" ..." if len(unmatched) > 10 else "")
+                ))

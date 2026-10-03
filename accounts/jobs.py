@@ -15,7 +15,7 @@ scheduler.add_jobstore(DjangoJobStore(), "default")
 @register_job(scheduler, "interval", minutes=1, id="expire_orders", replace_existing=True)
 def expire_orders_job():
     print(">>> SCHEDULER RAN AT", timezone.now(), "<<<")
-    
+
     now = timezone.now()
     expired_count = 0
 
@@ -32,8 +32,8 @@ def expire_orders_job():
             try:
                 provider.cancel_order(order.provider_order_id)
             except Exception as e:
-                logger.warning("Provider cancel failed for expired order %s on server %s: %s", 
-                              order.order_id, order.provider, str(e))
+                logger.warning("Provider cancel failed for expired order %s on server %s: %s",
+                               order.order_id, order.provider, str(e))
 
             order.status = "expired"
             order.save(update_fields=["status", "updated_at"])
@@ -45,14 +45,3 @@ def expire_orders_job():
 
 
 register_events(scheduler)
-
-
-@register_job(scheduler, "interval", days=3, id="update_prices", replace_existing=True)
-def update_prices_job():
-    from django.core.management import call_command
-    print(">>> UPDATING PRICES AT", timezone.now(), "<<<")
-    try:
-        call_command("update_prices")
-        print(">>> PRICE UPDATE COMPLETE <<<")
-    except Exception as e:
-        print(f">>> PRICE UPDATE FAILED: {e} <<<")

@@ -5,12 +5,10 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from countries.models import Country
 from services.models import Service
-from pricing.services import PricingService
 from wallet.models import Wallet, Transaction
 from orders.models import Order
 from providers.factory import get_provider
 from pricing.models import Pricing
-from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -175,9 +173,9 @@ def check_sms(request):
 
 @login_required
 def get_price(request):
+    """Return cached price from database. Never hits the provider."""
     country_id = request.GET.get("country")
     service_id = request.GET.get("service")
-    server = request.GET.get("server", "server2")
 
     if not country_id or not service_id:
         return JsonResponse({
@@ -187,48 +185,22 @@ def get_price(request):
         })
 
     try:
-        country = Country.objects.get(id=country_id)
-        service = Service.objects.get(id=service_id)
-
-        try:
-            pricing = Pricing.objects.get(
-                country=country,
-                service=service,
-                status="active",
-            )
-
-            # === Daisy changes prices often — refresh if cache is older than 6h ===
-            if server == "server2":
-                age = timezone.now() - pricing.updated_at
-                if age > timedelta(hours=6):
-                    try:
-                        pricing = PricingService.update_price(
-                            country=country,
-                            service=service,
-                            server=server,
-                        )
-                    except Exception as e:
-                        logger.warning("Daisy price refresh failed for %s, serving cached: %s", service.code, e)
-
-            return JsonResponse({
-                "success": True,
-                "selling_price": str(pricing.selling_price),
-                "provider_cost": str(pricing.provider_cost),
-            })
-
-        except Pricing.DoesNotExist:
-            # First time only: fetch live from provider and cache it
-            pricing = PricingService.update_price(
-                country=country,
-                service=service,
-                server=server,
-            )
-            return JsonResponse({
-                "success": True,
-                "selling_price": str(pricing.selling_price),
-                "provider_cost": str(pricing.provider_cost),
-            })
-
+        pricing = Pricing.objects.get(
+            country_id=country_id,
+            service_id=service_id,
+            status="active",
+        )
+        return JsonResponse({
+            "success": True,
+            "selling_price": str(pricing.selling_price),
+            "provider_cost": str(pricing.provider_cost),
+        })
+    except Pricing.DoesNotExist:
+        return JsonResponse({
+            "success": False,
+            "price": 0,
+            "error": "Price not available for this service yet",
+        })
     except Exception as e:
         logger.error("Get price error: %s", e)
         return JsonResponse({

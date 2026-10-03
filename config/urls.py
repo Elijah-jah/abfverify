@@ -16,7 +16,6 @@ urlpatterns = [
 
     path("wallet/", include("wallet.urls")),
 
-    path("pricing/", include("pricing.urls")),
 
      # Google Search Console verification
     path('googlef0f70b255124184e.html', TemplateView.as_view(

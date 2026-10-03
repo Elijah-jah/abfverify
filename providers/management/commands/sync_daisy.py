@@ -13,28 +13,21 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         server = "server2"
 
-        # --- Sanity check: provider must answer with this key BEFORE we touch the DB ---
+        # --- ONE API call for all USA services.
+        # This doubles as the sanity check: a bad API key raises
+        # PermissionError from inside _request before any DB writes. ---
         try:
             provider = get_provider(server=server)
-            balance = provider.get_balance() if hasattr(provider, "get_balance") else None
-        except PermissionError as e:
-            raise CommandError(f"DaisySMS rejected the API key: {e}")
-        except Exception as e:
-            raise CommandError(f"Could not reach DaisySMS: {e}")
-
-        if balance is not None:
-            self.stdout.write(f"DaisySMS connected. Balance: {balance}")
-
-        # --- ONE API call for all USA services ---
-        try:
             rates = provider.get_all_prices(USA_COUNTRY_ID)
         except PermissionError as e:
             raise CommandError(f"DaisySMS rejected the API key: {e}")
         except Exception as e:
-            raise CommandError(f"get_all_prices failed: {e}")
+            raise CommandError(f"Could not fetch DaisySMS services: {e}")
 
         if not rates:
             raise CommandError("DaisySMS returned 0 services — aborting without changes.")
+
+        self.stdout.write(f"DaisySMS reachable. {len(rates)} services returned.")
 
         # --- Ensure USA country exists ---
         country, country_created = Country.objects.get_or_create(

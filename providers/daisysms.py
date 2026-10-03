@@ -1,8 +1,13 @@
 """DaisySMS provider - sms-activate compatible API.
 
-Docs: https://daisysms.io/docs/api
-Rebuilt with: session persistence, exponential backoff + jitter,
-Cloudflare 403 detection/retry, and request rate limiting.
+Allowed API actions ONLY:
+  - getNumber      (purchase number)
+  - getStatus      (poll SMS)
+  - setStatus      (cancel / mark done)
+  - getPrices      (bulk price sync — used ONLY by `update_prices` command)
+
+Prices for users are served from the local database (Pricing model).
+No live price/balance/service requests happen during normal site usage.
 """
 
 import json
@@ -23,8 +28,6 @@ BASE_RETRY_WAIT = 2        # base seconds for exponential backoff
 JITTER_RANGE = (0, 1.5)    # random extra seconds to avoid thundering herd
 MIN_REQUEST_INTERVAL = 1.0  # min seconds between API calls (rate limit courtesy)
 
-# Realistic browser headers — datacenter requests with default python-requests
-# headers are the #1 thing Cloudflare's bot score flags.
 # NOTE: "br" (brotli) is intentionally excluded — requests cannot decode it
 # without the brotli package, and an undecoded body breaks error detection.
 BROWSER_HEADERS = {
@@ -95,6 +98,7 @@ def _is_non_retryable(text: str) -> bool:
 class DaisySMSProvider:
     """DaisySMS API client.
 
+    Only purchase / poll / cancel / bulk-price-sync methods remain.
     Keeps a persistent requests.Session so Cloudflare sees consistent
     cookies/headers across calls from the same process.
     """
@@ -210,8 +214,15 @@ class DaisySMSProvider:
 
         raise last_exc
 
-    def _get_price_map(self, country: int = COUNTRY_USA) -> dict:
-        """Return {service_code: {cost, count}} for a country."""
+    # ------------------------------------------------------------------
+    # Price sync — used ONLY by `py manage.py update_prices`
+    # Never called during normal site traffic.
+    # ------------------------------------------------------------------
+
+    def get_all_prices(self, country: int = COUNTRY_USA) -> dict:
+        """
+        One-shot price map: {"service_code": {"cost": float, "count": int}}.
+        """
         data = json.loads(
             self._request({"action": "getPrices", "country": country}).text
         )
@@ -226,52 +237,6 @@ class DaisySMSProvider:
         # Shape B: {country: {service: {cost, count}}}
         inner = data.get(str(country)) or data.get(country) or {}
         return inner if isinstance(inner, dict) else {}
-
-    # ------------------------------------------------------------------
-    # Account
-    # ------------------------------------------------------------------
-
-    def check_balance(self) -> float:
-        """Balance in dollars."""
-        result = self._request({"action": "getBalance"}).text
-        if result.startswith("ACCESS_BALANCE:"):
-            return float(result.split(":")[1])
-        raise DaisySMSError(f"Unexpected balance response: {result}")
-
-    # ------------------------------------------------------------------
-    # Catalog / prices
-    # ------------------------------------------------------------------
-
-    def get_services(self) -> list:
-        """All services available for USA: [{"code": ..., "name": ...}, ...]"""
-        try:
-            data = self._get_price_map(COUNTRY_USA)
-            services = [
-                {"code": code, "name": code.replace("_", " ").title()}
-                for code in data
-            ]
-            if services:
-                return services
-        except Exception as e:
-            logger.error("Failed to fetch DaisySMS services: %s", e)
-        return []
-
-    def get_price(self, service: str, country: int = COUNTRY_USA) -> dict:
-        """{"success": bool, "price_usd": float}"""
-        try:
-            cost = self._get_price_map(country).get(service, {}).get("cost", 0)
-            if cost:
-                return {"success": True, "price_usd": float(cost)}
-        except Exception as e:
-            logger.error("Failed to get DaisySMS price: %s", e)
-        return {"success": False, "price_usd": 0}
-
-    def get_all_prices(self, country: int = COUNTRY_USA) -> dict:
-        """
-        One-shot price map: {"service_code": {"cost": float, "count": int}}.
-        Use this for bulk updates instead of calling get_price() per service.
-        """
-        return self._get_price_map(country)
 
     # ------------------------------------------------------------------
     # Orders
