@@ -25,6 +25,8 @@ MIN_REQUEST_INTERVAL = 1.0  # min seconds between API calls (rate limit courtesy
 
 # Realistic browser headers — datacenter requests with default python-requests
 # headers are the #1 thing Cloudflare's bot score flags.
+# NOTE: "br" (brotli) is intentionally excluded — requests cannot decode it
+# without the brotli package, and an undecoded body breaks error detection.
 BROWSER_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -33,7 +35,7 @@ BROWSER_HEADERS = {
     ),
     "Accept": "application/json, text/plain, */*",
     "Accept-Language": "en-US,en;q=0.9",
-    "Accept-Encoding": "gzip, deflate, br",
+    "Accept-Encoding": "gzip, deflate",
     "Connection": "keep-alive",
     "Upgrade-Insecure-Requests": "1",
     "Sec-Fetch-Dest": "empty",
