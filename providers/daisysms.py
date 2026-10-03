@@ -8,7 +8,7 @@ import logging
 import time
 
 import requests
-from requests.exceptions import ConnectionError, Timeout
+from requests.exceptions import ConnectionError, Timeout, HTTPError
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +17,17 @@ COUNTRY_USA = 187  # USA code in sms-activate compatible API
 
 MAX_RETRIES = 3   # total attempts per request
 RETRY_WAIT = 2    # seconds between attempts
+
+# Browser-like headers so Cloudflare is less likely to flag datacenter traffic
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/129.0.0.0 Safari/537.36"
+    ),
+    "Accept": "*/*",
+    "Accept-Language": "en-US,en;q=0.9",
+}
 
 # Raw provider errors -> friendly messages
 ERRORS = {
@@ -41,6 +52,11 @@ def _friendly_error(raw: str) -> str:
     return ERRORS.get(raw.strip(), raw.strip())
 
 
+def _is_cloudflare_challenge(text: str) -> bool:
+    """Detect Cloudflare 'Just a moment...' interstitial pages."""
+    return "<title>Just a moment" in text or "challenges.cloudflare.com" in text
+
+
 class DaisySMSProvider:
     def __init__(self, api_key: str):
         # Your DaisySMS API key is required and sent with every request.
@@ -51,7 +67,12 @@ class DaisySMSProvider:
     # ------------------------------------------------------------------
 
     def _request(self, params: dict) -> requests.Response:
-        """GET the DaisySMS API with retries."""
+        """GET the DaisySMS API with retries.
+
+        Retries on connection errors/timeouts AND on 403 responses, since
+        DaisySMS sits behind Cloudflare which intermittently challenges
+        datacenter IPs. Browser-like headers reduce how often that happens.
+        """
         params = dict(params)
         params["api_key"] = self.api_key
 
@@ -62,6 +83,7 @@ class DaisySMSProvider:
                 response = requests.get(
                     BASE_URL,
                     params=params,
+                    headers=HEADERS,
                     timeout=30,
                 )
 
@@ -76,6 +98,33 @@ class DaisySMSProvider:
                         "DaisySMS rejected the API key (401 WRONG_API_KEY). "
                         "Check your DaisySMS dashboard key."
                     )
+
+                # Cloudflare intermittently blocks datacenter IPs with a 403
+                # challenge page — retry instead of failing immediately.
+                if response.status_code == 403:
+                    if _is_cloudflare_challenge(response.text):
+                        last_exc = DaisySMSError(
+                            "DaisySMS blocked by Cloudflare (403). "
+                            "Contact DaisySMS support to whitelist your "
+                            "server IP."
+                        )
+                    else:
+                        last_exc = HTTPError(
+                            f"403 Forbidden from DaisySMS: {response.text[:200]}"
+                        )
+
+                    if attempt < MAX_RETRIES:
+                        logger.warning(
+                            "DaisySMS attempt %d/%d blocked (403). "
+                            "Retrying in %ds...",
+                            attempt,
+                            MAX_RETRIES,
+                            RETRY_WAIT,
+                        )
+                        time.sleep(RETRY_WAIT)
+                        continue
+
+                    raise last_exc
 
                 response.raise_for_status()
 
