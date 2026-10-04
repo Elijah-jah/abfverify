@@ -24,6 +24,7 @@ def get_provider(server="server2"):
     if server == "server2":
         from django.conf import settings
         api_key = getattr(settings, "DAISYSMS_API_KEY", "")
-        return provider_class(api_key=api_key)
+        proxy = getattr(settings, "DAISYSMS_PROXY", None)
+        return provider_class(api_key=api_key, proxy=proxy)
 
     return provider_class()
