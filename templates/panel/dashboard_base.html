@@ -4,19 +4,19 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<!-- ADD THESE LINES HERE -->
-    <meta name="description" content="ABFverify - Secure SMS verification and virtual number platform">
-    <meta property="og:title" content="ABFverify">
-    <meta property="og:description" content="Secure SMS verification and virtual number platform">
-    <meta property="og:image" content="{% static 'images/mylogo1.png' %}">
-    <meta name="google-site-verification" content="dB107PkjCje9eLimA_JTSOO689oGJhHYKb1RD-cJY6A" />
-    <!-- Privacy-friendly analytics by Plausible -->
+<meta name="description" content="ABFverify - Secure SMS verification and virtual number platform">
+<meta property="og:title" content="ABFverify">
+<meta property="og:description" content="Secure SMS verification and virtual number platform">
+<meta property="og:image" content="{% static 'images/mylogo1.png' %}">
+<meta name="google-site-verification" content="dB107PkjCje9eLimA_JTSOO689oGJhHYKb1RD-cJY6A" />
+<meta name="theme-color" content="#0b1220">
+
+<!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-XPxZ8G9FaD0vXL5jswvJX.js"></script>
 <script>
   window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
   plausible.init()
 </script>
-
 
 <title>{% block title %}ABFverify{% endblock %}</title>
 
@@ -26,13 +26,13 @@
 <link rel="stylesheet" href="{% static 'css/dashboard_base.css' %}">
 <link rel="stylesheet" href="{% static 'css/logout_modal.css' %}">
 <link rel="stylesheet" href="{% static 'css/toast.css' %}">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
-
 {% block extra_css %}{% endblock %}
+<base target="_blank">
 </head>
 
 <body class="dashboard">
@@ -58,7 +58,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         <button
             onclick="location.href='{% url 'dashboard' %}'"
             class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-            
+
             <i class="fa-solid fa-house"></i>
             <span>Dashboard</span>
 
@@ -67,7 +67,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         <button
             onclick="location.href='{% url 'sms' %}'"
             class="{% if request.resolver_match.url_name == 'sms' %}active{% endif %}">
-            
+
             <i class="fa-solid fa-sim-card"></i>
             <span>Buy Number</span>
 
@@ -76,7 +76,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         <button
             onclick="location.href='{% url 'wallet' %}'"
             class="{% if request.resolver_match.url_name == 'wallet' %}active{% endif %}">
-            
+
             <i class="fa-solid fa-wallet"></i>
             <span>Fund Wallet</span>
 
@@ -85,7 +85,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         <button
             onclick="location.href='{% url 'orders' %}'"
             class="{% if request.resolver_match.url_name == 'orders' %}active{% endif %}">
-            
+
             <i class="fa-solid fa-clipboard-list"></i>
             <span>Orders</span>
 
@@ -94,7 +94,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         <button
             onclick="location.href='{% url 'transactions' %}'"
             class="{% if request.resolver_match.url_name == 'transactions' %}active{% endif %}">
-            
+
             <i class="fa-solid fa-receipt"></i>
             <span>Transactions</span>
 
@@ -103,7 +103,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         <button
             onclick="location.href='{% url 'services' %}'"
             class="{% if request.resolver_match.url_name == 'services' %}active{% endif %}">
-            
+
             <i class="fa-solid fa-chart-line"></i>
             <span>Buy Logs</span>
 
@@ -119,7 +119,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         <button
             type="button"
             class="theme-toggle"
-            id="themeToggle">
+            id="themeToggle"
+            aria-label="Toggle color theme">
 
             <i class="fa-solid fa-moon"></i>
 
@@ -169,7 +170,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
     <!-- TOPBAR -->
     <header class="topbar">
 
-        <button class="hamburger" id="hamburger">☰</button>
+        <button class="hamburger" id="hamburger" aria-label="Open menu">☰</button>
 
         <div class="logos">
             <img src="{% static 'images/mylogo1.png' %}" class="logo-icon" alt="ABFverify Logo">
@@ -181,7 +182,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
             {% block page_title %}
             Dashboard
             {% endblock %}
-        </h1> 
+        </h1>
 
         <div class="topbar-user">
 
@@ -189,7 +190,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
                 ₦{{ user_wallet.balance|floatformat:2 }}
             </div>
 
-            <a href="{% url 'settings' %}" class="profile-icon">
+            <a href="{% url 'settings' %}" class="profile-icon" aria-label="Account settings">
                 <div class="egg-user-avatar">
                     {{ request.user.username|first|upper }}
                 </div>
@@ -198,11 +199,12 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         </div>
 
     </header>
-        <h2 class="section-title">
-{% block section_title %}
-Dashboard
-{% endblock %}
-</h2>
+
+    <h2 class="section-title">
+        {% block section_title %}
+        Dashboard
+        {% endblock %}
+    </h2>
 
     {% block content %}
     <!--
@@ -274,6 +276,7 @@ document.addEventListener("DOMContentLoaded", function () {
     <i class="fa-brands fa-telegram"></i>
     <span class="support-tooltip">Support</span>
 </a>
+
 {% block extra_js %}
 {% endblock %}
 

@@ -1,278 +1,144 @@
-console.log("dashboard_base.js loaded");
+/* =========================================================
+   ABFverify — Dashboard Base JS  (Redesigned)
+   Sidebar / theme / logout modal / notice modal
+========================================================= */
 
+(function () {
+    "use strict";
 
-// =============================
-// SIDEBAR
-// =============================
+    /* =============================
+       SIDEBAR
+    ============================= */
 
-const sidebar = document.getElementById("sidebar");
-const overlay = document.getElementById("overlay");
-const hamburger = document.getElementById("hamburger");
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    const hamburger = document.getElementById("hamburger");
 
-if (hamburger && sidebar && overlay) {
-
-    hamburger.addEventListener("click", function () {
-
+    function openSidebar() {
+        if (!sidebar || !overlay) return;
         sidebar.classList.add("active");
         overlay.classList.add("active");
+    }
 
-    });
-
-
-    overlay.addEventListener("click", function () {
-
+    function closeSidebar() {
+        if (!sidebar || !overlay) return;
         sidebar.classList.remove("active");
         overlay.classList.remove("active");
+    }
 
-    });
+    if (hamburger) {
+        hamburger.addEventListener("click", openSidebar);
+    }
 
-}
-
-
-// =============================
-// THEME TOGGLE
-// =============================
-
-const themeToggle = document.getElementById("themeToggle");
-
-
-// =============================
-// SET THEME
-// =============================
-
-function setTheme(isLight) {
-
-    // Remove previous theme classes
-    document.body.classList.remove("light", "dark");
-
-
-    // Apply selected theme
-    if (isLight) {
-
-        document.body.classList.add("light");
-
-    } else {
-
-        document.body.classList.add("dark");
-
+    if (overlay) {
+        overlay.addEventListener("click", closeSidebar);
     }
 
 
-    // Update theme button
+    /* =============================
+       THEME TOGGLE
+    ============================= */
+
+    const themeToggle = document.getElementById("themeToggle");
+
+    function setTheme(isLight) {
+
+        document.body.classList.remove("light", "dark");
+        document.body.classList.add(isLight ? "light" : "dark");
+
+        if (themeToggle) {
+            themeToggle.innerHTML = isLight
+                ? '<i class="fa-solid fa-moon"></i><span>Dark Mode</span>'
+                : '<i class="fa-solid fa-sun"></i><span>Light Mode</span>';
+        }
+
+        localStorage.setItem("theme", isLight ? "light" : "dark");
+    }
+
+    // Initial theme: saved preference > system preference > light
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "light" || savedTheme === "dark") {
+        setTheme(savedTheme === "light");
+    } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        setTheme(false);
+    } else {
+        setTheme(true);
+    }
+
     if (themeToggle) {
+        themeToggle.addEventListener("click", function () {
+            const isCurrentlyLight = document.body.classList.contains("light");
+            setTheme(!isCurrentlyLight);
+        });
+    }
 
-        if (isLight) {
 
-            themeToggle.innerHTML =
-                '<i class="fa-solid fa-moon"></i>' +
-                '<span>Dark Mode</span>';
+    /* =============================
+       LOGOUT MODAL
+    ============================= */
 
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const logoutButtons = document.querySelectorAll(".logout-trigger");
+        const logoutModal = document.getElementById("logoutModal");
+        const cancelLogout = document.getElementById("cancelLogout");
+
+        if (!logoutModal || !cancelLogout) return;
+
+        function openLogoutModal() {
+            logoutModal.classList.add("show");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeLogoutModal() {
+            logoutModal.classList.remove("show");
+            document.body.style.overflow = "";
+        }
+
+        logoutButtons.forEach(function (button) {
+            button.addEventListener("click", function (e) {
+                e.preventDefault();
+                openLogoutModal();
+            });
+        });
+
+        cancelLogout.addEventListener("click", closeLogoutModal);
+
+        logoutModal.addEventListener("click", function (e) {
+            if (e.target === logoutModal) closeLogoutModal();
+        });
+
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape" && logoutModal.classList.contains("show")) {
+                closeLogoutModal();
+            }
+        });
+    });
+
+
+    /* =============================
+       NOTICE MODAL (session dismiss)
+    ============================= */
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const modal = document.getElementById("noticeModal");
+        const btnGotIt = document.getElementById("btnGotIt");
+
+        if (!modal) return;
+
+        if (!sessionStorage.getItem("noticeDismissed")) {
+            modal.style.display = "flex";
         } else {
-
-            themeToggle.innerHTML =
-                '<i class="fa-solid fa-sun"></i>' +
-                '<span>Light Mode</span>';
-
+            modal.style.display = "none";
         }
 
-    }
-
-
-    // Save theme
-    localStorage.setItem(
-        "theme",
-        isLight ? "light" : "dark"
-    );
-
-}
-
-
-// =============================
-// LOAD SAVED THEME
-// =============================
-
-const savedTheme = localStorage.getItem("theme");
-
-
-if (savedTheme === "light") {
-
-    setTheme(true);
-
-} else if (savedTheme === "dark") {
-
-    setTheme(false);
-
-} else {
-
-    // Default theme
-    setTheme(true);
-
-}
-
-
-// =============================
-// TOGGLE THEME
-// =============================
-
-if (themeToggle) {
-
-    themeToggle.addEventListener("click", function () {
-
-        const isCurrentlyLight =
-            document.body.classList.contains("light");
-
-
-        // Switch to opposite theme
-        setTheme(!isCurrentlyLight);
-
+        if (btnGotIt) {
+            btnGotIt.addEventListener("click", function () {
+                modal.style.display = "none";
+                sessionStorage.setItem("noticeDismissed", "true");
+            });
+        }
     });
 
-}
-
-
-// =============================
-// LOGOUT MODAL
-// =============================
-
-document.addEventListener("DOMContentLoaded", function () {
-
-
-    const logoutButtons =
-        document.querySelectorAll(".logout-trigger");
-
-
-    const logoutModal =
-        document.getElementById("logoutModal");
-
-
-    const cancelLogout =
-        document.getElementById("cancelLogout");
-
-
-    if (!logoutModal || !cancelLogout) {
-
-        return;
-
-    }
-
-
-    // =============================
-    // OPEN MODAL
-    // =============================
-
-    function openLogoutModal() {
-
-        logoutModal.classList.add("show");
-
-        document.body.style.overflow = "hidden";
-
-    }
-
-
-    // =============================
-    // CLOSE MODAL
-    // =============================
-
-    function closeLogoutModal() {
-
-        logoutModal.classList.remove("show");
-
-        document.body.style.overflow = "";
-
-    }
-
-
-    // =============================
-    // LOGOUT BUTTONS
-    // =============================
-
-    logoutButtons.forEach(function (button) {
-
-        button.addEventListener("click", function (e) {
-
-            e.preventDefault();
-
-            openLogoutModal();
-
-        });
-
-    });
-
-
-    // =============================
-    // CANCEL LOGOUT
-    // =============================
-
-    cancelLogout.addEventListener(
-        "click",
-        function () {
-
-            closeLogoutModal();
-
-        }
-    );
-
-
-    // =============================
-    // CLICK OUTSIDE MODAL
-    // =============================
-
-    logoutModal.addEventListener(
-        "click",
-        function (e) {
-
-            if (e.target === logoutModal) {
-
-                closeLogoutModal();
-
-            }
-
-        }
-    );
-
-
-    // =============================
-    // ESC KEY
-    // =============================
-
-    document.addEventListener(
-        "keydown",
-        function (e) {
-
-            if (
-                e.key === "Escape" &&
-                logoutModal.classList.contains("show")
-            ) {
-
-                closeLogoutModal();
-
-            }
-
-        }
-    );
-
-});
-
-
-// Show notice modal on load
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('noticeModal');
-    const btnGotIt = document.getElementById('btnGotIt');
-    
-    if (!modal) return;
-    
-    // Check if user already dismissed this session
-    if (!sessionStorage.getItem('noticeDismissed')) {
-        modal.style.display = 'flex';
-    } else {
-        modal.style.display = 'none';
-    }
-    
-    // Dismiss button
-    if (btnGotIt) {
-        btnGotIt.addEventListener('click', function() {
-            modal.style.display = 'none';
-            sessionStorage.setItem('noticeDismissed', 'true');
-        });
-    }
-});
+})();
