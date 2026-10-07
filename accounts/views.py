@@ -475,12 +475,44 @@ def dashboard(request):
     # ADD both so everything counts
     total_spent = total_spent_transactions + total_spent_orders
 
+    # --- ACTIVE NUMBERS (live list on dashboard) ---
+    active_orders = []
+    orders = (
+        Order.objects
+        .filter(user=request.user, status__in=["pending", "received"])
+        .order_by("-created_at")[:5]
+    )
+    for o in orders:
+        active_orders.append({
+            "service_name": getattr(o, "service_name", "") or "Number",
+            "phone_number": getattr(o, "phone_number", "")
+                            or getattr(o, "number", "") or "—",
+            "status": "received" if o.status == "received" else "pending",
+            "otp_code": getattr(o, "otp_code", "") or "",
+        })
+
+    # --- RECENT TRANSACTIONS (list on dashboard) ---
+    recent_transactions = []
+    for tx in transactions.order_by("-created_at")[:6]:
+        recent_transactions.append({
+            "txn_type": "credit" if tx.transaction_type in (
+                "funding", "credit", "deposit", "wallet_funding"
+            ) else "debit",
+            "description": getattr(tx, "description", "")
+                           or tx.transaction_type.replace("_", " ").title(),
+            "created_at": tx.created_at,
+            "amount": tx.amount,
+            "status": tx.status,
+        })
+
     context = {
         "wallet": wallet,
+        "user_wallet": wallet,
         "total_transactions": total_transactions,
         "total_spent": total_spent,
 
-        "active_orders": 0,
+        "active_orders": active_orders,
+        "recent_transactions": recent_transactions,
         "total_sms": 0,
 
         "show_notice": show_notice,

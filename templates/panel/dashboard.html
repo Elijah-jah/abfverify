@@ -20,131 +20,184 @@ Dashboard
 
 {% block content %}
 
-<!-- WELCOME SECTION -->
-<section class="dashboard-hero">
+<!-- GREETING -->
+<div class="dash-head">
 
-    <div class="hero-content">
-        <h2>Welcome, {{ request.user.username }}</h2>
-        <p>
-            Manage your virtual numbers, fund your wallet,
-            track transactions and monitor account activity.
-        </p>
-    </div>
-
-    <div class="hero-side">
-        <span class="hero-chip">
-            <i class="fa-solid fa-shield-halved"></i>
-            Secure Account
+    <div class="dash-head-text">
+        <span class="dash-eyebrow">
+            <i class="fa-solid fa-bolt"></i>
+            ABFverify
         </span>
+        <h2 class="dash-hello">Hello, {{ request.user.username|truncatechars:16 }}</h2>
+        <p class="dash-date">{% now "l, j F Y" %}</p>
     </div>
 
-</section>
+    <a href="{% url 'sms' %}" class="dash-head-btn">
+        <i class="fa-solid fa-plus"></i>
+        Get Number
+    </a>
 
-<!-- STATS -->
-<section class="dashboard-stats">
+</div>
 
+<!-- SERVICES STRIP -->
+<div class="dash-services">
 
-    <div class="card stat-card">
-        <div class="stat-body">
-            <h3>Total Spent</h3>
-            <p>₦{{ total_spent|floatformat:2 }}</p>
-        </div>
-        <div class="stat-icon">
+    <a href="{% url 'sms' %}" class="dash-svc">
+        <span class="dash-svc-icon svc-blue">
+            <i class="fa-solid fa-sim-card"></i>
+        </span>
+        <span class="dash-svc-text">
+            <strong>Virtual Numbers</strong>
+            <small>Instant SMS verification</small>
+        </span>
+        <i class="fa-solid fa-chevron-right dash-svc-arrow"></i>
+    </a>
+
+    <a href="{% url 'services' %}" class="dash-svc">
+        <span class="dash-svc-icon svc-violet">
+            <i class="fa-solid fa-box-archive"></i>
+        </span>
+        <span class="dash-svc-text">
+            <strong>Logs Store</strong>
+            <small>Premium digital logs</small>
+        </span>
+        <i class="fa-solid fa-chevron-right dash-svc-arrow"></i>
+    </a>
+
+</div>
+
+<!-- WALLET HERO -->
+<div class="wallet-hero">
+
+    <div class="wallet-hero-left">
+        <p class="wallet-hero-label">
             <i class="fa-solid fa-wallet"></i>
-        </div>
+            Wallet Balance
+        </p>
+        <h3 class="wallet-hero-amount mono">&#8358;{{ user_wallet.balance|default:"0.00"|floatformat:2 }}</h3>
+        <p class="wallet-hero-note">Top up once — spend on numbers &amp; logs.</p>
     </div>
 
+    <a href="{% url 'wallet' %}" class="wallet-hero-btn">
+        <i class="fa-solid fa-plus"></i>
+        Fund Wallet
+    </a>
 
-    <div class="card stat-card">
-        <div class="stat-body">
-            <h3>Transactions</h3>
-            <p>{{ total_transactions }}</p>
-        </div>
-        <div class="stat-icon">
-            <i class="fa-solid fa-receipt"></i>
-        </div>
+</div>
+
+<!-- ACTIVE NUMBERS -->
+<div class="card dash-card">
+
+    <div class="dash-card-head">
+        <h5><i class="fa-solid fa-sim-card"></i> Active Numbers</h5>
+        <a href="{% url 'orders' %}" class="dash-viewall">View all</a>
     </div>
 
-</section>
+    {% for order in active_orders %}
+    <div class="dash-row">
 
-<!-- QUICK ACTIONS -->
-<section class="quick-actions-card">
+        <span class="dash-row-icon row-blue">
+            <i class="fa-solid fa-phone"></i>
+        </span>
 
-    <h3>Quick Actions</h3>
-
-    <div class="actions">
-
-        <button class="qa-card" onclick="location.href='{% url 'sms' %}'">
-            <span class="qa-icon">
-                <i class="fa-solid fa-sim-card"></i>
-            </span>
-            <span class="qa-text">
-                <strong>Buy Number</strong>
-                <small>Instant USA numbers</small>
-            </span>
-            <i class="fa-solid fa-chevron-right qa-go"></i>
-        </button>
-
-        <button class="qa-card" onclick="location.href='{% url 'wallet' %}'">
-            <span class="qa-icon">
-                <i class="fa-solid fa-wallet"></i>
-            </span>
-            <span class="qa-text">
-                <strong>Fund Wallet</strong>
-                <small>Top up in seconds</small>
-            </span>
-            <i class="fa-solid fa-chevron-right qa-go"></i>
-        </button>
-
-        <button class="qa-card" onclick="location.href='{% url 'transactions' %}'">
-            <span class="qa-icon">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-            </span>
-            <span class="qa-text">
-                <strong>Transactions</strong>
-                <small>View full history</small>
-            </span>
-            <i class="fa-solid fa-chevron-right qa-go"></i>
-        </button>
-
-    </div>
-
-</section>
-
-<!-- RECENT ACTIVITY -->
-<section class="panel recent-activity">
-
-    <h3>Recent Activity</h3>
-
-    <div class="activity-list">
-
-        <div class="act-row">
-            <span class="act-icon">
-                <i class="fa-solid fa-receipt"></i>
-            </span>
-            <p>Wallet funding activities will appear here</p>
-            <i class="fa-solid fa-chevron-right act-go"></i>
+        <div class="dash-row-info">
+            <p class="dash-row-title">{{ order.service_name|default:"Number" }}</p>
+            <p class="dash-row-sub mono">{{ order.phone_number }}</p>
         </div>
 
-        <div class="act-row">
-            <span class="act-icon">
-                <i class="fa-solid fa-clipboard-list"></i>
-            </span>
-            <p>Incoming OTP messages will appear here</p>
-            <i class="fa-solid fa-chevron-right act-go"></i>
-        </div>
+        <div class="dash-row-state">
 
-        <div class="act-row">
-            <span class="act-icon">
-                <i class="fa-solid fa-clipboard-list"></i>
-            </span>
-            <p>Purchased numbers will appear here</p>
-            <i class="fa-solid fa-chevron-right act-go"></i>
+            {% if order.status == 'received' %}
+                <span class="otp-chip mono">{{ order.otp_code }}</span>
+                <button class="copy-btn" data-copy="{{ order.otp_code }}" title="Copy OTP">
+                    <i class="fa-regular fa-clipboard"></i>
+                </button>
+
+            {% elif order.status == 'pending' %}
+                <span class="state-pill pill-waiting">
+                    <span class="pulse-dot"></span>
+                    Waiting for SMS
+                </span>
+
+            {% else %}
+                <span class="state-pill pill-expired">Expired</span>
+            {% endif %}
+
         </div>
 
     </div>
+    {% empty %}
+    <div class="dash-empty">
+        <i class="fa-regular fa-inbox"></i>
+        <p>No active numbers right now.</p>
+        <a href="{% url 'sms' %}" class="dash-empty-btn">Get a number</a>
+    </div>
+    {% endfor %}
 
-</section>
+</div>
+
+<!-- RECENT TRANSACTIONS -->
+<div class="card dash-card">
+
+    <div class="dash-card-head">
+        <h5><i class="fa-solid fa-receipt"></i> Recent Transactions</h5>
+        <a href="{% url 'transactions' %}" class="dash-viewall">View all</a>
+    </div>
+
+    {% for tx in recent_transactions %}
+    <div class="dash-row">
+
+        {% if tx.txn_type == 'credit' %}
+        <span class="dash-row-icon row-green">
+            <i class="fa-solid fa-arrow-down"></i>
+        </span>
+        {% else %}
+        <span class="dash-row-icon row-red">
+            <i class="fa-solid fa-arrow-up"></i>
+        </span>
+        {% endif %}
+
+        <div class="dash-row-info">
+            <p class="dash-row-title">{{ tx.description|default:"Transaction" }}</p>
+            <p class="dash-row-sub">{{ tx.created_at|date:"M j, Y" }}</p>
+        </div>
+
+        <div class="dash-row-state tx-state">
+
+            <p class="tx-amount mono {% if tx.txn_type == 'credit' %}tx-credit{% else %}tx-debit{% endif %}">
+                {% if tx.txn_type == 'credit' %}+{% else %}-{% endif %}&#8358;{{ tx.amount }}
+            </p>
+
+            <span class="tx-badge tx-{{ tx.status|default:'completed' }}">{{ tx.status|default:"completed"|title }}</span>
+
+        </div>
+
+    </div>
+    {% empty %}
+    <div class="dash-empty">
+        <i class="fa-solid fa-receipt"></i>
+        <p>No transactions yet.</p>
+        <a href="{% url 'wallet' %}" class="dash-empty-btn">Fund wallet</a>
+    </div>
+    {% endfor %}
+
+</div>
 
 {% include 'panel/includes/notice_modal.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.copy-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        navigator.clipboard.writeText(btn.dataset.copy).then(function () {
+            var icon = btn.querySelector('i');
+            icon.className = 'fa-solid fa-check';
+            setTimeout(function () {
+                icon.className = 'fa-regular fa-clipboard';
+            }, 1200);
+        });
+    });
+});
+</script>
 {% endblock %}
