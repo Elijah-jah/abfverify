@@ -24,11 +24,20 @@ Dashboard
 <section class="dashboard-hero">
 
     <div class="hero-content">
+        <span class="hero-badge">
+            <i class="fa-solid fa-bolt"></i>
+            Account Active
+        </span>
+
         <h2>Welcome back, {{ request.user.username }}</h2>
         <p>
             Manage your virtual numbers, fund your wallet,
             track transactions and monitor account activity.
         </p>
+    </div>
+
+    <div class="hero-art" aria-hidden="true">
+        <i class="fa-solid fa-sim-card"></i>
     </div>
 
 </section>
@@ -41,8 +50,10 @@ Dashboard
         <div class="stat-icon">
             <i class="fa-solid fa-wallet"></i>
         </div>
-        <h3>Total Spent</h3>
-        <p>₦{{ total_spent|floatformat:2 }}</p>
+        <div class="stat-body">
+            <h3>Total Spent</h3>
+            <p>₦{{ total_spent|floatformat:2 }}</p>
+        </div>
     </div>
 
 
@@ -50,8 +61,10 @@ Dashboard
         <div class="stat-icon">
             <i class="fa-solid fa-receipt"></i>
         </div>
-        <h3>Transactions</h3>
-        <p>{{ total_transactions }}</p>
+        <div class="stat-body">
+            <h3>Transactions</h3>
+            <p>{{ total_transactions }}</p>
+        </div>
     </div>
 
 </section>
@@ -63,19 +76,28 @@ Dashboard
 
     <div class="actions">
 
-        <button onclick="location.href='{% url 'sms' %}'">
-            <i class="fa-solid fa-sim-card"></i>
-            Buy Number
+        <button class="action-tile" onclick="location.href='{% url 'sms' %}'">
+            <span class="action-icon">
+                <i class="fa-solid fa-sim-card"></i>
+            </span>
+            <span class="action-label">Buy Number</span>
+            <i class="fa-solid fa-arrow-right action-arrow"></i>
         </button>
 
-        <button onclick="location.href='{% url 'wallet' %}'">
-            <i class="fa-solid fa-wallet"></i>
-            Fund Wallet
+        <button class="action-tile" onclick="location.href='{% url 'wallet' %}'">
+            <span class="action-icon">
+                <i class="fa-solid fa-wallet"></i>
+            </span>
+            <span class="action-label">Fund Wallet</span>
+            <i class="fa-solid fa-arrow-right action-arrow"></i>
         </button>
 
-        <button onclick="location.href='{% url 'transactions' %}'">
-            <i class="fa-solid fa-clock-rotate-left"></i>
-            Transactions
+        <button class="action-tile" onclick="location.href='{% url 'transactions' %}'">
+            <span class="action-icon">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </span>
+            <span class="action-label">Transactions</span>
+            <i class="fa-solid fa-arrow-right action-arrow"></i>
         </button>
 
     </div>
