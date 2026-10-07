@@ -13,10 +13,12 @@ Dashboard
 Dashboard
 {% endblock %}
 
-{% block content %}
-
+{% block extra_css %}
 <!-- DASHBOARD CSS -->
 <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
 
 <!-- WELCOME SECTION -->
 <section class="dashboard-hero">
@@ -34,21 +36,6 @@ Dashboard
 <!-- STATS -->
 <section class="grid dashboard-stats">
 
-    <!-- <div class="card stat-card">
-        <div class="stat-icon">
-            <i class="fa-solid fa-sim-card"></i>
-        </div>
-        <h3>Active Orders</h3>
-        <p>{{ active_orders }}</p>
-    </div>
-
-    <div class="card stat-card">
-        <div class="stat-icon">
-            <i class="fa-solid fa-message"></i>
-        </div>
-        <h3>Messages</h3>
-        <p>{{ total_sms }}</p>
-    </div> -->
 
     <div class="card stat-card">
         <div class="stat-icon">
@@ -57,7 +44,7 @@ Dashboard
         <h3>Total Spent</h3>
         <p>₦{{ total_spent|floatformat:2 }}</p>
     </div>
-    
+
 
     <div class="card stat-card">
         <div class="stat-icon">
@@ -120,5 +107,6 @@ Dashboard
     </div>
 
 </section>
+
 {% include 'panel/includes/notice_modal.html' %}
 {% endblock %}
