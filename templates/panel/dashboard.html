@@ -24,46 +24,44 @@ Dashboard
 <section class="dashboard-hero">
 
     <div class="hero-content">
-        <span class="hero-badge">
-            <i class="fa-solid fa-bolt"></i>
-            Account Active
-        </span>
-
-        <h2>Welcome back, {{ request.user.username }}</h2>
+        <h2>Welcome, {{ request.user.username }}</h2>
         <p>
             Manage your virtual numbers, fund your wallet,
             track transactions and monitor account activity.
         </p>
     </div>
 
-    <div class="hero-art" aria-hidden="true">
-        <i class="fa-solid fa-sim-card"></i>
+    <div class="hero-side">
+        <span class="hero-chip">
+            <i class="fa-solid fa-shield-halved"></i>
+            Secure Account
+        </span>
     </div>
 
 </section>
 
 <!-- STATS -->
-<section class="grid dashboard-stats">
+<section class="dashboard-stats">
 
 
     <div class="card stat-card">
-        <div class="stat-icon">
-            <i class="fa-solid fa-wallet"></i>
-        </div>
         <div class="stat-body">
             <h3>Total Spent</h3>
             <p>₦{{ total_spent|floatformat:2 }}</p>
+        </div>
+        <div class="stat-icon">
+            <i class="fa-solid fa-wallet"></i>
         </div>
     </div>
 
 
     <div class="card stat-card">
-        <div class="stat-icon">
-            <i class="fa-solid fa-receipt"></i>
-        </div>
         <div class="stat-body">
             <h3>Transactions</h3>
             <p>{{ total_transactions }}</p>
+        </div>
+        <div class="stat-icon">
+            <i class="fa-solid fa-receipt"></i>
         </div>
     </div>
 
@@ -76,28 +74,37 @@ Dashboard
 
     <div class="actions">
 
-        <button class="action-tile" onclick="location.href='{% url 'sms' %}'">
-            <span class="action-icon">
+        <button class="qa-card" onclick="location.href='{% url 'sms' %}'">
+            <span class="qa-icon">
                 <i class="fa-solid fa-sim-card"></i>
             </span>
-            <span class="action-label">Buy Number</span>
-            <i class="fa-solid fa-arrow-right action-arrow"></i>
+            <span class="qa-text">
+                <strong>Buy Number</strong>
+                <small>Instant USA numbers</small>
+            </span>
+            <i class="fa-solid fa-chevron-right qa-go"></i>
         </button>
 
-        <button class="action-tile" onclick="location.href='{% url 'wallet' %}'">
-            <span class="action-icon">
+        <button class="qa-card" onclick="location.href='{% url 'wallet' %}'">
+            <span class="qa-icon">
                 <i class="fa-solid fa-wallet"></i>
             </span>
-            <span class="action-label">Fund Wallet</span>
-            <i class="fa-solid fa-arrow-right action-arrow"></i>
+            <span class="qa-text">
+                <strong>Fund Wallet</strong>
+                <small>Top up in seconds</small>
+            </span>
+            <i class="fa-solid fa-chevron-right qa-go"></i>
         </button>
 
-        <button class="action-tile" onclick="location.href='{% url 'transactions' %}'">
-            <span class="action-icon">
+        <button class="qa-card" onclick="location.href='{% url 'transactions' %}'">
+            <span class="qa-icon">
                 <i class="fa-solid fa-clock-rotate-left"></i>
             </span>
-            <span class="action-label">Transactions</span>
-            <i class="fa-solid fa-arrow-right action-arrow"></i>
+            <span class="qa-text">
+                <strong>Transactions</strong>
+                <small>View full history</small>
+            </span>
+            <i class="fa-solid fa-chevron-right qa-go"></i>
         </button>
 
     </div>
@@ -111,19 +118,28 @@ Dashboard
 
     <div class="activity-list">
 
-        <div class="activity-item">
-            <i class="fa-solid fa-receipt"></i>
+        <div class="act-row">
+            <span class="act-icon">
+                <i class="fa-solid fa-receipt"></i>
+            </span>
             <p>Wallet funding activities will appear here</p>
+            <i class="fa-solid fa-chevron-right act-go"></i>
         </div>
 
-        <div class="activity-item">
-            <i class="fa-solid fa-clipboard-list"></i>
+        <div class="act-row">
+            <span class="act-icon">
+                <i class="fa-solid fa-clipboard-list"></i>
+            </span>
             <p>Incoming OTP messages will appear here</p>
+            <i class="fa-solid fa-chevron-right act-go"></i>
         </div>
 
-        <div class="activity-item">
-            <i class="fa-solid fa-clipboard-list"></i>
+        <div class="act-row">
+            <span class="act-icon">
+                <i class="fa-solid fa-clipboard-list"></i>
+            </span>
             <p>Purchased numbers will appear here</p>
+            <i class="fa-solid fa-chevron-right act-go"></i>
         </div>
 
     </div>

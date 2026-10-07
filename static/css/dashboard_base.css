@@ -383,9 +383,11 @@ body.light .theme-toggle:hover { color: var(--brand); }
 
 .card h3 { color: var(--text); margin-bottom: 5px; }
 
-/* Nested containers — keeps inner boxes readable on Get Number / Orders pages */
-body.light .card > div,
-body.light .panel > div,
+/* Nested containers — keeps inner boxes readable on Get Number / Orders pages.
+   :not([class]) scopes it to unclassed wrapper divs so it never touches
+   structured components like stat cards / action tiles */
+body.light .card > div:not([class]),
+body.light .panel > div:not([class]),
 body.light .activity li {
     background: var(--card-2);
     border: 1px solid var(--border);
@@ -394,7 +396,7 @@ body.light .activity li {
     margin-top: 8px;
 }
 
-body.light .card > div > div {
+body.light .card > div:not([class]) > div {
     background: var(--brand-soft);
     border-radius: 10px;
     padding: 8px;

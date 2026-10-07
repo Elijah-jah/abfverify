@@ -1,12 +1,11 @@
 /* =========================================================
-   ABFverify — Dashboard Page v2  (matches redesigned base)
-   Uses the base's CSS variables — themes stay in sync
-   Layout: badge hero / icon-left stat rows / action tiles /
-           timeline activity
+   ABFverify — Dashboard Page v3  (matches redesigned base)
+   Layout: slim hero + side chip / edge-accent stat cards
+           (icon right) / caption action cards / clean rows
 ========================================================= */
 
 /* =========================
-   HERO
+   HERO — slim banner
 ========================= */
 
 .dashboard-hero {
@@ -15,84 +14,64 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 24px;
-    padding: 30px;
-    border-radius: 20px;
-    margin-bottom: 22px;
+    gap: 20px;
+    padding: 22px 26px;
+    border-radius: var(--radius);
+    margin-bottom: 20px;
     background:
-        linear-gradient(120deg, var(--brand-soft), rgba(139, 92, 246, .10) 55%, transparent),
+        linear-gradient(110deg, var(--brand-soft), transparent 55%),
         var(--card);
     border: 1px solid var(--border);
 }
 
-.hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 5px 12px;
-    margin-bottom: 14px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--brand);
-    background: var(--brand-soft);
-    border: 1px solid var(--brand-border);
-}
-
-.hero-badge i { font-size: 11px; }
-
 .dashboard-hero h2 {
-    font-size: 27px;
-    letter-spacing: -.4px;
-    margin-bottom: 8px;
+    font-size: 22px;
+    letter-spacing: -.3px;
+    margin-bottom: 4px;
 }
 
 .hero-content p {
     color: var(--muted);
-    font-size: 14px;
-    line-height: 1.65;
-    max-width: 520px;
+    font-size: 13.5px;
+    line-height: 1.6;
     margin: 0;
 }
 
-/* Decorative floating icon (desktop only) */
-.hero-art {
-    flex-shrink: 0;
-    width: 96px;
-    height: 96px;
-    border-radius: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 38px;
-    color: #ffffff;
-    background: linear-gradient(135deg, #2563eb, #7c3aed);
-    box-shadow: 0 18px 40px rgba(59, 130, 246, .4);
-    transform: rotate(6deg);
-    animation: heroFloat 5s ease-in-out infinite;
-}
+.hero-side { flex-shrink: 0; }
 
-@keyframes heroFloat {
-    0%, 100% { transform: rotate(6deg) translateY(0); }
-    50%      { transform: rotate(6deg) translateY(-8px); }
+.hero-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--brand);
+    background: var(--brand-soft);
+    border: 1px solid var(--brand-border);
+    white-space: nowrap;
 }
 
 /* =========================
-   STATS — icon-left rows
+   STATS — edge-accent cards, icon on the right
 ========================= */
 
 .dashboard-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 16px;
-    margin-bottom: 22px;
+    margin-bottom: 20px;
 }
 
 .card.stat-card {
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 20px;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 20px 22px;
     border-radius: var(--radius);
     transition:
         transform .25s ease,
@@ -100,32 +79,31 @@
         box-shadow .25s ease;
 }
 
+/* Gradient accent bar on the left edge */
+.card.stat-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 14px;
+    bottom: 14px;
+    width: 4px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #2563eb, #7c3aed);
+    box-shadow: 0 0 14px rgba(59, 130, 246, .55);
+}
+
 .card.stat-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
     border-color: var(--brand-border);
     box-shadow: var(--shadow);
 }
 
-/* Gradient circle icon — forced readable in BOTH themes */
-.stat-icon {
-    position: static;
-    width: 50px;
-    height: 50px;
-    min-width: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
-    color: #ffffff !important;
-    font-size: 18px;
-    box-shadow: 0 8px 18px rgba(59, 130, 246, .35);
-    transition: transform .25s ease, box-shadow .25s ease;
-}
-
-.card.stat-card:hover .stat-icon {
-    transform: scale(1.08);
-    box-shadow: 0 10px 24px rgba(124, 58, 237, .45);
+/* Never let the base nested-box rule touch these */
+.card.stat-card > div {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 .stat-body h3 {
@@ -135,20 +113,48 @@
 }
 
 .stat-body p {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 800;
-    letter-spacing: -.4px;
+    letter-spacing: -.5px;
     margin-top: 4px;
 }
 
+/* Gradient icon — blue in BOTH themes, always */
+.stat-icon {
+    position: static;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+    color: #ffffff !important;
+    font-size: 18px;
+    box-shadow: 0 8px 18px rgba(59, 130, 246, .35);
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.card.stat-card:hover .stat-icon {
+    transform: scale(1.08) rotate(-4deg);
+    box-shadow: 0 10px 24px rgba(124, 58, 237, .45);
+}
+
+body.light .stat-icon,
+body.dark .stat-icon {
+    background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+    color: #ffffff !important;
+}
+
 /* =========================
-   QUICK ACTIONS — tiles
+   QUICK ACTIONS — caption cards
 ========================= */
 
 .quick-actions-card {
     padding: 20px;
     border-radius: var(--radius);
-    margin-bottom: 22px;
+    margin-bottom: 20px;
 }
 
 .quick-actions-card h3 {
@@ -159,22 +165,20 @@
 
 .actions {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 12px;
     margin-top: 0;
 }
 
-.action-tile {
+.qa-card {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 15px 16px;
+    gap: 13px;
+    padding: 16px;
     border-radius: 14px;
     background: var(--card-2);
     border: 1px solid var(--border);
     color: var(--text);
-    font-size: 14px;
-    font-weight: 600;
     font-family: 'Inter', sans-serif;
     cursor: pointer;
     text-align: left;
@@ -186,48 +190,56 @@
         box-shadow .2s ease;
 }
 
-.action-icon {
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
+.qa-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
+    border-radius: 12px;
     background: var(--brand-soft);
     color: var(--brand);
-    font-size: 15px;
+    font-size: 16px;
     transition: background .2s ease, color .2s ease;
 }
 
-.action-label { flex: 1; }
+.qa-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
 
-.action-arrow {
+.qa-text strong { font-size: 14px; font-weight: 600; }
+.qa-text small { font-size: 12px; color: var(--muted); }
+
+.qa-go {
     color: var(--muted);
     font-size: 12px;
     transition: transform .2s ease, color .2s ease;
 }
 
-.action-tile:hover {
+.qa-card:hover {
     border-color: var(--brand-border);
     transform: translateY(-2px);
-    box-shadow: 0 10px 22px rgba(37, 99, 235, .18);
+    box-shadow: 0 10px 22px rgba(37, 99, 235, .16);
 }
 
-.action-tile:hover .action-icon {
+.qa-card:hover .qa-icon {
     background: linear-gradient(135deg, #2563eb, #7c3aed);
     color: #ffffff;
 }
 
-.action-tile:hover .action-arrow {
+.qa-card:hover .qa-go {
     transform: translateX(4px);
     color: var(--brand);
 }
 
-.action-tile:active { transform: scale(.98); }
+.qa-card:active { transform: scale(.98); }
 
 /* =========================
-   RECENT ACTIVITY — timeline
+   RECENT ACTIVITY — clean rows
 ========================= */
 
 .panel.recent-activity {
@@ -238,31 +250,16 @@
 .panel.recent-activity h3 {
     font-size: 16px;
     font-weight: 600;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .activity-list {
-    position: relative;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding-left: 24px;
 }
 
-/* Vertical timeline line */
-.activity-list::before {
-    content: "";
-    position: absolute;
-    left: 9px;
-    top: 10px;
-    bottom: 10px;
-    width: 2px;
-    border-radius: 2px;
-    background: linear-gradient(180deg, var(--brand), rgba(139, 92, 246, .35), transparent);
-}
-
-.activity-item {
-    position: relative;
+.act-row {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -272,44 +269,43 @@
     border: 1px solid var(--border);
     transition:
         border-color .25s ease,
-        transform .25s ease;
+        background .25s ease;
 }
 
-/* Timeline dot */
-.activity-item::before {
-    content: "";
-    position: absolute;
-    left: -21px;
-    top: 17px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--brand);
-    box-shadow: 0 0 0 3px var(--brand-soft);
-}
-
-.activity-item i {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
+.act-icon {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 9px;
+    border-radius: 10px;
     background: var(--brand-soft);
-    color: var(--brand) !important;
+    color: var(--brand);
     font-size: 13px;
 }
 
-.activity-item p {
+.act-row p {
+    flex: 1;
     font-size: 13.5px;
     color: var(--muted);
     margin: 0;
 }
 
-.activity-item:hover {
+.act-go {
+    color: var(--muted);
+    font-size: 11px;
+    transition: transform .2s ease, color .2s ease;
+}
+
+.act-row:hover {
     border-color: var(--brand-border);
-    transform: translateX(4px);
+    background: var(--card);
+}
+
+.act-row:hover .act-go {
+    transform: translateX(3px);
+    color: var(--brand);
 }
 
 /* =========================
@@ -323,49 +319,24 @@
 @media (max-width: 768px) {
 
     .dashboard-hero {
-        padding: 22px;
-        border-radius: var(--radius);
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
+        gap: 12px;
     }
 
-    .hero-art { display: none; }
-    .dashboard-hero h2 { font-size: 21px; }
+    .dashboard-hero h2 { font-size: 20px; }
 
-    .actions {
-        grid-template-columns: 1fr;
-    }
-
-    .action-tile {
-        padding: 14px 16px;
-    }
+    .actions { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {
 
-    .dashboard-stats {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
+    .dashboard-stats { grid-template-columns: 1fr; }
 
-    .card.stat-card { padding: 16px; }
-    .stat-icon { width: 44px; height: 44px; min-width: 44px; }
+    .card.stat-card { padding: 16px 18px; }
+    .stat-icon { width: 42px; height: 42px; min-width: 42px; }
     .stat-body p { font-size: 20px; }
+
     .quick-actions-card, .panel.recent-activity { padding: 16px; }
-}
-
-/* =========================
-   THEME SAFETY (icon fix)
-   Keeps gradient icon tiles readable in light mode
-   even if other stylesheets override backgrounds
-========================= */
-
-body.light .stat-icon,
-body.light .action-icon,
-.stat-icon,
-.action-icon {
-    text-shadow: none;
-}
-
-body.light .stat-icon {
-    background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
-    color: #ffffff !important;
 }
