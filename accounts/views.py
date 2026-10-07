@@ -444,6 +444,39 @@ def login_view(request):
 # USER DASHBOARD
 # ==========================
 
+from datetime import timedelta
+from django.utils import timezone
+
+
+def _order_timer_running(o):
+    """True only while the order's countdown is still ticking."""
+
+    # 1) If the model already has a helper, trust it
+    is_expired = getattr(o, "is_expired", None)
+    if callable(is_expired):
+        return not is_expired()
+
+    now = timezone.now()
+
+    # 2) Explicit expiry timestamp field
+    expires_at = getattr(o, "expires_at", None)
+    if expires_at is not None:
+        return expires_at > now
+
+    # 3) created_at + TTL in minutes
+    created_at = getattr(o, "created_at", None)
+    ttl = (
+        getattr(o, "expires_minutes", None)
+        or getattr(o, "ttl_minutes", None)
+        or 20  # <-- set this to your real order lifetime (minutes)
+    )
+    if created_at is not None:
+        return created_at + timedelta(minutes=ttl) > now
+
+    # No timer info found — fall back to status only
+    return True
+
+
 @login_required
 def dashboard(request):
     # --- POPUP NOTICE LOGIC ---
@@ -475,14 +508,16 @@ def dashboard(request):
     # ADD both so everything counts
     total_spent = total_spent_transactions + total_spent_orders
 
-    # --- ACTIVE NUMBERS (live list on dashboard) ---
+    # --- ACTIVE NUMBERS (only orders whose timer is still running) ---
     active_orders = []
     orders = (
         Order.objects
         .filter(user=request.user, status__in=["pending", "received"])
-        .order_by("-created_at")[:5]
+        .order_by("-created_at")[:15]          # fetch extra, trim below
     )
     for o in orders:
+        if not _order_timer_running(o):
+            continue                            # countdown finished — skip it
         active_orders.append({
             "service_name": getattr(o, "service_name", "") or "Number",
             "phone_number": getattr(o, "phone_number", "")
@@ -490,6 +525,8 @@ def dashboard(request):
             "status": "received" if o.status == "received" else "pending",
             "otp_code": getattr(o, "otp_code", "") or "",
         })
+        if len(active_orders) >= 5:
+            break
 
     # --- RECENT TRANSACTIONS (list on dashboard) ---
     recent_transactions = []
