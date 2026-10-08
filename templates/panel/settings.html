@@ -1,107 +1,99 @@
 {% extends 'panel/dashboard_base.html' %}
 {% load static %}
 
+{% block title %}Settings{% endblock %}
+{% block page_title %}Settings{% endblock %}
+{% block section_title %}Settings{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/settings.css' %}">
 {% endblock %}
 
-{% block page_title %}
-Settings
-{% endblock %}
-
 {% block content %}
 
-
-
-<div class="hephaestus-settings">
+<div class="settings-page">
 
     <!-- Header -->
-    <div class="atlas-header">
+    <div class="st-header">
 
-        <div class="atlas-left">
-            <h2 class="atlas-title">Settings</h2>
-            <p class="atlas-subtitle">
+        <div>
+            <h2 class="st-title">Settings</h2>
+            <p class="st-subtitle">
                 Manage your account preferences and security settings.
             </p>
         </div>
 
-        <div class="atlas-right">
-            <span class="atlas-status">
-                <i class="fas fa-shield-alt"></i>
-                Secure Account
-            </span>
-        </div>
+        <span class="st-status">
+            <i class="fas fa-shield-alt"></i>
+            Secure Account
+        </span>
 
     </div>
 
-    <!-- Settings Grid -->
-    <div class="hera-grid">
+    <!-- Top grid: Account Info + Security -->
+    <div class="st-grid">
 
         <!-- Account Information -->
-        <div class="hera-card">
+        <div class="st-card">
 
-            <div class="hera-card-header">
-                <i class="fas fa-user-circle"></i>
+            <div class="st-card-header">
+                <div class="st-card-icon">
+                    <i class="fas fa-user-circle"></i>
+                </div>
                 <h3>Account Information</h3>
             </div>
 
-            <div class="ares-field">
+            <div class="st-field">
                 <label>Username</label>
-                <input
-                    type="text"
-                    value="{{ request.user.username }}"
-                    readonly>
+                <input type="text" value="{{ request.user.username }}" readonly>
             </div>
 
-            <div class="ares-field">
+            <div class="st-field">
                 <label>Email Address</label>
-                <input
-                    type="email"
-                    value="{{ request.user.email }}"
-                    readonly>
+                <input type="email" value="{{ request.user.email }}" readonly>
             </div>
 
         </div>
 
         <!-- Security -->
-        <div class="hera-card">
+        <div class="st-card">
 
-            <div class="hera-card-header">
-                <i class="fas fa-lock"></i>
+            <div class="st-card-header">
+                <div class="st-card-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
                 <h3>Security</h3>
             </div>
 
-            <div class="hepha-field-row">
+            <div class="st-row">
 
-                <div>
+                <div class="st-row-text">
                     <h4>Password</h4>
-                    <p>
-                        Keep your account secure by changing your password regularly.
-                    </p>
+                    <p>Keep your account secure by changing your password regularly.</p>
                 </div>
 
-                <a href="{% url 'change_password' %}" class="apollo-btn">
-    Change Password
-</a>
+                <a href="{% url 'change_password' %}" class="st-btn">
+                    Change Password
+                </a>
+
             </div>
 
-            <div class="hepha-field-row">
+            <div class="st-row">
 
-                <div>
-
+                <div class="st-row-text">
                     <h4>Email Verification</h4>
-
-                    {% if request.user.is_active %}
-                    <span class="status-success">
-                        Verified
-                    </span>
-                    {% else %}
-                    <span class="status-warning">
-                        Pending
-                    </span>
-                    {% endif %}
-
+                    <p>Your email status for this account.</p>
                 </div>
+
+                {% if request.user.is_active %}
+                <span class="st-pill st-pill-success">
+                    <i class="fas fa-check"></i> Verified
+                </span>
+                {% else %}
+                <span class="st-pill st-pill-warning">
+                    <i class="fas fa-clock"></i> Pending
+                </span>
+                {% endif %}
 
             </div>
 
@@ -110,143 +102,106 @@ Settings
     </div>
 
     <!-- Preferences -->
-    <div class="poseidon-card">
+    <div class="st-card st-card-full">
 
-        <div class="hera-card-header">
-            <i class="fas fa-sliders-h"></i>
+        <div class="st-card-header">
+            <div class="st-card-icon">
+                <i class="fas fa-sliders-h"></i>
+            </div>
             <h3>Preferences</h3>
         </div>
 
-        <div class="zeus-option">
+        <div class="st-row">
 
-            <div>
+            <div class="st-row-text">
                 <h4>Theme</h4>
                 <p>Switch between Dark and Light mode.</p>
             </div>
 
-            <span class="coming-badge">
-                Managed From Dashboard
+            <span class="st-badge-note">
+                <i class="fas fa-toggle-on"></i> Managed From Sidebar
             </span>
 
         </div>
 
-        <div class="zeus-option">
+        <div class="st-row">
 
-            <div>
+            <div class="st-row-text">
                 <h4>Language</h4>
                 <p>English (Default)</p>
             </div>
 
-            <button class="disabled-btn" disabled>
-                Coming Soon
-            </button>
+            <button class="st-btn-ghost" disabled>Coming Soon</button>
 
         </div>
 
     </div>
 
-    
-    <form method="POST">
-    {% csrf_token %}
-
-<div class="poseidon-card">
-
-    <div class="hera-card-header">
-        <i class="fas fa-bell"></i>
-        <h3>Notifications</h3>
-    </div>
-
-    <form method="POST">
+    <!-- Notifications (single, clean form — was nested/invalid before) -->
+    <form method="POST" class="st-card st-card-full st-form">
         {% csrf_token %}
 
-        <div class="zeus-option">
+        <div class="st-card-header">
+            <div class="st-card-icon">
+                <i class="fas fa-bell"></i>
+            </div>
+            <h3>Notifications</h3>
+        </div>
 
-            <div>
+        <div class="st-row">
+
+            <div class="st-row-text">
                 <h4>Email Notifications</h4>
-                <p>
-                    Receive updates about orders and wallet activities.
-                </p>
+                <p>Receive updates about orders and wallet activities.</p>
             </div>
 
-            <label class="switch">
+            <label class="st-switch">
                 <input
                     type="checkbox"
                     name="email_notifications"
-                    {% if settings.email_notifications %}checked{% endif %}
-                >
-                <span class="slider"></span>
+                    {% if settings.email_notifications %}checked{% endif %}>
+                <span class="st-slider"></span>
             </label>
 
         </div>
 
-        <div class="zeus-option">
+        <div class="st-row">
 
-            <div>
+            <div class="st-row-text">
                 <h4>Order Notifications</h4>
-                <p>
-                    Get notified whenever your OTP arrives.
-                </p>
+                <p>Get notified whenever your OTP arrives.</p>
             </div>
 
-            <label class="switch">
+            <label class="st-switch">
                 <input
                     type="checkbox"
                     name="order_notifications"
-                    {% if settings.order_notifications %}checked{% endif %}
-                >
-                <span class="slider"></span>
+                    {% if settings.order_notifications %}checked{% endif %}>
+                <span class="st-slider"></span>
             </label>
 
         </div>
 
-        <button
-            type="submit"
-            class="apollo-btn">
-
-            Save Preferences
-
+        <button type="submit" class="st-btn st-btn-full">
+            <i class="fas fa-save"></i> Save Preferences
         </button>
 
     </form>
 
-</div>
-
-    
-</form>
-
     <!-- Danger Zone -->
-    <div class="ares-danger">
+    <div class="st-danger">
 
-        <div class="danger-left">
-
-            <h3>Danger Zone</h3>
-
-            <p>
-                These actions are irreversible. Proceed carefully.
-            </p>
-
+        <div class="st-danger-text">
+            <h3><i class="fas fa-triangle-exclamation"></i> Danger Zone</h3>
+            <p>These actions are irreversible. Proceed carefully.</p>
         </div>
 
-        <div class="danger-actions">
-
-            <form action="{% url 'logout' %}" method="POST">
-    {% csrf_token %}
-
-    <button
-        type="submit"
-        class="logout-btn">
-
-        <i class="fas fa-right-from-bracket"></i>
-        Logout
-
-    </button>
-    
-
-</form>
-
-        
-
-        </div>
+        <form action="{% url 'logout' %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="st-btn st-btn-danger">
+                <i class="fas fa-right-from-bracket"></i> Logout
+            </button>
+        </form>
 
     </div>
 

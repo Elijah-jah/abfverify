@@ -1,19 +1,47 @@
-/* =====================================================
-   ABFVERIFY - SETTINGS PAGE
-   PART 1
-   Desktop Layout
-===================================================== */
+:root{
+    /* DARK MODE (default) */
+    --bg: #0f172a;
+    --card: #111827;
+    --border: #1f2937;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --grad: linear-gradient(135deg, #38bdf8, #818cf8);
+    --accent-soft: rgba(56, 189, 248, 0.10);
+    --accent-line: rgba(56, 189, 248, 0.22);
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+}
 
+body.light{
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text: #0f172a;
+    --muted: #64748b;
+    --accent: #0ea5e9;
+    --accent2: #6366f1;
+    --grad: linear-gradient(135deg, #0ea5e9, #6366f1);
+    --accent-soft: rgba(14, 165, 233, 0.08);
+    --accent-line: rgba(14, 165, 233, 0.22);
+}
 
 /* ==========================
    PAGE WRAPPER
 ========================== */
 
-.hephaestus-settings{
-    display:flex;
-    flex-direction:column;
-    gap:28px;
-    animation:settingsFade .35s ease;
+.settings-page{
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    animation: stFade 0.35s ease;
+}
+
+@keyframes stFade{
+    from{ opacity: 0; transform: translateY(12px); }
+    to{ opacity: 1; transform: translateY(0); }
 }
 
 
@@ -21,52 +49,64 @@
    HEADER
 ========================== */
 
-.atlas-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:20px;
-    padding:24px 28px;
-    background:#111827;
-    border:1px solid #1f2937;
-    border-radius:18px;
+.st-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+
+    padding: 22px 26px;
+
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+
+    position: relative;
+    overflow: hidden;
 }
 
-.atlas-left{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
+/* subtle gradient orb, same language as wallet cards */
+.st-header::before{
+    content: "";
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: var(--grad);
+    opacity: 0.10;
+    pointer-events: none;
 }
 
-.atlas-title{
-    margin:0;
-    font-size:30px;
-    font-weight:700;
-    color:#ffffff;
+.st-title{
+    margin: 0 0 4px;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
 }
 
-.atlas-subtitle{
-    margin:0;
-    color:#94a3b8;
-    font-size:15px;
-    line-height:1.7;
+.st-subtitle{
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
 }
 
-.atlas-status{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    background:#0f172a;
-    border:1px solid #1f2937;
-    padding:12px 18px;
-    border-radius:50px;
-    font-size:14px;
-    font-weight:600;
-    color:#22c55e;
-}
+.st-status{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 
-.atlas-status i{
-    color:#22c55e;
+    padding: 9px 16px;
+    border-radius: 999px;
+
+    background: rgba(34, 197, 94, 0.10);
+    color: var(--success);
+
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
 
@@ -74,32 +114,38 @@
    GRID
 ========================== */
 
-.hera-grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:22px;
+.st-grid{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px;
 }
 
 
 /* ==========================
-   CARD
+   CARDS
 ========================== */
 
-.hera-card,
-.poseidon-card,
-.ares-danger{
-    background:#111827;
-    border:1px solid #1f2937;
-    border-radius:18px;
-    padding:28px;
-    transition:.25s ease;
+.st-card{
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.hera-card:hover,
-.poseidon-card:hover{
-    transform:translateY(-3px);
-    border-color:#2563eb;
-    box-shadow:0 12px 30px rgba(37,99,235,.18);
+.st-card:hover{
+    border-color: var(--accent-line);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.10);
+}
+
+.st-card-full{
+    width: 100%;
+}
+
+.st-form{
+    display: flex;
+    flex-direction: column;
+    margin: 0;
 }
 
 
@@ -107,122 +153,159 @@
    CARD HEADER
 ========================== */
 
-.hera-card-header{
-    display:flex;
-    align-items:center;
-    gap:14px;
-    margin-bottom:25px;
+.st-card-header{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
-.hera-card-header i{
-    width:50px;
-    height:50px;
-    border-radius:14px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:#2563eb;
-    color:#ffffff;
-    font-size:20px;
+.st-card-icon{
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+
+    border-radius: 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: var(--grad);
+    color: #ffffff;
+    font-size: 18px;
 }
 
-.hera-card-header h3{
-    margin:0;
-    color:#ffffff;
-    font-size:22px;
-}
-
-
-/* ==========================
-   INPUT FIELDS
-========================== */
-
-.ares-field{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    margin-bottom:22px;
-}
-
-.ares-field:last-child{
-    margin-bottom:0;
-}
-
-.ares-field label{
-    font-size:14px;
-    font-weight:600;
-    color:#d1d5db;
-}
-
-.ares-field input{
-    height:52px;
-    padding:0 16px;
-    border-radius:12px;
-    border:1px solid #374151;
-    background:#0f172a;
-    color:#ffffff;
-    outline:none;
-    font-size:15px;
-}
-
-.ares-field input:focus{
-    border-color:#3b82f6;
-    box-shadow:0 0 0 3px rgba(59,130,246,.15);
+.st-card-header h3{
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
 }
 
 
 /* ==========================
-   SECURITY ROWS
+   READONLY FIELDS
 ========================== */
 
-.hepha-field-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:20px;
-    padding:18px 0;
-    border-bottom:1px solid #1f2937;
+.st-field{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
 }
 
-.hepha-field-row:last-child{
-    border-bottom:none;
+.st-field:last-child{
+    margin-bottom: 0;
 }
 
-.hepha-field-row h4{
-    margin:0 0 6px;
-    color:#ffffff;
+.st-field label{
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
 }
 
-.hepha-field-row p{
-    margin:0;
-    color:#94a3b8;
-    font-size:14px;
-    line-height:1.6;
+.st-field input{
+    height: 48px;
+    padding: 0 14px;
+
+    border-radius: 12px;
+    border: 1px solid var(--border);
+
+    background: var(--bg);
+    color: var(--text);
+
+    outline: none;
+    font-size: 14px;
+    cursor: default;
 }
 
 
 /* ==========================
-   STATUS
+   ROWS (security / preferences / notifications)
 ========================== */
 
-.status-success{
-    display:inline-block;
-    padding:6px 14px;
-    border-radius:30px;
-    background:rgba(34,197,94,.15);
-    color:#22c55e;
-    font-size:13px;
-    font-weight:600;
+.st-row{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
 }
 
-.status-warning{
-    display:inline-block;
-    padding:6px 14px;
-    border-radius:30px;
-    background:rgba(245,158,11,.15);
-    color:#f59e0b;
-    font-size:13px;
-    font-weight:600;
+.st-row:last-of-type{
+    border-bottom: none;
+}
+
+.st-row-text{
+    min-width: 0;
+}
+
+.st-row-text h4{
+    margin: 0 0 4px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.st-row-text p{
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
+
+/* ==========================
+   PILLS / BADGES
+========================== */
+
+.st-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 6px 14px;
+    border-radius: 999px;
+
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    user-select: none;
+}
+
+.st-pill-success{
+    color: var(--success);
+    background: rgba(34, 197, 94, 0.12);
+}
+
+.st-pill-warning{
+    color: var(--warning);
+    background: rgba(245, 158, 11, 0.12);
+}
+
+.st-badge-note{
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 8px 16px;
+    border-radius: 999px;
+
+    background: var(--accent-soft);
+    border: 1px dashed var(--accent-line);
+    color: var(--accent);
+
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    user-select: none;
 }
 
 
@@ -230,68 +313,65 @@
    BUTTONS
 ========================== */
 
-.apollo-btn{
-    border:none;
-    border-radius:12px;
-    background:linear-gradient(135deg,#2563eb,#3b82f6);
-    color:#ffffff;
-    padding:12px 22px;
-    cursor:pointer;
-    font-size:14px;
-    font-weight:600;
-    transition:.25s ease;
+.st-btn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 11px 22px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: var(--grad);
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+
+    cursor: pointer;
+    white-space: nowrap;
+
+    transition: filter 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
 }
 
-.apollo-btn:hover{
-    transform:translateY(-2px);
-    box-shadow:0 12px 28px rgba(37,99,235,.30);
+.st-btn:hover{
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    color: #ffffff;
 }
 
-.disabled-btn{
-    border:none;
-    border-radius:12px;
-    background:#374151;
-    color:#d1d5db;
-    padding:12px 20px;
-    cursor:not-allowed;
+.st-btn:active{
+    transform: scale(0.98);
 }
 
-
-/* ==========================
-   PREFERENCES
-========================== */
-
-.zeus-option{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:20px;
-    padding:18px 0;
-    border-bottom:1px solid #1f2937;
+.st-btn-full{
+    width: 100%;
+    margin-top: 18px;
+    height: 48px;
 }
 
-.zeus-option:last-child{
-    border-bottom:none;
+.st-btn-ghost{
+    padding: 11px 20px;
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    background: transparent;
+    color: var(--muted);
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: not-allowed;
+    white-space: nowrap;
 }
 
-.zeus-option h4{
-    margin:0 0 6px;
-    color:#ffffff;
-}
-
-.zeus-option p{
-    margin:0;
-    color:#94a3b8;
-    line-height:1.6;
-}
-
-.coming-badge{
-    background:#1d4ed8;
-    color:#ffffff;
-    padding:8px 16px;
-    border-radius:30px;
-    font-size:13px;
-    font-weight:600;
+.st-btn-danger{
+    background: linear-gradient(135deg, #f87171, #ef4444);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
 }
 
 
@@ -299,44 +379,52 @@
    TOGGLE SWITCH
 ========================== */
 
-.switch{
-    position:relative;
-    display:inline-block;
-    width:54px;
-    height:30px;
+.st-switch{
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 30px;
+    flex-shrink: 0;
 }
 
-.switch input{
-    display:none;
+.st-switch input{
+    display: none;
 }
 
-.slider{
-    position:absolute;
-    inset:0;
-    background:#374151;
-    border-radius:30px;
-    cursor:pointer;
-    transition:.3s;
+.st-slider{
+    position: absolute;
+    inset: 0;
+
+    background: var(--border);
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    transition: background 0.25s ease;
 }
 
-.slider::before{
-    content:"";
-    position:absolute;
-    width:22px;
-    height:22px;
-    left:4px;
-    top:4px;
-    background:#ffffff;
-    border-radius:50%;
-    transition:.3s;
+.st-slider::before{
+    content: "";
+
+    position: absolute;
+    width: 22px;
+    height: 22px;
+
+    left: 4px;
+    top: 4px;
+
+    background: #ffffff;
+    border-radius: 50%;
+
+    transition: transform 0.25s ease;
 }
 
-.switch input:checked + .slider{
-    background:#2563eb;
+.st-switch input:checked + .st-slider{
+    background: var(--grad);
 }
 
-.switch input:checked + .slider::before{
-    transform:translateX(24px);
+.st-switch input:checked + .st-slider::before{
+    transform: translateX(22px);
 }
 
 
@@ -344,416 +432,135 @@
    DANGER ZONE
 ========================== */
 
-.ares-danger{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:30px;
+.st-danger{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+
+    padding: 22px 24px;
+
+    background: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.20);
+    border-radius: 16px;
 }
 
-.danger-left h3{
-    margin:0 0 8px;
-    color:#ef4444;
+.st-danger-text h3{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--danger);
 }
 
-.danger-left p{
-    margin:0;
-    color:#94a3b8;
-    line-height:1.7;
+.st-danger-text p{
+    margin: 0;
+    font-size: 13px;
+    color: var(--muted);
 }
 
-.danger-actions{
-    display:flex;
-    gap:14px;
-}
-
-.logout-btn,
-.delete-btn{
-    border:none;
-    border-radius:12px;
-    padding:13px 22px;
-    cursor:pointer;
-    color:#ffffff;
-    font-weight:600;
-    transition:.25s ease;
-}
-
-.logout-btn{
-    background:#2563eb;
-}
-
-.logout-btn:hover{
-    background:#1d4ed8;
-}
-
-.delete-btn{
-    background:#dc2626;
-}
-
-.delete-btn:hover{
-    background:#b91c1c;
+.st-danger form{
+    margin: 0;
 }
 
 
 /* ==========================
-   ANIMATION
-========================== */
+   MOBILE SHRINK GUARDS
+========================= */
 
-@keyframes settingsFade{
-
-    from{
-        opacity:0;
-        transform:translateY(12px);
-    }
-
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
-
-}
-/* =====================================================
-   ABFVERIFY - SETTINGS PAGE
-   PART 2
-   Light Theme + Responsive + Polish
-===================================================== */
-
-
-/* ==========================
-   LIGHT THEME
-========================== */
-
-body.light .atlas-header,
-body.light .hera-card,
-body.light .poseidon-card,
-body.light .ares-danger{
-    background:#ffffff;
-    border:1px solid #e5e7eb;
-    box-shadow:0 8px 25px rgba(15,23,42,.06);
+.st-header, .st-card, .st-row, .st-row-text, .st-field{
+    min-width: 0;
 }
 
-body.light .atlas-title,
-body.light .hera-card-header h3,
-body.light .hepha-field-row h4,
-body.light .zeus-option h4,
-body.light .danger-left h3{
-    color:#0f172a;
-}
-
-body.light .atlas-subtitle,
-body.light .ares-field label,
-body.light .hepha-field-row p,
-body.light .zeus-option p,
-body.light .danger-left p{
-    color:#64748b;
-}
-
-body.light .atlas-status{
-    background:#f8fafc;
-    border:1px solid #dbeafe;
-    color:#16a34a;
-}
-
-body.light .atlas-status i{
-    color:#16a34a;
-}
-
-body.light .ares-field input{
-    background:#ffffff;
-    color:#0f172a;
-    border:1px solid #d1d5db;
-}
-
-body.light .ares-field input:focus{
-    border-color:#2563eb;
-}
-
-body.light .hepha-field-row,
-body.light .zeus-option{
-    border-bottom:1px solid #e5e7eb;
-}
-
-body.light .slider{
-    background:#cbd5e1;
-}
-
-body.light .switch input:checked + .slider{
-    background:#2563eb;
-}
-
-body.light .coming-badge{
-    background:#2563eb;
+.st-row-text h4{
+    overflow-wrap: anywhere;
 }
 
 
 /* ==========================
-   CARD HOVER
-========================== */
+   RESPONSIVE
+========================= */
 
-body.light .hera-card:hover,
-body.light .poseidon-card:hover{
-    border-color:#2563eb;
-    box-shadow:0 16px 35px rgba(37,99,235,.15);
-}
-
-
-/* ==========================
-   BUTTON HOVER
-========================== */
-
-body.light .apollo-btn:hover,
-body.light .logout-btn:hover{
-    box-shadow:0 12px 25px rgba(37,99,235,.25);
-}
-
-body.light .delete-btn:hover{
-    box-shadow:0 12px 25px rgba(220,38,38,.20);
-}
-
-
-/* ==========================
-   LARGE TABLETS
-========================== */
-
-@media(max-width:1100px){
-
-    .hera-grid{
-        grid-template-columns:1fr;
-    }
-
-    .rug{
-        display: none;
+@media (max-width: 1100px){
+    .st-grid{
+        grid-template-columns: 1fr;
     }
 }
 
+@media (max-width: 768px){
 
-/* ==========================
-   TABLETS
-========================== */
-
-@media(max-width:900px){
-
-    .atlas-header{
-        flex-direction:column;
-        align-items:flex-start;
-        gap:20px;
+    .settings-page{
+        gap: 16px;
     }
 
-    .atlas-right{
-        width:100%;
+    .st-header{
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 20px;
     }
 
-    .atlas-status{
-        width:fit-content;
+    .st-title{
+        font-size: 22px;
     }
 
-    .rug{
-        display: none;
-    }
-}
-
-
-/* ==========================
-   MOBILE
-========================== */
-
-@media(max-width:768px){
-
-    .hephaestus-settings{
-        gap:20px;
+    .st-card{
+        padding: 20px;
     }
 
-    .atlas-header{
-        padding:20px;
-        border-radius:16px;
+    .st-row{
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
     }
 
-    .atlas-title{
-        font-size:24px;
+    .st-switch{
+        align-self: flex-start;
     }
 
-    .atlas-subtitle{
-        font-size:14px;
+    .st-btn, .st-btn-ghost, .st-badge-note{
+        width: 100%;
     }
 
-    .hera-card,
-    .poseidon-card,
-    .ares-danger{
-        padding:22px;
-        border-radius:16px;
+    .st-badge-note{
+        justify-content: center;
     }
 
-    .hera-card-header{
-        margin-bottom:20px;
-    }
-
-    .hera-card-header h3{
-        font-size:20px;
-    }
-
-    .hera-card-header i{
-        width:45px;
-        height:45px;
-        font-size:18px;
-    }
-
-    .hepha-field-row,
-    .zeus-option{
-        flex-direction:column;
-        align-items:flex-start;
-        gap:16px;
-    }
-
-    .apollo-btn,
-    .disabled-btn{
-        width:100%;
-    }
-
-    .switch{
-        align-self:flex-start;
-    }
-
-    .danger-actions{
-        width:100%;
-        flex-direction:column;
-    }
-
-    .logout-btn,
-    .delete-btn{
-        width:100%;
-    }
-
-    .rug{
-        display: none;
+    .st-danger{
+        flex-direction: column;
+        align-items: stretch;
+        text-align: left;
     }
 
 }
 
+@media (max-width: 480px){
 
-/* ==========================
-   SMALL PHONES
-========================== */
-
-@media(max-width:480px){
-
-    .atlas-header{
-        padding:18px;
+    .st-title{
+        font-size: 20px;
     }
 
-    .atlas-title{
-        font-size:22px;
+    .st-card-icon{
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
     }
 
-    .atlas-subtitle{
-        font-size:13px;
-        line-height:1.6;
+    .st-card-header h3{
+        font-size: 16px;
     }
 
-    .atlas-status{
-        width:100%;
-        justify-content:center;
-        font-size:13px;
-    }
-
-    .hera-card,
-    .poseidon-card,
-    .ares-danger{
-        padding:18px;
-    }
-
-    .hera-card-header{
-        flex-direction:column;
-        align-items:flex-start;
-        gap:12px;
-    }
-
-    .hera-card-header i{
-        width:42px;
-        height:42px;
-        border-radius:12px;
-    }
-
-    .hera-card-header h3{
-        font-size:18px;
-    }
-
-    .ares-field input{
-        height:48px;
-        font-size:14px;
-    }
-
-    .hepha-field-row h4,
-    .zeus-option h4{
-        font-size:16px;
-    }
-
-    .hepha-field-row p,
-    .zeus-option p{
-        font-size:13px;
-    }
-
-    .apollo-btn,
-    .logout-btn,
-    .delete-btn,
-    .disabled-btn{
-        height:48px;
-        font-size:14px;
-    }
-
-    .rug{
-        display: none;
+    .st-field input{
+        height: 46px;
+        font-size: 13px;
     }
 
 }
 
-
-/* ==========================
-   POLISH
-========================== */
-
-.hera-card,
-.poseidon-card,
-.ares-danger,
-.atlas-header{
-    transition:all .25s ease;
-}
-
-.apollo-btn,
-.logout-btn,
-.delete-btn,
-.disabled-btn{
-    transition:
-        transform .25s ease,
-        box-shadow .25s ease,
-        background .25s ease;
-}
-
-.apollo-btn:hover,
-.logout-btn:hover,
-.delete-btn:hover{
-    transform:translateY(-2px);
-}
-
-.apollo-btn:active,
-.logout-btn:active,
-.delete-btn:active{
-    transform:scale(.98);
-}
-
-.apollo-btn:disabled,
-.disabled-btn:disabled{
-    opacity:.7;
-    cursor:not-allowed;
-}
-
-.switch,
-.slider,
-.slider::before{
-    transition:all .25s ease;
-}
-
-.status-success,
-.status-warning,
-.coming-badge{
-    user-select:none;
+@media (max-width: 380px){
+    .st-pill, .st-badge-note{
+        font-size: 11px;
+    }
 }
