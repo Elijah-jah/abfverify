@@ -1,26 +1,30 @@
-from django.shortcuts import render
+import logging
+
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
 from django.db import transaction, models
+from django.db.models import Count, Q
 from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.http import require_POST
+
 from .models import (
     LogProduct, LogCategory, LogItem, LogPurchase,
-    LogOrderCounter
+    LogOrderCounter,
 )
 from wallet.models import Wallet, Transaction
 
+logger = logging.getLogger(__name__)
 
-from django.db.models import Count, Q
 
 @login_required
 def services_view(request):
     query = request.GET.get("q", "").strip().lower()
-    
+
     # Show ALL products, annotate stock count
     products = LogProduct.objects.annotate(
-        stock=Count('items', filter=Q(items__status='available'))
+        stock=Count("items", filter=Q(items__status="available"))
     ).select_related("category", "sub_category")
-    
+
     categories = LogCategory.objects.prefetch_related("subcategories").all()
     log_purchases = LogPurchase.objects.filter(user=request.user).select_related("log_item")
 
@@ -45,7 +49,6 @@ def services_view(request):
             "user_wallet": wallet,
         },
     )
-
 
 
 @login_required
@@ -82,7 +85,7 @@ def purchase_log(request, product_id):
                 return JsonResponse(
                     {
                         "success": False,
-                        "error": f"Insufficient funds. You need ₦{product.price:,.2f} but your balance is ₦{wallet.balance:,.2f}.",
+                        "error": f"Insufficient funds. You need \u20A6{product.price:,.2f} but your balance is \u20A6{wallet.balance:,.2f}.",
                     },
                     status=400,
                 )
@@ -99,6 +102,9 @@ def purchase_log(request, product_id):
                 product_title=product.title,
                 username=log_item.username,
                 password=log_item.password,
+                email_password=log_item.email_password,
+                two_fa=log_item.two_fa,
+                recovery_email=log_item.recovery_email,
                 price=product.price,
             )
 
@@ -115,14 +121,15 @@ def purchase_log(request, product_id):
                     "success": True,
                     "order_id": purchase.order_id,
                     "product_title": purchase.product_title,
-                    "username": purchase.username,
-                    "password": purchase.password,
+                    "creds": purchase.creds,
+                    "format_label": product.format_labels,
                     "price": str(purchase.price),
                     "new_balance": str(wallet.balance),
                 }
             )
 
-    except Exception as e:
+    except Exception:
+        logger.exception("Log purchase failed for user %s, product %s", request.user.id, product_id)
         return JsonResponse(
             {"success": False, "error": "Something went wrong. Please try again."},
             status=500,

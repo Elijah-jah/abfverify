@@ -8,8 +8,24 @@ def log_image_path(instance, filename):
     return f'log_images/{instance.id or "new"}_{instance.title[:20]}.{ext}'
 
 
+# Segments a log can carry, in display order. Used to build the
+# "EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL" format line.
+LOG_FORMAT_LABELS = "EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL"
+
+
+def build_creds(username="", password="", email_password="",
+                two_fa="", recovery_email=""):
+    """Pipe-separated login line with only the parts that exist."""
+    parts = [p for p in (username, password, email_password, two_fa, recovery_email) if p]
+    return ":".join(parts) if len(parts) <= 2 else " | ".join(parts)
+
+
 class LogCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(
+        blank=True,
+        help_text="Shown in the category info panel on the shop page"
+    )
     icon = models.CharField(
         max_length=50,
         default="fa-solid fa-box",
@@ -48,6 +64,11 @@ class LogProduct(models.Model):
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
+    format_labels = models.CharField(
+        max_length=255,
+        default=LOG_FORMAT_LABELS,
+        help_text="Pipe-separated format shown on the buy card, e.g. EMAIL | PASSWORD | 2FA"
+    )
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to=log_image_path, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -72,8 +93,16 @@ class LogItem(models.Model):
     product = models.ForeignKey(
         LogProduct, on_delete=models.CASCADE, related_name="items"
     )
+    # Segment 1 — EMAIL / UID
     username = models.CharField(max_length=255)
+    # Segment 2 — PASSWORD
     password = models.CharField(max_length=255)
+    # Segment 3 — EMAIL PASSWORD (optional)
+    email_password = models.CharField(max_length=255, blank=True, default="")
+    # Segment 4 — 2FA code (optional)
+    two_fa = models.CharField(max_length=255, blank=True, default="")
+    # Segment 5 — RECOVERY EMAIL (optional)
+    recovery_email = models.CharField(max_length=255, blank=True, default="")
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default="available"
     )
@@ -84,6 +113,13 @@ class LogItem(models.Model):
 
     def __str__(self):
         return f"{self.product.title} — {self.username}"
+
+    @property
+    def creds(self):
+        return build_creds(
+            self.username, self.password,
+            self.email_password, self.two_fa, self.recovery_email
+        )
 
 
 class LogOrderCounter(models.Model):
@@ -114,6 +150,9 @@ class LogPurchase(models.Model):
     product_title = models.CharField(max_length=200)
     username = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
+    email_password = models.CharField(max_length=255, blank=True, default="")
+    two_fa = models.CharField(max_length=255, blank=True, default="")
+    recovery_email = models.CharField(max_length=255, blank=True, default="")
     price = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -127,3 +166,10 @@ class LogPurchase(models.Model):
 
     def __str__(self):
         return f"{self.order_id} — {self.product_title}"
+
+    @property
+    def creds(self):
+        return build_creds(
+            self.username, self.password,
+            self.email_password, self.two_fa, self.recovery_email
+        )

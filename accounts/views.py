@@ -1,39 +1,43 @@
 import logging
+import requests
 from datetime import timedelta
-from decimal import Decimal
-from django.db.models import Sum
-from django.shortcuts import render, redirect, get_object_or_404
+
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
 from django.db import transaction
+from django.db.models import Sum
+from django.conf import settings
+from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string
 from django.urls import reverse
-from django_ratelimit.decorators import ratelimit
 from django.utils import timezone
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.decorators.cache import never_cache
+from django_ratelimit.decorators import ratelimit
+
 from countries.models import Country
 from services.models import Service
 from wallet.models import Wallet, Transaction
 from pricing.models import Pricing
 from providers.factory import get_provider
 from orders.models import Order
+from marketplace.models import LogPurchase
+
 from .models import User, UserSettings
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.conf import settings
-from django.contrib.auth.forms import SetPasswordForm
-from marketplace.models import LogPurchase  # ← Add this import
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-# reverse, transaction, get_object_or_404, Wallet, Transaction, logger — already imported
 
 logger = logging.getLogger(__name__)
 
+
+# ==========================
+# ORDERS
+# ==========================
 
 @ratelimit(key='user', rate='10/m', method='POST', block=True)
 @login_required
@@ -82,7 +86,6 @@ def cancel_order_view(request):
     return redirect("sms")
 
 
-
 @login_required
 def orders_view(request):
     user_orders = Order.objects.filter(user=request.user).order_by("-created_at")
@@ -110,9 +113,8 @@ def orders_view(request):
         })
 
     # ---- Log purchases ----
-    # LogPurchase fields: id, user, order_id, log_item, product_title,
-    # username, password, price, created_at (no status field — logs
-    # are delivered instantly, so they are always "completed").
+    # LogPurchase has no status field — logs are delivered
+    # instantly, so they are always "completed".
     for lp in log_purchases:
         purchases.append({
             "type": "log",
@@ -120,7 +122,7 @@ def orders_view(request):
             "detail": "",
             "otp": "",
             "uid": "",
-            "format_string": f"{lp.username}:{lp.password}",
+            "format_string": lp.creds,
             "format_labels": "EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL",
             "description": "",
             "price": lp.price,
@@ -142,6 +144,10 @@ def orders_view(request):
     )
 
 
+# ==========================
+# SMS / BUY NUMBER
+# ==========================
+
 @login_required
 def sms_view(request):
 
@@ -151,7 +157,6 @@ def sms_view(request):
     wallet, created = Wallet.objects.get_or_create(
         user=request.user
     )
-
 
     if request.method == "POST":
 
@@ -231,8 +236,10 @@ def sms_view(request):
         provider = get_provider(server=server)
 
         # Use correct identifiers based on server
+        # (defaults keep provider.purchase() safe for any server)
+        service_identifier = service.code
+        country_identifier = country.id
         if server == "server2":
-            service_identifier = service.code
             country_identifier = 187
 
         try:
@@ -283,6 +290,10 @@ def sms_view(request):
         },
     )
 
+
+# ==========================
+# AUTH
+# ==========================
 
 @ratelimit(key='ip', rate='3/m', method='POST', block=True)
 def register_view(request):
@@ -374,56 +385,6 @@ def register_view(request):
     )
 
 
-
-@login_required
-def settings_view(request):
-
-    settings, created = UserSettings.objects.get_or_create(
-        user=request.user
-    )
-
-    if request.method == "POST":
-
-        settings.email_notifications = (
-            "email_notifications" in request.POST
-        )
-
-        settings.order_notifications = (
-            "order_notifications" in request.POST
-        )
-
-        settings.save()
-
-        messages.success(
-            request,
-            "Settings updated successfully."
-        )
-
-    return render(
-        request,
-        "panel/settings.html",
-        {
-            "settings": settings
-        }
-    )
-
-
-
-@never_cache
-def logout_view(request):
-
-    logout(request)
-
-    response = redirect("website:home")
-
-    response["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response["Pragma"] = "no-cache"
-    response["Expires"] = "0"
-
-    return response
-
-
-
 @ratelimit(key='ip', rate='5/m', method='POST', block=True)
 def login_view(request):
 
@@ -463,7 +424,6 @@ def login_view(request):
             logger.info("User %s logged in successfully", user.id)
             return redirect("dashboard")
 
-
         logger.warning("Login failed for %s: invalid credentials", email)
         messages.error(
             request,
@@ -484,13 +444,23 @@ def login_view(request):
     )
 
 
+@never_cache
+def logout_view(request):
+
+    logout(request)
+
+    response = redirect("website:home")
+
+    response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+
+    return response
+
+
 # ==========================
 # USER DASHBOARD
 # ==========================
-
-from datetime import timedelta
-from django.utils import timezone
-
 
 def _order_timer_running(o):
     """True only while the order's countdown is still ticking."""
@@ -613,8 +583,9 @@ def dismiss_notice(request):
         request.session['dashboard_notice_dismissed'] = True
     return redirect('dashboard')
 
+
 # ==========================
-# WALLET PAGE
+# WALLET & TRANSACTIONS
 # ==========================
 
 @login_required
@@ -624,7 +595,6 @@ def wallet_view(request):
         user=request.user
     )
 
-
     return render(
         request,
         "panel/wallet.html",
@@ -632,7 +602,6 @@ def wallet_view(request):
             "wallet": wallet
         }
     )
-
 
 
 @login_required
@@ -671,142 +640,47 @@ def transactions_page(request):
         }
     )
 
+
 # ==========================
-# SERVICES
+# SETTINGS
 # ==========================
 
 @login_required
-def services_view(request):
-    from marketplace.models import LogCategory, LogProduct
+def settings_view(request):
 
-    # Categories + their products, with live stock per product
-    categories = []
-    for cat in LogCategory.objects.all():
-        prods = []
-        total_stock = 0
-        for p in LogProduct.objects.filter(category=cat):
-            stock = p.in_stock  # counts LogItem with status="available"
-            total_stock += stock
-            prods.append({
-                "id": p.id,
-                "title": p.title,
-                "description": p.description or "",
-                "price": p.price,
-                "stock": stock,
-            })
+    user_settings, created = UserSettings.objects.get_or_create(
+        user=request.user
+    )
 
-        # LogCategory has no description field, so build one
-        desc = ""
-        if prods:
-            desc = (
-                f"{len(prods)} product{'s' if len(prods) != 1 else ''} "
-                f"\u00b7 {total_stock} log{'s' if total_stock != 1 else ''} in stock"
-            )
+    if request.method == "POST":
 
-        categories.append({
-            "id": cat.id,
-            "name": cat.name,
-            "description": desc,
-            "products": prods,
-        })
+        user_settings.email_notifications = (
+            "email_notifications" in request.POST
+        )
 
-    wallet, _ = Wallet.objects.get_or_create(user=request.user)
+        user_settings.order_notifications = (
+            "order_notifications" in request.POST
+        )
+
+        user_settings.save()
+
+        messages.success(
+            request,
+            "Settings updated successfully."
+        )
 
     return render(
         request,
-        "panel/services.html",
+        "panel/settings.html",
         {
-            "categories": categories,
-            "wallet_balance": wallet.balance,
-            "purchase_url": reverse("purchase_log"),
-        },
+            "settings": user_settings
+        }
     )
 
 
-@login_required
-@require_POST
-def purchase_log_view(request):
-    """AJAX endpoint: buy one available LogItem for a LogProduct."""
-    from marketplace.models import LogProduct, LogItem, LogPurchase
-
-    product_id = request.POST.get("product_id")
-    if not product_id:
-        return JsonResponse({"success": False, "error": "Missing product."}, status=400)
-
-    product = get_object_or_404(LogProduct, id=product_id)
-
-    wallet, _ = Wallet.objects.get_or_create(user=request.user)
-
-    if wallet.balance < product.price:
-        return JsonResponse({
-            "success": False,
-            "error": "Insufficient wallet balance. Please fund your wallet and try again.",
-        })
-
-    try:
-        with transaction.atomic():
-            # Lock one available item so two buyers never get the same log
-            item = (
-                LogItem.objects
-                .select_for_update()
-                .filter(product=product, status="available")
-                .first()
-            )
-            if item is None:
-                return JsonResponse({
-                    "success": False,
-                    "error": "Sorry, this item just sold out.",
-                })
-
-            item.status = "sold"
-            item.save(update_fields=["status"])
-
-            purchase = LogPurchase.objects.create(
-                user=request.user,
-                log_item=item,
-                product_title=product.title,
-                username=item.username,
-                password=item.password,
-                price=product.price,
-            )
-
-            wallet.balance -= product.price
-            wallet.save(update_fields=["balance"])
-
-            Transaction.objects.create(
-                user=request.user,
-                transaction_type="payment",
-                amount=product.price,
-                status="successful",
-                description=f"Log purchase: {product.title}",
-            )
-
-    except Exception as e:
-        logger.exception("Log purchase failed for user %s, product %s", request.user.id, product_id)
-        return JsonResponse({
-            "success": False,
-            "error": "Purchase failed. Please try again.",
-        })
-
-    return JsonResponse({
-        "success": True,
-        "order_id": purchase.order_id,
-        "creds": f"{purchase.username}:{purchase.password}",
-        "new_balance": str(wallet.balance),
-    })
-
-
-
-def landing_view(request):
-    return render(request, "website/home.html")
-
-
-
-# ============================================================
-# PASSWORD RESET VIEWS
-# ============================================================
-
-import requests
+# ==========================
+# PASSWORD RESET (Brevo HTTP API)
+# ==========================
 
 def forgot_password_view(request):
     """Show forgot password form and send reset email via Brevo HTTP API."""
@@ -850,7 +724,7 @@ def forgot_password_view(request):
 
         # Send via Brevo HTTP API
         brevo_api_key = getattr(settings, 'BREVO_API_KEY', None)
-        
+
         if not brevo_api_key:
             logger.error("BREVO_API_KEY is not set")
             return render(request, "accounts/forgot_password.html", {
@@ -878,9 +752,9 @@ def forgot_password_view(request):
                 json=payload,
                 timeout=10
             )
-            
+
             logger.info("Brevo API status: %s", response.status_code)
-            
+
             if response.status_code in (200, 201, 202):
                 logger.info("Password reset email sent to %s", email)
                 return render(request, "accounts/reset_email_sent.html")
@@ -889,7 +763,7 @@ def forgot_password_view(request):
                 return render(request, "accounts/forgot_password.html", {
                     "error": "Unable to send email. Please contact support."
                 })
-                
+
         except Exception as e:
             logger.error("Brevo API request failed: %s", str(e))
             return render(request, "accounts/forgot_password.html", {
@@ -939,6 +813,7 @@ def reset_password_confirm_view(request, uidb64, token):
 def reset_password_complete_view(request):
     """Password successfully changed."""
     return render(request, "accounts/password_reset_complete.html")
+
 
 @ratelimit(key='user', rate='5/m', method='POST', block=True)
 @login_required
@@ -1005,12 +880,21 @@ def change_password_view(request):
     )
 
 
+# ==========================
+# MISC PAGES
+# ==========================
+
+def landing_view(request):
+    return render(request, "website/home.html")
+
+
 def privacy_policy(request):
     return render(request, "website/privacypolicy.html")
 
 
 def terms_of_service(request):
     return render(request, "website/termsofservice.html")
+
 
 def ratelimited_error(request, exception=None):
     return render(request, '429.html', status=429)
