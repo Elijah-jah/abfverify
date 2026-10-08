@@ -28,6 +28,9 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.contrib.auth.forms import SetPasswordForm
 from marketplace.models import LogPurchase  # ← Add this import
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+# reverse, transaction, get_object_or_404, Wallet, Transaction, logger — already imported
 
 logger = logging.getLogger(__name__)
 
@@ -674,11 +677,123 @@ def transactions_page(request):
 
 @login_required
 def services_view(request):
+    from marketplace.models import LogCategory, LogProduct
+
+    # Categories + their products, with live stock per product
+    categories = []
+    for cat in LogCategory.objects.all():
+        prods = []
+        total_stock = 0
+        for p in LogProduct.objects.filter(category=cat):
+            stock = p.in_stock  # counts LogItem with status="available"
+            total_stock += stock
+            prods.append({
+                "id": p.id,
+                "title": p.title,
+                "description": p.description or "",
+                "price": p.price,
+                "stock": stock,
+            })
+
+        # LogCategory has no description field, so build one
+        desc = ""
+        if prods:
+            desc = (
+                f"{len(prods)} product{'s' if len(prods) != 1 else ''} "
+                f"\u00b7 {total_stock} log{'s' if total_stock != 1 else ''} in stock"
+            )
+
+        categories.append({
+            "id": cat.id,
+            "name": cat.name,
+            "description": desc,
+            "products": prods,
+        })
+
+    wallet, _ = Wallet.objects.get_or_create(user=request.user)
 
     return render(
         request,
-        "panel/services.html"
+        "panel/services.html",
+        {
+            "categories": categories,
+            "wallet_balance": wallet.balance,
+            "purchase_url": reverse("purchase_log"),
+        },
     )
+
+
+@login_required
+@require_POST
+def purchase_log_view(request):
+    """AJAX endpoint: buy one available LogItem for a LogProduct."""
+    from marketplace.models import LogProduct, LogItem, LogPurchase
+
+    product_id = request.POST.get("product_id")
+    if not product_id:
+        return JsonResponse({"success": False, "error": "Missing product."}, status=400)
+
+    product = get_object_or_404(LogProduct, id=product_id)
+
+    wallet, _ = Wallet.objects.get_or_create(user=request.user)
+
+    if wallet.balance < product.price:
+        return JsonResponse({
+            "success": False,
+            "error": "Insufficient wallet balance. Please fund your wallet and try again.",
+        })
+
+    try:
+        with transaction.atomic():
+            # Lock one available item so two buyers never get the same log
+            item = (
+                LogItem.objects
+                .select_for_update()
+                .filter(product=product, status="available")
+                .first()
+            )
+            if item is None:
+                return JsonResponse({
+                    "success": False,
+                    "error": "Sorry, this item just sold out.",
+                })
+
+            item.status = "sold"
+            item.save(update_fields=["status"])
+
+            purchase = LogPurchase.objects.create(
+                user=request.user,
+                log_item=item,
+                product_title=product.title,
+                username=item.username,
+                password=item.password,
+                price=product.price,
+            )
+
+            wallet.balance -= product.price
+            wallet.save(update_fields=["balance"])
+
+            Transaction.objects.create(
+                user=request.user,
+                transaction_type="payment",
+                amount=product.price,
+                status="successful",
+                description=f"Log purchase: {product.title}",
+            )
+
+    except Exception as e:
+        logger.exception("Log purchase failed for user %s, product %s", request.user.id, product_id)
+        return JsonResponse({
+            "success": False,
+            "error": "Purchase failed. Please try again.",
+        })
+
+    return JsonResponse({
+        "success": True,
+        "order_id": purchase.order_id,
+        "creds": f"{purchase.username}:{purchase.password}",
+        "new_balance": str(wallet.balance),
+    })
 
 
 

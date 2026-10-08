@@ -1,903 +1,392 @@
 {% extends "panel/dashboard_base.html" %}
 {% load static %}
 
-{% block title %}Buy Logs{% endblock %}
-{% block page_title %}Buy Logs{% endblock %}
+{% block title %}Services{% endblock %}
+{% block page_title %}Services{% endblock %}
 {% block section_title %}Marketplace{% endblock %}
 
 {% block extra_css %}
-<style>
-/* ===== BASE MARKETPLACE ===== */
-.mp-wrap { padding: 0 1.5rem 2rem; }
-
-/* Tabs */
-.mp-tabs {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid var(--border-color, #e5e7eb);
-    padding-bottom: 0.5rem;
-}
-.mp-tab {
-    padding: 0.6rem 1.2rem;
-    border-radius: 10px;
-    border: none;
-    background: transparent;
-    color: var(--muted-color, #64748b);
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.mp-tab:hover { color: #0d6efd; background: rgba(13,110,253,0.05); }
-.mp-tab.active {
-    background: #0d6efd;
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(13,110,253,0.2);
-}
-
-/* Search */
-.mp-topbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-.mp-search {
-    flex: 1;
-    min-width: 220px;
-    position: relative;
-}
-.mp-search input {
-    width: 100%;
-    padding: 0.85rem 1rem 0.85rem 2.8rem;
-    border-radius: 12px;
-    border: 1px solid var(--border-color, #ddd);
-    background: var(--input-bg, #fff);
-    color: var(--text-color, #333);
-    font-size: 0.95rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-.mp-search input:focus {
-    outline: none;
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 3px rgba(13,110,253,0.12);
-}
-.mp-search i {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #94a3b8;
-}
-
-/* Category Pills */
-.mp-categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-bottom: 1.25rem;
-    align-items: center;
-}
-.cat-pill {
-    padding: 0.55rem 1.1rem;
-    border-radius: 50px;
-    border: 1px solid var(--border-color, #ddd);
-    background: var(--card-bg, #fff);
-    color: var(--muted-color, #666);
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
-.cat-pill:hover { border-color: #0d6efd; color: #0d6efd; }
-.cat-pill.active {
-    background: #0d6efd;
-    color: #fff;
-    border-color: #0d6efd;
-    box-shadow: 0 4px 12px rgba(13,110,253,0.25);
-}
-
-/* See More button */
-.btn-see-more {
-    padding: 0.55rem 1.1rem;
-    border-radius: 50px;
-    border: 1px dashed var(--border-color, #cbd5e1);
-    background: transparent;
-    color: #0d6efd;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
-.btn-see-more:hover {
-    background: rgba(13,110,253,0.08);
-    border-style: solid;
-}
-.cat-hidden {
-    display: none !important;
-}
-
-.sub-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #0d6efd;
-    background: rgba(13,110,253,0.08);
-    padding: 0.3rem 0.7rem;
-    border-radius: 20px;
-    width: fit-content;
-}
-
-/* ===== VERTICAL PRODUCT CARDS ===== */
-.products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1.25rem;
-}
-.product-card {
-    background: var(--card-bg, #fff);
-    border: 1px solid var(--border-color, #e5e7eb);
-    border-radius: 16px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-}
-.product-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.1);
-}
-.prod-img-wrap {
-    width: 100%;
-    height: 160px;
-    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-}
-.prod-img-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-.prod-img-wrap .prod-fallback {
-    font-size: 3rem;
-    color: #94a3b8;
-}
-.prod-body {
-    padding: 1.1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    flex: 1;
-}
-.prod-title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: var(--text-color, #1e293b);
-    line-height: 1.3;
-    word-break: break-word;
-}
-.prod-desc {
-    font-size: 0.85rem;
-    color: var(--muted-color, #64748b);
-    line-height: 1.5;
-    flex: 1;
-}
-.prod-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 0.4rem;
-}
-/* LIGHT MODE: ABFverify blue price */
-.prod-price {
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: #0d6efd;
-}
-.prod-stock {
-    font-size: 0.78rem;
-    font-weight: 700;
-    padding: 0.3rem 0.7rem;
-    border-radius: 20px;
-}
-.stock-in { background: #dcfce7; color: #166534; }
-.stock-out { background: #fee2e2; color: #991b1b; }
-.btn-buy {
-    width: 100%;
-    padding: 0.8rem;
-    border-radius: 10px;
-    border: none;
-    background: #0d6efd;
-    color: #fff;
-    font-weight: 700;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-top: 0.4rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-}
-.btn-buy:hover { background: #0b5ed7; transform: translateY(-1px); }
-.btn-buy:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-    transform: none;
-}
-.empty-state {
-    text-align: center;
-    padding: 4rem 1rem;
-    color: var(--muted-color, #94a3b8);
-}
-.empty-state i { font-size: 3.5rem; margin-bottom: 1rem; display: block; }
-
-/* Purchases Tab */
-.purchases-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-.purchase-card {
-    background: var(--card-bg, #fff);
-    border: 1px solid var(--border-color, #e5e7eb);
-    border-radius: 14px;
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    border-left: 4px solid #0d6efd;
-}
-.purchase-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.purchase-id {
-    font-family: monospace;
-    font-weight: 700;
-    color: #0d6efd;
-    font-size: 0.95rem;
-}
-.purchase-status {
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 0.3rem 0.7rem;
-    border-radius: 20px;
-    background: rgba(13,110,253,0.1);
-    color: #0d6efd;
-}
-.purchase-product {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: var(--text-color, #1e293b);
-}
-.purchase-creds {
-    background: var(--creds-bg, #f8fafc);
-    border-radius: 10px;
-    padding: 0.75rem 1rem;
-    font-family: monospace;
-    font-size: 0.9rem;
-    color: #334155;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-}
-.purchase-creds div span {
-    color: #64748b;
-    font-family: sans-serif;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-right: 0.5rem;
-}
-.purchase-date {
-    font-size: 0.8rem;
-    color: #94a3b8;
-}
-
-/* ===== MODALS - ABFVERIFY THEME ===== */
-.mp-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(6px);
-    z-index: 99999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-}
-.mp-modal.show { display: flex; }
-.mp-modal-box {
-    background: var(--card-bg, #fff);
-    border-radius: 18px;
-    max-width: 420px;
-    width: 100%;
-    padding: 1.75rem;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.25);
-    text-align: center;
-    animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
-    border: 2px solid var(--border-color, #e5e7eb);
-}
-.mp-modal-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    font-size: 1.8rem;
-}
-.mp-modal-icon.success {
-    background: rgba(13,110,253,0.1);
-    color: #0d6efd;
-}
-.mp-modal-icon.error {
-    background: rgba(220,53,69,0.1);
-    color: #dc3545;
-}
-.mp-modal-icon.warn {
-    background: rgba(255,193,7,0.1);
-    color: #f59e0b;
-}
-.mp-modal-box h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1.25rem;
-    color: var(--text-color, #1e293b);
-}
-.mp-modal-box p {
-    font-size: 0.95rem;
-    color: var(--muted-color, #64748b);
-    margin-bottom: 1.5rem;
-    line-height: 1.5;
-}
-
-.order-id-badge {
-    display: inline-block;
-    background: rgba(13,110,253,0.08);
-    color: #0d6efd;
-    padding: 0.4rem 1rem;
-    border-radius: 8px;
-    font-family: monospace;
-    font-weight: 700;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-    letter-spacing: 0.5px;
-}
-
-.cred-field {
-    background: var(--creds-bg, #f8fafc);
-    border-radius: 12px;
-    padding: 0.9rem 1rem;
-    margin: 0.5rem 0;
-    text-align: left;
-    border: 1px solid var(--border-color, #e2e8f0);
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-.cred-field label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: #94a3b8;
-    font-weight: 700;
-    min-width: 80px;
-}
-.cred-field span {
-    font-family: 'SF Mono', Monaco, monospace;
-    font-size: 0.95rem;
-    color: var(--text-color, #1e293b);
-    flex: 1;
-    word-break: break-all;
-}
-.btn-copy-cred {
-    background: var(--border-color, #e2e8f0);
-    border: none;
-    padding: 0.35rem 0.7rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #475569;
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0;
-}
-.btn-copy-cred:hover { background: #0d6efd; color: #fff; }
-
-.mp-modal-actions {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-}
-.mp-modal-actions button, .mp-btn {
-    flex: 1;
-    padding: 0.85rem;
-    border-radius: 12px;
-    border: none;
-    font-weight: 700;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.mp-btn-primary {
-    background: #0d6efd;
-    color: #fff;
-}
-.mp-btn-primary:hover { background: #0b5ed7; transform: translateY(-1px); }
-.mp-btn-secondary {
-    background: var(--border-color, #e2e8f0);
-    color: var(--text-color, #475569);
-}
-.mp-btn-secondary:hover { background: #cbd5e1; }
-.mp-btn-full {
-    width: 100%;
-    margin-top: 1rem;
-}
-
-.confirm-price {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #0d6efd;
-    margin: 0.75rem 0;
-}
-
-@keyframes popIn {
-    from { transform: scale(0.85) translateY(20px); opacity: 0; }
-    to   { transform: scale(1) translateY(0); opacity: 1; }
-}
-
-/* ===== DARK MODE ===== */
-body.dark .product-card, html[data-theme="dark"] .product-card {
-    background: #1e1e2f;
-    border-color: #2a2a3f;
-}
-body.dark .product-card:hover, html[data-theme="dark"] .product-card:hover {
-    border-color: #3b82f6;
-    box-shadow: 0 12px 28px rgba(0,0,0,0.3);
-}
-body.dark .prod-img-wrap, html[data-theme="dark"] .prod-img-wrap {
-    background: linear-gradient(135deg, #1e293b, #0f172a);
-}
-body.dark .prod-fallback, html[data-theme="dark"] .prod-fallback { color: #475569; }
-body.dark .prod-title, html[data-theme="dark"] .prod-title { color: #f1f5f9; }
-body.dark .prod-desc, html[data-theme="dark"] .prod-desc { color: #94a3b8; }
-body.dark .prod-price, html[data-theme="dark"] .prod-price { color: #3b82f6; }
-body.dark .mp-search input, html[data-theme="dark"] .mp-search input {
-    background: #1e1e2f;
-    border-color: #2a2a3f;
-    color: #f1f5f9;
-}
-body.dark .mp-modal-box, html[data-theme="dark"] .mp-modal-box {
-    background: #1e1e2f;
-    border-color: #2a2a3f;
-}
-body.dark .mp-modal-box h3, html[data-theme="dark"] .mp-modal-box h3 { color: #f1f5f9; }
-body.dark .mp-modal-box p, html[data-theme="dark"] .mp-modal-box p { color: #94a3b8; }
-body.dark .cred-field, html[data-theme="dark"] .cred-field {
-    background: #2a2a3f;
-    border-color: #3f3f5f;
-}
-body.dark .cred-field span, html[data-theme="dark"] .cred-field span { color: #e2e8f0; }
-body.dark .purchase-card, html[data-theme="dark"] .purchase-card {
-    background: #1e1e2f;
-    border-color: #2a2a3f;
-}
-body.dark .purchase-product, html[data-theme="dark"] .purchase-product { color: #f1f5f9; }
-body.dark .purchase-creds, html[data-theme="dark"] .purchase-creds {
-    background: #2a2a3f;
-    color: #e2e8f0;
-}
-body.dark .purchase-creds div span, html[data-theme="dark"] .purchase-creds div span { color: #94a3b8; }
-body.dark .mp-btn-secondary, html[data-theme="dark"] .mp-btn-secondary {
-    background: #2a2a3f;
-    color: #cbd5e1;
-}
-body.dark .mp-btn-secondary:hover, html[data-theme="dark"] .mp-btn-secondary:hover { background: #3f3f5f; }
-body.dark .order-id-badge, html[data-theme="dark"] .order-id-badge {
-    background: rgba(59,130,246,0.15);
-    color: #3b82f6;
-}
-body.dark .purchase-status, html[data-theme="dark"] .purchase-status {
-    background: rgba(59,130,246,0.15);
-    color: #3b82f6;
-}
-body.dark .purchase-id, html[data-theme="dark"] .purchase-id { color: #3b82f6; }
-body.dark .mp-modal-icon.success, html[data-theme="dark"] .mp-modal-icon.success {
-    background: rgba(59,130,246,0.15);
-    color: #3b82f6;
-}
-body.dark .mp-modal-icon.error, html[data-theme="dark"] .mp-modal-icon.error {
-    background: rgba(239,68,68,0.15);
-    color: #ef4444;
-}
-body.dark .confirm-price, html[data-theme="dark"] .confirm-price { color: #3b82f6; }
-
-@media (max-width: 640px) {
-    .products-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
-    .mp-topbar { flex-direction: column; align-items: stretch; }
-    .mp-modal-actions { flex-direction: column; }
-}
-</style>
+<link rel="stylesheet" href="{% static 'css/services.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="mp-wrap">
 
-    <!-- TABS -->
-    <div class="mp-tabs">
-        <button class="mp-tab active" onclick="switchTab('marketplace', this)">
-            <i class="fa-solid fa-store"></i> Browse Logs
-        </button>
-        <button class="mp-tab" onclick="switchTab('purchases', this)">
-            <i class="fa-solid fa-box-open"></i> My Purchases
-            {% if log_purchases.count > 0 %}
-            <span style="background:#0d6efd;color:#fff;font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:10px;margin-left:0.4rem;">{{ log_purchases.count }}</span>
-            {% endif %}
-        </button>
+<!-- PAGE HEAD -->
+<div class="logs-head">
+    <h2 class="page-heading">Account Logs Shop</h2>
+    <p class="page-sub">Verified account logs delivered instantly after payment.</p>
+</div>
+
+<!-- CATEGORY PILLS -->
+<div class="cat-bar" id="catBar">
+    <button class="cat-pill active" data-cat="all">All</button>
+    {% for cat in categories %}
+    <button class="cat-pill" data-cat="{{ cat.id }}">{{ cat.name }}</button>
+    {% endfor %}
+</div>
+
+<!-- CATEGORY DESCRIPTION PANEL -->
+<div class="cat-panel" id="catPanel" hidden>
+    <div class="cat-panel-icon"><i class="bi bi-grid-fill"></i></div>
+    <div class="cat-panel-text">
+        <h6 id="catPanelName"></h6>
+        <p id="catPanelDesc"></p>
     </div>
+</div>
 
-    <!-- MARKETPLACE TAB -->
-    <div id="tab-marketplace">
-        <div class="mp-topbar">
-            <div class="mp-search">
-                <i class="fa-solid fa-search"></i>
-                <input type="text" id="searchInput" placeholder="Search logs, categories..." value="{{ query }}">
+<!-- SEARCH -->
+<div class="logs-tools">
+    <div class="logs-search-wrap">
+        <i class="bi bi-search"></i>
+        <input type="text" id="logSearch" placeholder="Search products..." autocomplete="off">
+    </div>
+</div>
+
+<!-- PRODUCT GRID -->
+<div class="prod-grid" id="prodGrid">
+    {% for cat in categories %}
+        {% for product in cat.products %}
+        <div class="prod-card" data-cat="{{ cat.id }}" data-name="{{ product.title|lower }}"
+             data-id="{{ product.id }}" data-price="{{ product.price }}" data-stock="{{ product.stock }}"
+             data-desc="{{ product.description|default:''|lower }}">
+            <div class="prod-top">
+                <span class="prod-cat">{{ cat.name }}</span>
+                <span class="prod-stock {% if product.stock == 0 %}out{% endif %}">
+                    {% if product.stock == 0 %}Sold out{% else %}{{ product.stock }} in stock{% endif %}
+                </span>
+            </div>
+            <h6 class="prod-name">{{ product.title }}</h6>
+            <p class="prod-desc">{{ product.description|default:''|truncatechars:80 }}</p>
+            <div class="prod-foot">
+                <span class="prod-price mono">&#8358;{{ product.price }}</span>
+                <button class="prod-buy" {% if product.stock == 0 %}disabled{% endif %}>
+                    {% if product.stock == 0 %}Sold out{% else %}<i class="bi bi-bag-plus"></i>Buy{% endif %}
+                </button>
             </div>
         </div>
+        {% endfor %}
+    {% endfor %}
+</div>
 
-        <!-- CATEGORY PILLS WITH SEE MORE -->
-        <div class="mp-categories" id="categoryPills">
-            <button class="cat-pill active" data-cat="all">All</button>
-            {% for cat in categories %}
-            <button class="cat-pill {% if forloop.counter > 3 %}cat-hidden{% endif %}" data-cat="{{ cat.id }}">
-                <i class="{{ cat.icon }}"></i> {{ cat.name }}
+<p class="flow-empty" id="prodEmpty" hidden>No products match your search.</p>
+
+<!-- ================= CARD 1: CONFIRM PURCHASE ================= -->
+<div class="mp-overlay" id="buyModal" hidden>
+    <div class="log-modal" role="dialog" aria-modal="true">
+
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+        <div class="lm-icon"><i class="bi bi-question-lg"></i></div>
+
+        <h5 class="lm-title">Confirm Purchase</h5>
+        <p class="lm-sub">Are you sure you want to buy this item?</p>
+
+        <h6 class="lm-product" id="modalProductName"></h6>
+        <div class="lm-price mono" id="modalPrice">&#8358;0.00</div>
+
+        <!-- format hint -->
+        <div class="lm-format">
+            <span class="lm-format-label">Format</span>
+            <span class="lm-format-val mono">EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL</span>
+        </div>
+
+        <div class="lm-actions">
+            <button type="button" class="lm-btn lm-btn-primary" id="modalYesBtn">Yes, Continue</button>
+            <button type="button" class="lm-btn lm-btn-ghost" id="modalNoBtn">No, Cancel</button>
+        </div>
+
+        <p class="log-modal-error" id="modalError" hidden></p>
+
+    </div>
+</div>
+
+<!-- ================= CARD 2: LOG DETAILS ================= -->
+<div class="mp-overlay" id="logModal" hidden>
+    <div class="log-modal" role="dialog" aria-modal="true">
+
+        <div class="lm-icon lm-icon-check"><i class="bi bi-check-lg"></i></div>
+
+        <h5 class="lm-title">Purchase Successful!</h5>
+
+        <!-- order id badge -->
+        <span class="lm-order mono" id="logOrderId" hidden></span>
+
+        <p class="lm-save">Save these credentials immediately. They are also saved in My&nbsp;Orders.</p>
+
+        <!-- dynamic format label -->
+        <div class="lm-format">
+            <span class="lm-format-label">Format</span>
+            <span class="lm-format-val mono" id="logFormatLabel">EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL</span>
+        </div>
+
+        <p class="creds-label">Your login details</p>
+
+        <!-- combined pipe-separated log line -->
+        <div class="lm-cred-box" id="logCredBox">
+            <span class="lm-cred-text mono" id="logCredsText"></span>
+            <button type="button" class="lm-copy-btn" id="logCopyBtn">
+                <i class="bi bi-clipboard"></i><span>Copy</span>
             </button>
-            {% endfor %}
-            {% if categories.count > 3 %}
-            <button class="btn-see-more" id="btnSeeMore" onclick="toggleCategories()">
-                <i class="fa-solid fa-ellipsis"></i> See More
-            </button>
-            {% endif %}
         </div>
 
-        <div class="products-grid" id="productsGrid">
-            {% for product in products %}
-            <div class="product-card"
-                 data-cat="{{ product.category.id|default:'' }}"
-                 data-sub="{{ product.sub_category.name|default:''|lower }}"
-                 data-title="{{ product.title|lower }}"
-                 data-desc="{{ product.description|lower }}"
-                 data-id="{{ product.id }}"
-                 data-name="{{ product.title }}"
-                 data-price="{{ product.price }}">
-
-                <div class="prod-img-wrap">
-                    {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.title }}">
-                    {% else %}
-                    <i class="fa-solid fa-box-open prod-fallback"></i>
-                    {% endif %}
-                </div>
-
-                <div class="prod-body">
-                    {% if product.sub_category %}
-                    <span class="sub-badge">
-                        <i class="fa-solid fa-tag"></i> {{ product.sub_category.name }}
-                    </span>
-                    {% endif %}
-
-                    <div class="prod-title">{{ product.title }}</div>
-                    <div class="prod-desc">{{ product.description|linebreaksbr }}</div>
-
-                    <div class="prod-meta">
-                        <span class="prod-price">₦{{ product.price|floatformat:2 }}</span>
-                        {% if product.stock > 0 %}
-                        <span class="prod-stock stock-in">In stock: {{ product.stock }}</span>
-                        {% else %}
-                        <span class="prod-stock stock-out">In stock: 0</span>
-                        {% endif %}
-                    </div>
-
-                    <button class="btn-buy" {% if product.stock == 0 %}disabled{% endif %}
-                        onclick="confirmBuy({{ product.id }}, '{{ product.title|escapejs }}', {{ product.price }}, this)">
-                        {% if product.stock > 0 %}
-                        <i class="fa-solid fa-cart-shopping"></i> Buy Now
-                        {% else %}
-                        <i class="fa-solid fa-circle-xmark"></i> Sold Out
-                        {% endif %}
-                    </button>
-                </div>
-            </div>
-            {% empty %}
-            <div class="empty-state" style="grid-column: 1 / -1;">
-                <i class="fa-solid fa-box-open"></i>
-                <h3>No logs available</h3>
-                <p>Check back later or contact support on Telegram.</p>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <!-- MY PURCHASES TAB -->
-    <div id="tab-purchases" style="display:none;">
-        {% if log_purchases %}
-        <div class="purchases-list">
-            {% for lp in log_purchases %}
-            <div class="purchase-card">
-                <div class="purchase-header">
-                    <span class="purchase-id">{{ lp.order_id }}</span>
-                    <span class="purchase-status">Completed</span>
-                </div>
-                <div class="purchase-product">{{ lp.product_title }}</div>
-                <div class="purchase-creds">
-                    <div><span>User:</span> {{ lp.username }}</div>
-                    <div><span>Pass:</span> {{ lp.password }}</div>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
-                    <span class="purchase-date">
-                        <i class="fa-regular fa-clock"></i> {{ lp.created_at|date:"M d, Y H:i" }}
-                    </span>
-                    <span style="font-weight:700; color:#0d6efd;">₦{{ lp.price|floatformat:2 }}</span>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <i class="fa-solid fa-bag-shopping"></i>
-            <h3>No purchases yet</h3>
-            <p>Your purchased logs will appear here.</p>
-        </div>
-        {% endif %}
-    </div>
-
-</div>
-
-<!-- CONFIRMATION MODAL -->
-<div class="mp-modal" id="confirmModal">
-    <div class="mp-modal-box">
-        <div class="mp-modal-icon warn">
-            <i class="fa-solid fa-circle-question"></i>
-        </div>
-        <h3>Confirm Purchase</h3>
-        <p>Are you sure you want to buy this item?</p>
-        <div id="confirmProductName" style="font-weight:700; color:var(--text-color,#1e293b); margin-bottom:0.3rem;"></div>
-        <div class="confirm-price" id="confirmProductPrice"></div>
-        <div class="mp-modal-actions">
-            <button class="mp-btn mp-btn-primary" id="btnConfirmYes">Yes, Continue</button>
-            <button class="mp-btn mp-btn-secondary" onclick="closeConfirmModal()">No, Cancel</button>
-        </div>
-    </div>
-</div>
-
-<!-- SUCCESS MODAL -->
-<div class="mp-modal" id="successModal">
-    <div class="mp-modal-box">
-        <div class="mp-modal-icon success">
-            <i class="fa-solid fa-check"></i>
-        </div>
-        <h3>Purchase Successful!</h3>
-        <div class="order-id-badge" id="modalOrderId"></div>
-        <p>Save these credentials immediately. They are also saved in My Purchases.</p>
-
-        <div class="cred-field">
-            <label>Username</label>
-            <span id="modalUsername"></span>
-            <button class="btn-copy-cred" onclick="copyToClipboard('modalUsername')">Copy</button>
-        </div>
-
-        <div class="cred-field">
-            <label>Password</label>
-            <span id="modalPassword"></span>
-            <button class="btn-copy-cred" onclick="copyToClipboard('modalPassword')">Copy</button>
-        </div>
-
-        <button class="mp-btn mp-btn-primary mp-btn-full" onclick="closeModal('successModal')">
-            <i class="fa-solid fa-check"></i> Got it, Thanks
+        <button type="button" class="lm-done" id="logDoneBtn">
+            <i class="bi bi-check2"></i> Got it, Thanks
         </button>
+
     </div>
 </div>
 
-<!-- ERROR MODAL -->
-<div class="mp-modal" id="errorModal">
-    <div class="mp-modal-box">
-        <div class="mp-modal-icon error">
-            <i class="fa-solid fa-circle-exclamation"></i>
-        </div>
-        <h3>Purchase Failed</h3>
-        <p id="modalError" style="color:var(--muted-color,#64748b);margin-bottom:1.5rem;"></p>
-        <button class="mp-btn mp-btn-primary mp-btn-full" onclick="closeModal('errorModal')">
-            <i class="fa-solid fa-xmark"></i> Close
-        </button>
-    </div>
-</div>
-{% endblock %}
+<!-- TOAST -->
+<div class="lm-toast" id="lmToast" hidden>Copied!</div>
 
-{% block extra_js %}
+{{ categories|json_script:"catData" }}
+
 <script>
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
+(function () {
+    "use strict";
+
+    /* ---------- CATEGORY DATA (descriptions for the panel) ---------- */
+    var catData = [];
+    try {
+        catData = JSON.parse(document.getElementById("catData").textContent) || [];
+    } catch (e) { catData = []; }
+
+    var purchaseUrl = document.body.dataset.purchaseUrl || "{{ purchase_url|escapejs }}";
+    var walletBalance = parseFloat(document.body.dataset.balance || "{{ wallet_balance|default:0 }}");
+
+    /* ---------- ELEMENTS ---------- */
+    var pills = document.querySelectorAll(".cat-pill");
+    var cards = Array.prototype.slice.call(document.querySelectorAll(".prod-card"));
+    var searchInput = document.getElementById("logSearch");
+    var prodEmpty = document.getElementById("prodEmpty");
+    var catPanel = document.getElementById("catPanel");
+    var catPanelName = document.getElementById("catPanelName");
+    var catPanelDesc = document.getElementById("catPanelDesc");
+
+    var buyModal = document.getElementById("buyModal");
+    var logModal = document.getElementById("logModal");
+    var modalProductName = document.getElementById("modalProductName");
+    var modalPrice = document.getElementById("modalPrice");
+    var modalYesBtn = document.getElementById("modalYesBtn");
+    var modalNoBtn = document.getElementById("modalNoBtn");
+    var modalError = document.getElementById("modalError");
+
+    var logOrderId = document.getElementById("logOrderId");
+    var logFormatLabel = document.getElementById("logFormatLabel");
+    var logCredsText = document.getElementById("logCredsText");
+    var logCopyBtn = document.getElementById("logCopyBtn");
+    var logDoneBtn = document.getElementById("logDoneBtn");
+    var logCredBox = document.getElementById("logCredBox");
+
+    var toast = document.getElementById("lmToast");
+    var toastTimer = null;
+
+    var currentCard = null;
+
+    /* ---------- TOAST ---------- */
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toast.hidden = true; }, 1800);
     }
-    return cookieValue;
-}
 
-function switchTab(tabName, btn) {
-    document.querySelectorAll('.mp-tab').forEach(t => t.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-marketplace').style.display = tabName === 'marketplace' ? '' : 'none';
-    document.getElementById('tab-purchases').style.display = tabName === 'purchases' ? '' : 'none';
-}
+    /* ---------- FILTER (category + search) ---------- */
+    function applyFilter() {
+        var term = searchInput.value.toLowerCase().trim();
+        var activeCat = document.querySelector(".cat-pill.active");
+        var cat = activeCat ? activeCat.getAttribute("data-cat") : "all";
+        var visible = 0;
 
-/* ===== SEE MORE CATEGORIES ===== */
-let categoriesExpanded = false;
-
-function toggleCategories() {
-    const hidden = document.querySelectorAll('.cat-hidden');
-    const btn = document.getElementById('btnSeeMore');
-    categoriesExpanded = !categoriesExpanded;
-    
-    hidden.forEach(pill => {
-        pill.style.display = categoriesExpanded ? '' : 'none';
-    });
-    
-    if (categoriesExpanded) {
-        btn.innerHTML = '<i class="fa-solid fa-chevron-up"></i> See Less';
-    } else {
-        btn.innerHTML = '<i class="fa-solid fa-ellipsis"></i> See More';
-    }
-}
-
-const pills = document.querySelectorAll('.cat-pill');
-const cards = document.querySelectorAll('.product-card');
-
-pills.forEach(pill => {
-    pill.addEventListener('click', () => {
-        pills.forEach(p => p.classList.remove('active'));
-        pill.classList.add('active');
-        const cat = pill.dataset.cat;
-        cards.forEach(card => {
-            card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+        cards.forEach(function (card) {
+            var matchCat = (cat === "all" || card.getAttribute("data-cat") === cat);
+            var matchTerm = !term ||
+                (card.getAttribute("data-name") || "").indexOf(term) !== -1 ||
+                (card.getAttribute("data-desc") || "").indexOf(term) !== -1;
+            var show = matchCat && matchTerm;
+            card.style.display = show ? "" : "none";
+            if (show) visible++;
         });
-        filterBySearch();
-    });
-});
 
-const searchInput = document.getElementById('searchInput');
-searchInput.addEventListener('input', filterBySearch);
+        prodEmpty.hidden = visible !== 0;
+    }
 
-function filterBySearch() {
-    const term = searchInput.value.toLowerCase().trim();
-    const activeCat = document.querySelector('.cat-pill.active').dataset.cat;
-    cards.forEach(card => {
-        const matchesCat = activeCat === 'all' || card.dataset.cat === activeCat;
-        const matchesSearch = !term ||
-            card.dataset.title.includes(term) ||
-            card.dataset.sub.includes(term) ||
-            card.dataset.desc.includes(term);
-        card.style.display = (matchesCat && matchesSearch) ? '' : 'none';
-    });
-}
+    pills.forEach(function (pill) {
+        pill.addEventListener("click", function () {
+            pills.forEach(function (p) { p.classList.remove("active"); });
+            pill.classList.add("active");
+            applyFilter();
 
-let pendingProductId = null;
-let pendingBtn = null;
+            /* category description panel */
+            var catId = pill.getAttribute("data-cat");
+            var found = null;
+            catData.forEach(function (c) { if (String(c.id) === String(catId)) found = c; });
 
-function confirmBuy(productId, productName, productPrice, btn) {
-    pendingProductId = productId;
-    pendingBtn = btn;
-    document.getElementById('confirmProductName').textContent = productName;
-    document.getElementById('confirmProductPrice').textContent = '₦' + parseFloat(productPrice).toLocaleString('en-US', {minimumFractionDigits: 2});
-    document.getElementById('confirmModal').classList.add('show');
-}
-
-document.getElementById('btnConfirmYes').addEventListener('click', function() {
-    const pid = pendingProductId;
-    const pbtn = pendingBtn;
-    closeConfirmModal();
-    if (pid && pbtn) buyLog(pid, pbtn);
-});
-
-function closeConfirmModal() {
-    document.getElementById('confirmModal').classList.remove('show');
-    pendingProductId = null;
-    pendingBtn = null;
-}
-
-function buyLog(productId, btn) {
-    btn.disabled = true;
-    const originalHTML = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
-
-    fetch(`/buy-logs/purchase/${productId}/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('modalOrderId').textContent = data.order_id;
-            document.getElementById('modalUsername').textContent = data.username;
-            document.getElementById('modalPassword').textContent = data.password;
-            document.getElementById('successModal').classList.add('show');
-
-            const walletEl = document.querySelector('.wallet');
-            if (walletEl && data.new_balance) {
-                walletEl.textContent = '₦' + parseFloat(data.new_balance).toLocaleString('en-US', {minimumFractionDigits: 2});
-            }
-
-            const card = btn.closest('.product-card');
-            const stockBadge = card.querySelector('.prod-stock');
-            let count = parseInt(stockBadge.textContent.replace('In stock: ', ''));
-            if (count > 1) {
-                stockBadge.textContent = 'In stock: ' + (count - 1);
+            if (found && found.description) {
+                catPanelName.textContent = found.name;
+                catPanelDesc.textContent = found.description;
+                catPanel.hidden = false;
             } else {
-                stockBadge.textContent = 'In stock: 0';
-                stockBadge.className = 'prod-stock stock-out';
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Sold Out';
-                return;
+                catPanel.hidden = true;
             }
-        } else {
-            document.getElementById('modalError').textContent = data.error;
-            document.getElementById('errorModal').classList.add('show');
-        }
-        if (!data.success) {
-            btn.disabled = false;
-            btn.innerHTML = originalHTML;
-        }
-    })
-    .catch(err => {
-        btn.disabled = false;
-        btn.innerHTML = originalHTML;
-        document.getElementById('modalError').textContent = 'Network error. Please try again.';
-        document.getElementById('errorModal').classList.add('show');
+        });
     });
-}
 
-function closeModal(id) {
-    document.getElementById(id).classList.remove('show');
-}
+    searchInput.addEventListener("input", applyFilter);
 
-function copyToClipboard(elementId) {
-    const text = document.getElementById(elementId).textContent;
-    navigator.clipboard.writeText(text).then(() => {
-        showToast('success', 'Copied to clipboard!');
+    /* ---------- MODALS ---------- */
+    function open(el) { el.hidden = false; document.body.style.overflow = "hidden"; }
+    function close(el) { el.hidden = true; document.body.style.overflow = ""; }
+
+    [buyModal, logModal].forEach(function (m) {
+        m.addEventListener("click", function (e) { if (e.target === m) close(m); });
     });
-}
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") { if (!buyModal.hidden) close(buyModal); if (!logModal.hidden) close(logModal); }
+    });
 
-document.querySelectorAll('.mp-modal').forEach(m => {
-    m.addEventListener('click', function(e) {
-        if (e.target === this) {
-            if (this.id === 'confirmModal') closeConfirmModal();
-            else this.classList.remove('show');
+    function naira(v) {
+        return "\u20A6" + parseFloat(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    /* ---------- BUY FLOW ---------- */
+    cards.forEach(function (card) {
+        var btn = card.querySelector(".prod-buy");
+        if (!btn || btn.disabled) return;
+        btn.addEventListener("click", function () {
+            currentCard = card;
+            modalProductName.textContent = card.querySelector(".prod-name").textContent;
+            modalPrice.textContent = naira(card.getAttribute("data-price"));
+            modalError.hidden = true;
+            open(buyModal);
+        });
+    });
+
+    modalNoBtn.addEventListener("click", function () { close(buyModal); });
+
+    modalYesBtn.addEventListener("click", function () {
+        if (!currentCard) { close(buyModal); return; }
+
+        var price = parseFloat(currentCard.getAttribute("data-price") || "0");
+
+        /* client-side balance guard */
+        if (walletBalance > 0 && price > walletBalance) {
+            modalError.textContent = "Insufficient wallet balance. Please fund your wallet and try again.";
+            modalError.hidden = false;
+            return;
+        }
+
+        var csrf = document.querySelector("input[name=csrfmiddlewaretoken]").value;
+        var productId = currentCard.getAttribute("data-id");
+
+        modalError.hidden = true;
+        modalYesBtn.disabled = true;
+        modalYesBtn.classList.add("paying");
+        modalYesBtn.textContent = "Processing...";
+
+        fetch(purchaseUrl, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrf,
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: "product_id=" + encodeURIComponent(productId)
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.success) {
+                close(buyModal);
+
+                /* fill success card */
+                if (data.order_id) { logOrderId.textContent = data.order_id; logOrderId.hidden = false; }
+                else { logOrderId.hidden = true; }
+
+                if (data.format_label) logFormatLabel.textContent = data.format_label;
+
+                var creds = data.creds
+                    || (data.username ? data.username + ":" + (data.password || "") : "");
+                logCredsText.textContent = creds || "\u2014";
+
+                if (data.new_balance) {
+                    walletBalance = parseFloat(data.new_balance);
+                    document.body.dataset.balance = String(walletBalance);
+                    var walletEl = document.querySelector(".wallet, .wallet-balance");
+                    if (walletEl) walletEl.textContent = naira(walletBalance);
+                }
+
+                /* update stock on the card */
+                var stockEl = currentCard.querySelector(".prod-stock");
+                var stock = parseInt(currentCard.getAttribute("data-stock") || "0", 10);
+                if (stockEl && stock > 0) {
+                    if (stock > 1) {
+                        stockEl.textContent = (stock - 1) + " in stock";
+                        currentCard.setAttribute("data-stock", String(stock - 1));
+                    } else {
+                        stockEl.textContent = "Sold out";
+                        stockEl.classList.add("out");
+                        currentCard.setAttribute("data-stock", "0");
+                        var b = currentCard.querySelector(".prod-buy");
+                        if (b) { b.disabled = true; b.textContent = "Sold out"; }
+                    }
+                }
+
+                open(logModal);
+            } else {
+                modalError.textContent = data.error || "Purchase failed. Please try again.";
+                modalError.hidden = false;
+            }
+        })
+        .catch(function () {
+            modalError.textContent = "Network error. Please try again.";
+            modalError.hidden = false;
+        })
+        .finally(function () {
+            modalYesBtn.disabled = false;
+            modalYesBtn.classList.remove("paying");
+            modalYesBtn.textContent = "Yes, Continue";
+        });
+    });
+
+    /* ---------- COPY + DONE ---------- */
+    logCopyBtn.addEventListener("click", function () {
+        var text = logCredsText.textContent;
+        if (!text || text === "\u2014") return;
+
+        function done() {
+            showToast("Copied to clipboard");
+            logCopyBtn.classList.add("copied");
+            logCredBox.classList.add("flash");
+            var icon = logCopyBtn.querySelector("i");
+            var label = logCopyBtn.querySelector("span");
+            if (icon) icon.className = "bi bi-check2";
+            if (label) label.textContent = "Copied";
+            setTimeout(function () {
+                logCopyBtn.classList.remove("copied");
+                logCredBox.classList.remove("flash");
+                if (icon) icon.className = "bi bi-clipboard";
+                if (label) label.textContent = "Copy";
+            }, 1500);
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+        } else { fallback(); }
+
+        function fallback() {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand("copy"); done(); } catch (e) { showToast("Copy failed"); }
+            document.body.removeChild(ta);
         }
     });
-});
+
+    logDoneBtn.addEventListener("click", function () { close(logModal); });
+})();
 </script>
+
 {% endblock %}
