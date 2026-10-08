@@ -9,127 +9,140 @@
 
 <link rel="stylesheet" href="{% static 'css/wallet.css' %}">
 
-<style>
-/* How it works - spacing and text size only */
-.wallet-info h3 {
-    font-size: 1.2rem;
-    margin-bottom: 16px;
-}
-
-.wallet-info p {
-    font-size: 1rem;
-    line-height: 1.7;
-    margin: 0 0 12px 0;
-}
-
-.wallet-info p:last-child {
-    margin-bottom: 0;
-}
-</style>
-
 <div class="wallet-container">
 
     <!-- HEADER -->
-    <div class="wallet-header">
-
-        <div>
-            <h2>Your Wallet</h2>
-
+    <div class="wallet-head">
+        <div class="wallet-head-text">
+            <span class="eyebrow">WALLET</span>
+            <h2>Fund your wallet</h2>
             <p class="wallet-subtitle">
-                Add funds to your account to buy virtual numbers
+                Top up once, then buy virtual numbers and logs instantly.
             </p>
         </div>
-
-        <div class="wallet-balance">
-            Balance:
-            ₦{{ wallet.balance }}
-        </div>
-
     </div>
 
-    <!-- DEDICATED VIRTUAL ACCOUNT -->
+    <!-- BALANCE HERO -->
+    <div class="wallet-hero">
+        <div class="hero-glow"></div>
+        <div class="wallet-hero-inner">
+            <div class="wallet-hero-left">
+                <span class="hero-label"><i class="fa-solid fa-wallet"></i> Current Balance</span>
+                <span class="hero-amount">₦{{ wallet.balance }}</span>
+                <span class="hero-hint">Instantly available for purchases</span>
+            </div>
+            <div class="wallet-hero-icon">
+                <i class="fa-solid fa-sack-dollar"></i>
+            </div>
+        </div>
+    </div>
+
     {% if wallet.virtual_account_number %}
-    <div class="wallet-card">
+    <!-- DEDICATED ACCOUNT — big, obvious card -->
+    <div class="va-section">
 
-        <h3>Your Dedicated Account Number</h3>
-
-        <p>
-            Transfer any amount from your bank app to the account
-            below. Your wallet is credited automatically.
-        </p>
-
-        <div>
-            <p>
-                <strong>Account Number:</strong>
-                <span id="vaNumber">{{ wallet.virtual_account_number }}</span>
-            </p>
-            <p>
-                <strong>Bank:</strong>
-                {{ wallet.virtual_bank_name|title }}
-            </p>
-            <p>
-                <strong>Account Name:</strong>
-                {{ wallet.virtual_account_name }}
-            </p>
+        <div class="va-head">
+            <h3><i class="fa-solid fa-building-columns"></i> Your Dedicated Bank Account</h3>
+            <p>Transfer money from any bank app to this account.
+               Your wallet is credited automatically — usually within 1 minute.</p>
         </div>
 
-        <button
-            type="button"
-            class="wallet-chip"
-            onclick="copyVA()">
-            Copy Account Number
-        </button>
+        <div class="va-card">
+            <div class="va-top">
+                <div class="va-brand">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>ABFverify Dedicated Account</span>
+                </div>
+                <span class="va-badge">Auto Credit</span>
+            </div>
+
+            <div class="va-number-row">
+                <span class="va-number" id="vaNumber">{{ wallet.virtual_account_number }}</span>
+                <button type="button" class="va-copy" onclick="copyVA(this)">
+                    <i class="fa-regular fa-copy"></i> Copy
+                </button>
+            </div>
+
+            <div class="va-meta">
+                <div class="va-meta-item">
+                    <span class="va-meta-label">Bank</span>
+                    <span class="va-meta-value">{{ wallet.virtual_bank_name|title }}</span>
+                </div>
+                <div class="va-divider"></div>
+                <div class="va-meta-item">
+                    <span class="va-meta-label">Account Name</span>
+                    <span class="va-meta-value">{{ wallet.virtual_account_name }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="va-supported">
+            <span>Works with every bank:</span>
+            <div class="va-banks">
+                <span>Opay</span><span>GTBank</span><span>Kuda</span><span>Zenith</span>
+                <span>Access</span><span>UBA</span><span>PalmPay</span><span>Moniepoint</span>
+            </div>
+        </div>
 
     </div>
 
     {% else %}
-    <div class="wallet-card">
-
-        <h3>Get Your Dedicated Account Number</h3>
-
-        <p>
-            Add your name and phone number to get a permanent
-            account number for instant wallet funding.
-        </p>
-
-        <a
-            href="{% url 'add_account_details' %}"
-            class="wallet-button">
-            Add Details
+    <!-- NO ACCOUNT YET -->
+    <div class="va-card va-empty">
+        <div class="va-empty-icon"><i class="fa-solid fa-building-columns"></i></div>
+        <h3>You don't have a dedicated account yet</h3>
+        <p>Add your name and phone number to get a permanent account
+           number for instant wallet funding.</p>
+        <a href="{% url 'add_account_details' %}" class="va-cta">
+            <i class="fa-solid fa-user-plus"></i> Add My Details
         </a>
-
     </div>
     {% endif %}
 
+    <!-- HOW IT WORKS -->
+    <div class="wallet-steps">
+        <h3>How funding works</h3>
 
-    <!-- INFO SECTION -->
-<div class="wallet-info">
+        <div class="steps-grid">
 
-    <h3>
-        How it works
-    </h3>
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-icon"><i class="fa-solid fa-paper-plane"></i></div>
+                <h4>Make a transfer</h4>
+                <p>Send any amount from your bank app to your dedicated account number above.</p>
+            </div>
 
-    <p>
-        Transfer any amount from your bank app to your
-        dedicated account number above. Use any bank —
-        Opay, GTBank, Kuda, all banks work.
-    </p>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-icon"><i class="fa-solid fa-bolt"></i></div>
+                <h4>Auto credit</h4>
+                <p>Your wallet is topped up automatically — usually within 1 minute. No fees.</p>
+            </div>
 
-    <p>
-        Your wallet is credited automatically, usually
-        within 1 minute. No fees, no expiry — the account
-        number is yours permanently.
-    </p>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                <h4>Start buying</h4>
+                <p>Use your balance to buy virtual numbers and logs instantly.</p>
+            </div>
+
+        </div>
+    </div>
 
 </div>
 
-
 <script>
-function copyVA() {
-    const num = document.getElementById("vaNumber").innerText;
-    navigator.clipboard.writeText(num).then(
-        () => alert("Account number copied!")
-    );
+function copyVA(btn) {
+    const num = document.getElementById("vaNumber").innerText.trim();
+    navigator.clipboard.writeText(num).then(() => {
+        const old = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+        btn.classList.add("copied");
+        setTimeout(() => {
+            btn.innerHTML = old;
+            btn.classList.remove("copied");
+        }, 2000);
+    });
 }
 </script>
 
