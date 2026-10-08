@@ -1,5 +1,5 @@
 /* ==========================
-   LOGOUT MODAL
+   LOGOUT MODAL (panel theme: dark default, body.light override)
 ========================== */
 
 .logout-modal{
@@ -12,7 +12,7 @@
 
     padding: 20px;
 
-    background: rgba(15, 23, 42, .65);
+    background: rgba(2, 6, 23, 0.7);
 
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
@@ -31,14 +31,17 @@
 
 
 /* ==========================
-   MODAL BOX
+   MODAL BOX — DARK (default)
 ========================== */
 
 .logout-box{
-
     width: 420px;
     max-width: 100%;
 
+    background: #111827;
+    color: #f8fafc;
+
+    border: 1px solid #1f2937;
     border-radius: 22px;
 
     padding: 35px 30px;
@@ -53,8 +56,7 @@
         color .25s ease;
 
     box-shadow:
-        0 30px 70px rgba(0, 0, 0, .22);
-
+        0 25px 60px rgba(0, 0, 0, .55);
 }
 
 
@@ -63,18 +65,15 @@
 ========================== */
 
 .logout-modal.show .logout-box{
-
     transform: translateY(0) scale(1);
-
 }
 
 
 /* ==========================
-   ICON
+   ICON — DARK (default)
 ========================== */
 
 .logout-icon{
-
     width: 72px;
     height: 72px;
 
@@ -88,8 +87,11 @@
 
     font-size: 28px;
 
-    transition: .25s;
+    background: rgba(56, 189, 248, 0.10);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.22);
 
+    transition: .25s;
 }
 
 
@@ -98,23 +100,22 @@
 ========================== */
 
 .logout-box h3{
-
     margin-top: 20px;
 
     font-size: 25px;
     font-weight: 700;
 
+    color: #f8fafc;
 }
 
-
 .logout-box p{
-
     margin-top: 12px;
 
     line-height: 1.7;
 
     font-size: 15px;
 
+    color: #9ca3af;
 }
 
 
@@ -123,19 +124,15 @@
 ========================== */
 
 .logout-actions{
-
     display: flex;
 
     gap: 14px;
 
     margin-top: 28px;
-
 }
-
 
 .logout-actions button,
 .logout-actions a{
-
     flex: 1;
 
     padding: 13px;
@@ -155,173 +152,87 @@
         background .25s ease,
         color .25s ease,
         transform .25s ease;
-
 }
-
-
-/* ==========================
-   BUTTON HOVER
-========================== */
 
 .cancel-logout:hover,
 .confirm-logout:hover{
-
     transform: translateY(-2px);
+}
 
+
+/* buttons — DARK (default) */
+
+.cancel-logout{
+    background: #1f2937;
+    color: #e5e7eb;
+    border: 1px solid #374151;
+}
+
+.cancel-logout:hover{
+    background: #374151;
+    color: #ffffff;
+}
+
+.confirm-logout{
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.confirm-logout:hover{
+    filter: brightness(1.1);
+}
+
+.confirm-logout:active{
+    transform: scale(.98);
 }
 
 
 /* ==========================
-   LIGHT THEME
+   LIGHT THEME OVERRIDE
 ========================== */
 
 body.light .logout-box{
-
     background: #ffffff;
-
-    color: #111827;
-
-}
-
-
-body.light .logout-icon{
-
-    background: #dbeafe;
-
-    color: #2563eb;
-
-    border: 1px solid #bfdbfe;
-
-}
-
-
-body.light .logout-box p{
-
-    color: #64748b;
-
-}
-
-
-body.light .cancel-logout{
-
-    background: #e2e8f0;
-
     color: #0f172a;
 
-}
-
-
-body.light .cancel-logout:hover{
-
-    background: #cbd5e1;
-
-}
-
-
-body.light .confirm-logout{
-
-    background: #2563eb;
-
-    color: #ffffff;
-
-}
-
-
-body.light .confirm-logout:hover{
-
-    background: #1d4ed8;
-
-}
-
-
-/* ==========================
-   DARK THEME
-========================== */
-
-body.dark .logout-box{
-
-    background: #111827;
-
-    color: #f8fafc;
-
-    border: 1px solid rgba(37, 99, 235, .25);
+    border: 1px solid #e5e7eb;
 
     box-shadow:
-        0 25px 60px rgba(0, 0, 0, .55),
-        0 0 0 1px rgba(37, 99, 235, .08);
-
+        0 30px 70px rgba(0, 0, 0, .18);
 }
 
-
-body.dark .logout-icon{
-
-    background: rgba(37, 99, 235, .12);
-
-    color: #60a5fa;
-
-    border: 1px solid rgba(37, 99, 235, .30);
-
+body.light .logout-icon{
+    background: rgba(14, 165, 233, 0.08);
+    color: #0ea5e9;
+    border: 1px solid rgba(14, 165, 233, 0.22);
 }
 
+body.light .logout-box h3{
+    color: #0f172a;
+}
 
-body.dark .logout-box h3{
+body.light .logout-box p{
+    color: #64748b;
+}
 
+body.light .cancel-logout{
+    background: #e2e8f0;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+}
+
+body.light .cancel-logout:hover{
+    background: #cbd5e1;
+}
+
+body.light .confirm-logout{
+    background: linear-gradient(135deg, #0ea5e9, #6366f1);
     color: #ffffff;
-
 }
 
-
-body.dark .logout-box p{
-
-    color: #cbd5e1;
-
-}
-
-
-body.dark .cancel-logout{
-
-    background: #1e293b;
-
-    color: #e2e8f0;
-
-    border: 1px solid rgba(37, 99, 235, .20);
-
-}
-
-
-body.dark .cancel-logout:hover{
-
-    background: #334155;
-
-    border-color: #2563eb;
-
-    color: #ffffff;
-
-}
-
-
-body.dark .confirm-logout{
-
-    background: #2563eb;
-
-    color: #ffffff;
-
-    font-weight: 700;
-
-}
-
-
-body.dark .confirm-logout:hover{
-
-    background: #1d4ed8;
-
-}
-
-
-body.dark .confirm-logout:active{
-
-    transform: scale(.98);
-
+body.light .confirm-logout:hover{
+    filter: brightness(1.1);
 }
 
 
@@ -332,62 +243,39 @@ body.dark .confirm-logout:active{
 @media(max-width: 600px){
 
     .logout-box{
-
         width: 100%;
-
         padding: 28px 22px;
-
         border-radius: 18px;
-
     }
-
 
     .logout-icon{
-
         width: 64px;
         height: 64px;
-
         font-size: 25px;
-
     }
-
 
     .logout-box h3{
-
         font-size: 22px;
-
     }
 
-
     .logout-actions{
-
         flex-direction: column;
-
     }
 
 }
 
-
 @media(max-width: 400px){
 
     .logout-box{
-
         padding: 24px 18px;
-
     }
-
 
     .logout-box h3{
-
         font-size: 20px;
-
     }
 
-
     .logout-box p{
-
         font-size: 14px;
-
     }
 
 }
