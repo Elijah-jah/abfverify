@@ -9,6 +9,8 @@
     --danger: #ef4444;
     --success: #22c55e;
     --warning: #f59e0b;
+    --accent2: #818cf8;
+    --grad: linear-gradient(135deg, #38bdf8, #818cf8);
 }
 
 /* LIGHT MODE OVERRIDE */
@@ -19,6 +21,8 @@ body.light{
     --text: #0f172a;
     --muted: #64748b;
     --accent: #0ea5e9;
+    --accent2: #6366f1;
+    --grad: linear-gradient(135deg, #0ea5e9, #6366f1);
 }
 
 /* =========================
@@ -40,6 +44,7 @@ body.light{
     justify-content: space-between;
     align-items: center;
     margin-bottom: 18px;
+    gap: 12px;
 }
 
 .orders-title{
@@ -49,18 +54,20 @@ body.light{
 }
 
 .orders-subtitle{
-    font-size: 16px;
+    font-size: 15px;
     color: var(--muted);
     margin-top: 4px;
 }
 
 .orders-badge{
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 8px 12px;
-    border-radius: 10px;
+    background: var(--grad);
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 999px;
     font-size: 13px;
-    color: var(--muted);
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 /* =========================
@@ -85,6 +92,13 @@ body.light{
     color: var(--text);
     outline: none;
     font-size: 13px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.orders-input:focus,
+.orders-select:focus{
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
 }
 
 .orders-input::placeholder{
@@ -98,7 +112,7 @@ body.light{
 .orders-table-wrap{
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 14px;
     overflow: hidden;
 }
 
@@ -110,52 +124,136 @@ body.light{
 .orders-table th{
     background: var(--bg);
     color: var(--muted);
-    font-size: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     text-align: left;
-    padding: 12px;
+    padding: 13px 14px;
     border-bottom: 1px solid var(--border);
 }
 
 .orders-table td{
-    padding: 12px;
+    padding: 13px 14px;
     font-size: 13px;
     color: var(--text);
     border-bottom: 1px solid var(--border);
 }
 
+.orders-table tbody tr:last-child td{
+    border-bottom: none;
+}
+
+.orders-table tbody tr{
+    transition: background 0.15s ease;
+}
+
+.orders-table tbody tr:hover{
+    background: var(--bg);
+}
+
 .orders-empty{
     text-align: center;
-    padding: 30px;
+    padding: 40px 20px;
     color: var(--muted);
 }
 
 /* =========================
-   STATUS
+   CELLS
 ========================= */
 
-.status-active{ color: var(--accent); font-weight: 600; }
-.status-completed{ color: var(--success); font-weight: 600; }
-.status-expired{ color: var(--warning); font-weight: 600; }
-.status-cancelled{ color: var(--danger); font-weight: 600; }
-
-/* =========================
-   BUTTON
-========================= */
-
-.orders-action-btn{
-    padding: 6px 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--bg);
-    color: var(--text);
+.orders-id-cell{
+    font-family: "SF Mono", "Consolas", monospace;
     font-size: 12px;
-    cursor: pointer;
-    transition: 0.2s ease;
+    font-weight: 700;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    white-space: nowrap;
 }
 
-.orders-action-btn:hover{
-    background: var(--accent);
-    color: #0f172a;
+.orders-num-cell{
+    font-family: "SF Mono", "Consolas", monospace;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.orders-otp-cell{
+    font-family: "SF Mono", "Consolas", monospace;
+    font-size: 13px;
+    font-weight: 700;
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 5px 10px;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.orders-otp-waiting{
+    color: var(--muted);
+    font-family: inherit;
+    font-weight: 400;
+    border: none;
+    background: transparent;
+    padding: 0;
+    font-style: italic;
+}
+
+.orders-date-cell{
+    color: var(--muted);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* =========================
+   STATUS PILLS
+========================= */
+
+.status-active,
+.status-completed,
+.status-expired,
+.status-cancelled{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.status-active::before,
+.status-completed::before,
+.status-expired::before,
+.status-cancelled::before{
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.status-active{
+    color: var(--accent);
+    background: rgba(56, 189, 248, 0.12);
+}
+
+.status-completed{
+    color: var(--success);
+    background: rgba(34, 197, 94, 0.12);
+}
+
+.status-expired{
+    color: var(--warning);
+    background: rgba(245, 158, 11, 0.12);
+}
+
+.status-cancelled{
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.12);
 }
 
 /* =========================
@@ -169,26 +267,71 @@ body.light{
 .orders-card{
     background: var(--card);
     border: 1px solid var(--border);
-    padding: 14px;
-    border-radius: 12px;
-    margin-bottom: 10px;
+    padding: 16px;
+    border-radius: 14px;
+    margin-bottom: 12px;
 }
 
 .orders-card-top{
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
 }
 
 .orders-id{
-    font-weight: 600;
-    color: var(--text);
+    font-family: "SF Mono", "Consolas", monospace;
+    font-size: 13px;
+    font-weight: 700;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.orders-card-body{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
 }
 
 .orders-card-body p{
     font-size: 12px;
     color: var(--muted);
-    margin: 3px 0;
+    margin: 0;
+}
+
+.orders-card-body p strong{
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 2px;
+}
+
+.orders-card-body .orders-otp-full{
+    grid-column: 1 / -1;
+}
+
+.orders-otp-inline{
+    font-family: "SF Mono", "Consolas", monospace;
+    font-size: 14px;
+    font-weight: 700;
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: inline-block;
+    color: var(--text);
+}
+
+.orders-mobile-empty{
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
 }
 
 /* =========================
@@ -219,7 +362,14 @@ body.light{
     .orders-select{
         width: 100%;
     }
+
     .rug{
         display: none;
+    }
+}
+
+@media (max-width: 420px){
+    .orders-card-body{
+        grid-template-columns: 1fr;
     }
 }
