@@ -387,6 +387,64 @@
 }
 
 /* =========================
+   PROCESSING OVERLAY
+========================= */
+
+.sms-overlay{
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(2, 6, 23, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.sms-overlay[hidden]{
+    display: none !important;
+}
+
+.sms-overlay-box{
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 38px;
+    text-align: center;
+    color: var(--text);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .4);
+    max-width: 320px;
+    width: 100%;
+}
+
+.sms-overlay-spinner{
+    width: 46px;
+    height: 46px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    border: 3px solid var(--brand-soft);
+    border-top-color: var(--brand);
+    animation: smsSpin .8s linear infinite;
+}
+
+@keyframes smsSpin{
+    to { transform: rotate(360deg); }
+}
+
+.sms-overlay-box p{
+    margin: 0 0 6px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.sms-overlay-box span{
+    font-size: 13px;
+    color: var(--muted);
+}
+
+/* =========================
    RESPONSIVE
 ========================= */
 
@@ -411,4 +469,8 @@
     .sms-session{ padding: 14px; }
 
     .sms-price-box h2{ font-size: 18px; }
+
+    .sms-overlay-box{
+        padding: 26px 22px;
+    }
 }

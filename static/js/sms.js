@@ -29,7 +29,7 @@ async function loadCountries() {
                 option.textContent = country.name;
                 countrySelect.appendChild(option);
             });
-            
+
             if (window.countryChoices) {
                 window.countryChoices.destroy();
             }
@@ -65,7 +65,7 @@ async function loadServices() {
                 option.textContent = service.name;
                 serviceSelect.appendChild(option);
             });
-            
+
             if (window.serviceChoices) {
                 window.serviceChoices.destroy();
             }
@@ -86,7 +86,7 @@ async function loadServices() {
 if (serverSelect) {
     serverSelect.addEventListener("change", async () => {
         priceDisplay.innerText = "₦0.00";
-        
+
         await loadCountries();
         await loadServices();
     });
@@ -292,9 +292,22 @@ document.querySelectorAll(".sms-session").forEach(session => {
 
 
 // ======================
-// PREVENT DOUBLE CLICK
+// PROCESSING OVERLAY
+// Covers the blank wait while the server talks to the provider
+// (request form + cancel forms are synchronous POSTs)
 // ======================
 
+const smsOverlay = document.getElementById("smsOverlay");
+const smsOverlayText = document.getElementById("smsOverlayText");
+
+function showOverlay(message) {
+    if (!smsOverlay) return;
+    if (message && smsOverlayText) smsOverlayText.innerText = message;
+    smsOverlay.hidden = false;
+    document.body.style.overflow = "hidden";
+}
+
+// Prevent double submit + show overlay on the request form
 const requestForm =
     document.getElementById("requestNumberForm");
 
@@ -307,9 +320,29 @@ if (requestForm) {
         requestBtn.innerText =
             "Processing...";
 
+        showOverlay("Requesting your number…");
+
     });
 
 }
+
+// Show overlay on every cancel-order form
+document.querySelectorAll(".js-cancel-form")
+.forEach(form => {
+
+    form.addEventListener("submit", () => {
+
+        showOverlay("Cancelling your order…");
+
+    });
+
+});
+
+// Safety: never trap the user on the overlay
+setTimeout(() => {
+    if (smsOverlay) smsOverlay.hidden = true;
+    document.body.style.overflow = "";
+}, 45000);
 
 
 // ======================

@@ -182,7 +182,7 @@
             </div>
 
             <!-- CANCEL -->
-            <form method="POST" action="{% url 'cancel_order' %}">
+            <form method="POST" action="{% url 'cancel_order' %}" class="js-cancel-form">
                 {% csrf_token %}
                 <input
                     type="hidden"
@@ -202,6 +202,15 @@
     </div>
     {% endif %}
 
+</div>
+
+<!-- PROCESSING OVERLAY -->
+<div class="sms-overlay" id="smsOverlay" hidden>
+    <div class="sms-overlay-box">
+        <div class="sms-overlay-spinner"></div>
+        <p id="smsOverlayText">Requesting your number…</p>
+        <span>Hold on, this takes a few seconds.</span>
+    </div>
 </div>
 
 <script src="{% static 'js/sms.js' %}"></script>
