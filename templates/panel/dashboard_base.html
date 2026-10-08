@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no"/>
 <meta name="description" content="ABFverify - Secure SMS verification and virtual number platform">
 <meta property="og:title" content="ABFverify">
 <meta property="og:description" content="Secure SMS verification and virtual number platform">
@@ -33,9 +33,23 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
 {% block extra_css %}{% endblock %}
 <base target="_blank">
+<base target="_blank">
 </head>
 
 <body class="dashboard">
+
+<!-- Apply saved theme BEFORE first paint (prevents dark flash on navigation).
+     Storage key must match the one used by dashboard_base.js theme toggle. -->
+<script>
+(function () {
+    try {
+        var t = localStorage.getItem("theme");
+        if (t === "light") {
+            document.body.classList.add("light");
+        }
+    } catch (e) {}
+})();
+</script>
 
 <!-- OVERLAY -->
 <div class="overlay" id="overlay"></div>
