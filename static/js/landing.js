@@ -1,202 +1,115 @@
 document.addEventListener("DOMContentLoaded", function () {
+    "use strict";
 
-    
+    /* ==========================
+       THEME TOGGLE
+       Convention: dark is default, body.light = light,
+       preference stored in localStorage under "theme".
+    ========================== */
 
-    // ==========================
-    // BACK TO TOP BUTTON
-    // ==========================
+    var themeToggle = document.getElementById("themeToggle");
 
-    const backTop =
-        document.getElementById("backToTop");
+    function applyTheme(isLight) {
+        document.body.classList.toggle("light", isLight);
+        if (themeToggle) {
+            themeToggle.innerHTML = isLight
+                ? '<i class="bi bi-sun-fill"></i>'
+                : '<i class="bi bi-moon-stars-fill"></i>';
+        }
+    }
+
+    /* initial state (pre-paint script in <head> already set body.light) */
+    applyTheme(document.body.classList.contains("light"));
+
+    if (themeToggle) {
+        themeToggle.addEventListener("click", function () {
+            var isLight = !document.body.classList.contains("light");
+            applyTheme(isLight);
+            try {
+                localStorage.setItem("theme", isLight ? "light" : "dark");
+            } catch (e) {}
+        });
+    }
+
+    /* ==========================
+       BACK TO TOP
+    ========================== */
+
+    var backTop = document.getElementById("backToTop");
 
     if (backTop) {
-
         window.addEventListener("scroll", function () {
-
-            if (window.scrollY > 400) {
-
-                backTop.classList.add("show");
-
-            } else {
-
-                backTop.classList.remove("show");
-
-            }
-
+            backTop.classList.toggle("show", window.scrollY > 400);
         });
 
         backTop.addEventListener("click", function () {
-
-            window.scrollTo({
-
-                top: 0,
-
-                behavior: "smooth"
-
-            });
-
+            window.scrollTo({ top: 0, behavior: "smooth" });
         });
-
     }
 
-    // ==========================
-    // SCROLL ANIMATION
-    // ==========================
+    /* ==========================
+       SCROLL REVEAL
+    ========================== */
 
-    const animatedElements = document.querySelectorAll(
-        ".feature-card, .step-card, .offer-card, .stat-box, .hero-title, .hero-description, .hero-buttons"
-    );
+    var animated = document.querySelectorAll(".rv");
 
-    const observer = new IntersectionObserver(
-
-        (entries) => {
-
-            entries.forEach((entry) => {
-
+    if ("IntersectionObserver" in window) {
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
                 if (entry.isIntersecting) {
-
                     entry.target.classList.add("animate");
-
+                    observer.unobserve(entry.target);
                 }
-
             });
+        }, { threshold: 0.12 });
 
-        },
+        animated.forEach(function (el) { observer.observe(el); });
+    } else {
+        animated.forEach(function (el) { el.classList.add("animate"); });
+    }
 
-        {
+    /* ==========================
+       ACTIVE NAV LINK
+    ========================== */
 
-            threshold: 0.15
-
-        }
-
-    );
-
-    animatedElements.forEach((element) => {
-
-        observer.observe(element);
-
-    });
-
-    // ==========================
-    // ACTIVE NAV LINK
-    // ==========================
-
-    const sections =
-        document.querySelectorAll("section[id]");
-
-    const navLinks =
-        document.querySelectorAll(".nav-link");
+    var sections = document.querySelectorAll("section[id]");
+    var navLinks = document.querySelectorAll(".nav-link");
 
     window.addEventListener("scroll", function () {
+        var current = "";
 
-        let current = "";
-
-        sections.forEach((section) => {
-
-            const sectionTop =
-                section.offsetTop - 120;
-
-            if (window.scrollY >= sectionTop) {
-
+        sections.forEach(function (section) {
+            if (window.scrollY >= section.offsetTop - 140) {
                 current = section.getAttribute("id");
-
             }
-
         });
 
-        navLinks.forEach((link) => {
-
+        navLinks.forEach(function (link) {
             link.classList.remove("active");
-
-            if (
-
-                link.getAttribute("href") === "#" + current
-
-            ) {
-
+            if (link.getAttribute("href") === "#" + current) {
                 link.classList.add("active");
-
             }
-
         });
-
     });
 
-    // ==========================
-    // PHONE FLOAT EFFECT
-    // ==========================
+    /* ==========================
+       PHONE TILT (desktop only)
+    ========================== */
 
-    const phone =
-        document.querySelector(".phone-frame");
+    var phone = document.querySelector(".phone-frame");
+    var finePointer = window.matchMedia && window.matchMedia("(pointer: fine)").matches;
 
-    if (phone) {
-
+    if (phone && finePointer) {
         window.addEventListener("mousemove", function (e) {
-
-            const x =
-                (window.innerWidth / 2 - e.clientX) / 80;
-
-            const y =
-                (window.innerHeight / 2 - e.clientY) / 80;
-
+            var x = (window.innerWidth / 2 - e.clientX) / 80;
+            var y = (window.innerHeight / 2 - e.clientY) / 80;
             phone.style.transform =
-                `rotateY(${x}deg) rotateX(${-y}deg)`;
-
+                "rotateY(" + x + "deg) rotateX(" + (-y) + "deg)";
         });
 
-        window.addEventListener("mouseleave", function () {
-
-            phone.style.transform =
-                "rotateY(0deg) rotateX(0deg)";
-
+        document.addEventListener("mouseleave", function () {
+            phone.style.transform = "rotateY(0deg) rotateX(0deg)";
         });
-
     }
 
 });
-
-
-// ==========================
-    // THEME TOGGLE
-    // ==========================
-
-    const themeToggle = document.getElementById("themeToggle");
-    const root = document.documentElement;
-
-    const savedTheme = localStorage.getItem("theme") || "light";
-
-    root.setAttribute("data-theme", savedTheme);
-
-    updateThemeIcon(savedTheme);
-
-    if (themeToggle) {
-
-        themeToggle.addEventListener("click", function () {
-
-            const currentTheme = root.getAttribute("data-theme");
-
-            const newTheme =
-                currentTheme === "dark"
-                    ? "light"
-                    : "dark";
-
-            root.setAttribute("data-theme", newTheme);
-
-            localStorage.setItem("theme", newTheme);
-
-            updateThemeIcon(newTheme);
-
-        });
-
-    }
-
-    function updateThemeIcon(theme) {
-
-        if (!themeToggle) return;
-
-        themeToggle.innerHTML =
-            theme === "dark"
-                ? '<i class="bi bi-sun-fill"></i>'
-                : '<i class="bi bi-moon-stars-fill"></i>';
-
-   }

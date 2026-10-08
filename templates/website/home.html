@@ -1,13 +1,14 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 
 <head>
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
 
-    <title>ABFverify | Instant SMS Verification</title>
+    <title>ABFverify | Instant SMS Verification & Account Logs</title>
+    <meta name="description" content="ABFverify - instant virtual numbers for SMS verification in 50+ countries, plus a marketplace of verified account logs delivered instantly after payment.">
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -20,6 +21,18 @@
 
     <link rel="icon" href="{% static 'images/mylogo1.png' %}">
 
+    <!-- Apply saved theme BEFORE first paint -->
+    <script>
+    (function () {
+        try {
+            if (localStorage.getItem("theme") === "light") {
+                document.documentElement.classList.add("pre-light");
+            }
+        } catch (e) {}
+    })();
+    </script>
+
+<base target="_blank">
 </head>
 
 <body>
@@ -32,107 +45,59 @@
 
     <div class="container">
 
-        <!-- Logo -->
-
         <a class="navbar-brand d-flex align-items-center" href="/">
 
-            <img
-                src="{% static 'images/mylogo1.png' %}"
-                alt="ABFverify Logo"
-                class="logo-image"
-            >
+            <img src="{% static 'images/mylogo1.png' %}"
+                 alt="ABFverify Logo"
+                 class="logo-image">
 
-            <span class="logo-text">
-                ABFverify
-            </span>
+            <span class="logo-text">ABFverify</span>
 
         </a>
 
-        <!-- Mobile Toggle -->
-
-        <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarMenu">
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarMenu"
+                aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
 
             <span class="navbar-toggler-icon"></span>
 
         </button>
-
-        <!-- Navigation -->
 
         <div class="collapse navbar-collapse" id="navbarMenu">
 
             <ul class="navbar-nav mx-auto">
 
                 <li class="nav-item">
-
-                    <a class="nav-link active" href="#">
-                        Home
-                    </a>
-
+                    <a class="nav-link active" href="#">Home</a>
                 </li>
 
                 <li class="nav-item">
-
-                    <a class="nav-link" href="#how">
-                        How It Works
-                    </a>
-
+                    <a class="nav-link" href="#how">How It Works</a>
                 </li>
 
                 <li class="nav-item">
-
-                    <a class="nav-link" href="#countries">
-                        Countries
-                    </a>
-
+                    <a class="nav-link" href="#logs">Logs Shop</a>
                 </li>
 
                 <li class="nav-item">
-
-                    <a class="nav-link" href="#services">
-                        Services
-                    </a>
-
+                    <a class="nav-link" href="#why">Why Us</a>
                 </li>
 
                 <li class="nav-item">
-
-                    <a class="nav-link" href="#contact">
-                        Contact
-                    </a>
-
+                    <a class="nav-link" href="#contact">Contact</a>
                 </li>
 
             </ul>
 
             <div class="d-flex align-items-center gap-2">
 
-                <button
-                    id="themeToggle"
-                    class="btn btn-theme">
-
+                <button id="themeToggle" class="btn btn-theme" aria-label="Toggle theme">
                     <i class="bi bi-moon-stars-fill"></i>
-
                 </button>
 
-                <a
-                    href="{% url 'login' %}"
-                    class="btn btn-outline-primary">
+                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-nav">Login</a>
 
-                    Login
-
-                </a>
-
-                <a
-                    href="{% url 'register' %}"
-                    class="btn btn-primary">
-
-                    Get Started
-
-                </a>
+                <a href="{% url 'register' %}" class="btn btn-primary btn-nav">Get Started</a>
 
             </div>
 
@@ -152,94 +117,70 @@
 
         <div class="row align-items-center gy-5">
 
-            <!-- Left -->
-
             <div class="col-lg-6">
 
-                <span class="hero-badge">
-
+                <span class="hero-badge rv">
                     <i class="bi bi-shield-check-fill"></i>
-
-                    Secure SMS Verification Platform
-
+                    SMS Verification + Account Logs Marketplace
                 </span>
 
-                <h1 class="hero-title">
+                <h1 class="hero-title rv">
 
-                    Receive Verification SMS
+                    Verify Instantly.
 
-                    <span>
+                    <span>Own the Account.</span>
 
-                        Instantly
-
-                    </span>
-
-                    From Anywhere
+                    All in One Place.
 
                 </h1>
 
-                <p class="hero-description">
+                <p class="hero-description rv">
 
-                    ABFverify lets you purchase temporary virtual phone numbers
-                    from multiple countries for OTP verification on your favorite
-                    online services. Fast activation, affordable pricing,
-                    reliable SMS delivery, and an easy-to-use dashboard.
+                    Buy temporary virtual numbers from 50+ countries for OTP
+                    verification &mdash; or grab fully-verified account logs from
+                    our marketplace, delivered to you the second your payment
+                    lands. Fast activation, honest pricing, and everything saved
+                    to your dashboard forever.
 
                 </p>
 
-                <div class="hero-buttons">
+                <div class="hero-buttons rv">
 
-                    <a
-                        href="{% url 'register' %}"
-                        class="btn btn-primary btn-lg">
-
-                        Get Started
-
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+                        Create Free Account
                     </a>
 
-                    <a
-                        href="#how"
-                        class="btn btn-outline-primary btn-lg">
-
-                        Learn More
-
+                    <a href="#logs" class="btn btn-outline-primary btn-lg">
+                        Explore the Logs Shop
                     </a>
 
                 </div>
 
-                <!-- Statistics -->
-
-                <div class="hero-stats">
+                <div class="hero-stats rv">
 
                     <div class="stat-box">
-
                         <h3>50+</h3>
-
                         <p>Countries</p>
-
                     </div>
 
                     <div class="stat-box">
-
                         <h3>500+</h3>
-
                         <p>Services</p>
-
                     </div>
 
                     <div class="stat-box">
+                        <h3>Instant</h3>
+                        <p>Delivery</p>
+                    </div>
 
+                    <div class="stat-box">
                         <h3>24/7</h3>
-
                         <p>Support</p>
-
                     </div>
 
                 </div>
 
             </div>
-
-            <!-- Right -->
 
             <div class="col-lg-6">
 
@@ -249,10 +190,9 @@
 
                     <div class="phone-frame">
 
-                        <img
-                            src="{% static 'images/dashboard-preview.png' %}"
-                            alt="Dashboard Preview"
-                            class="phone-screen">
+                        <img src="{% static 'images/dashboard-preview.png' %}"
+                             alt="ABFverify Dashboard Preview"
+                             class="phone-screen">
 
                     </div>
 
@@ -265,43 +205,183 @@
     </div>
 
 </section>
-<!-- <div class="phone-wrapper">
 
-    <div class="phone-glow"></div>
-
-    <div class="phone-frame">
-
-        <img
-            src="{% static 'images/dashboard-preview.png' %}"
-            alt="Dashboard Preview"
-            class="phone-screen">
-
-    </div>
-
-</div> -->
 <!-- ==========================================
-        WHY CHOOSE ABFVERIFY
+        LOGS MARKETPLACE
 ========================================== -->
 
-<section class="py-5 bg-body-tertiary">
+<section id="logs" class="logs-section">
 
     <div class="container">
 
         <div class="text-center mb-5">
 
-            <span class="section-badge">
-                WHY CHOOSE US
-            </span>
+            <span class="section-badge rv">ABFLOGS MARKETPLACE</span>
 
-            <h2 class="section-title">
+            <h2 class="section-title rv">
+                Verified Account Logs,<br>Delivered Instantly
+            </h2>
+
+            <p class="section-subtitle rv">
+
+                Not just numbers &mdash; complete account access. Browse verified
+                logs for Social Media, VPN and Texting services. Pay from your
+                wallet and the credentials appear on your screen immediately,
+                with a copy button and a permanent copy saved in your orders.
+
+            </p>
+
+        </div>
+
+        <div class="row g-4 align-items-stretch">
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="logs-feature rv">
+
+                    <div class="logs-feature-icon">
+                        <i class="bi bi-grid-fill"></i>
+                    </div>
+
+                    <h4>Organized Like a Real Shop</h4>
+
+                    <p>
+                        Logs are grouped by category and type &mdash; Facebook,
+                        TextPlus, Proton VPN and more &mdash; with live stock
+                        counts so you always know what's available.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="logs-feature rv">
+
+                    <div class="logs-feature-icon">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                    </div>
+
+                    <h4>Instant Delivery After Payment</h4>
+
+                    <p>
+                        One click and the log is yours. Credentials show
+                        immediately with a copy button &mdash; no waiting,
+                        no manual delivery, no Telegram handoffs.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-12">
+
+                <div class="logs-feature rv">
+
+                    <div class="logs-feature-icon">
+                        <i class="bi bi-key-fill"></i>
+                    </div>
+
+                    <h4>Full Format, Every Time</h4>
+
+                    <p>
+                        Every log ships with its complete format &mdash;
+                        UID, password, email password, 2FA and recovery email
+                        (where applicable) &mdash; and a snapshot is kept in
+                        your order history forever.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- sample stock preview -->
+        <div class="row justify-content-center mt-5">
+
+            <div class="col-lg-10">
+
+                <div class="logs-preview rv">
+
+                    <div class="logs-preview-head">
+                        <span class="lp-dot"></span>
+                        <span class="lp-dot"></span>
+                        <span class="lp-dot"></span>
+                        <span class="lp-title">Live from the shop</span>
+                    </div>
+
+                    <div class="logs-preview-body">
+
+                        <div class="lp-row">
+                            <span class="lp-cat">FACEBOOK</span>
+                            <span class="lp-name">United States Facebook (2012&ndash;2026)</span>
+                            <span class="lp-stock in">93 in stock</span>
+                            <span class="lp-price">&#8358;3,450</span>
+                        </div>
+
+                        <div class="lp-row">
+                            <span class="lp-cat">TEXTING</span>
+                            <span class="lp-name">TextPlus &mdash; USA verified</span>
+                            <span class="lp-stock in">64 in stock</span>
+                            <span class="lp-price">&#8358;2,500</span>
+                        </div>
+
+                        <div class="lp-row">
+                            <span class="lp-cat">VPN</span>
+                            <span class="lp-name">Proton VPN (USA)</span>
+                            <span class="lp-stock low">12 in stock</span>
+                            <span class="lp-price">&#8358;2,000</span>
+                        </div>
+
+                        <div class="lp-row">
+                            <span class="lp-cat">SOCIAL</span>
+                            <span class="lp-name">Mexico Facebook &mdash; fresh 2025</span>
+                            <span class="lp-stock out">Sold out</span>
+                            <span class="lp-price">&#8358;3,200</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="text-center mt-4 rv">
+
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4">
+                <i class="bi bi-bag-fill"></i> Start Buying Logs
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ==========================================
+        WHY CHOOSE ABFVERIFY
+========================================== -->
+
+<section id="why" class="why-section">
+
+    <div class="container">
+
+        <div class="text-center mb-5">
+
+            <span class="section-badge rv">WHY CHOOSE US</span>
+
+            <h2 class="section-title rv">
                 Why Thousands Choose ABFverify
             </h2>
 
-            <p class="section-subtitle">
+            <p class="section-subtitle rv">
 
-                Purchase temporary virtual numbers from multiple countries
-                with instant activation, reliable SMS delivery and an
-                easy-to-use dashboard.
+                One wallet, one dashboard, two superpowers &mdash; instant SMS
+                numbers and a premium logs marketplace, both built for speed.
 
             </p>
 
@@ -309,92 +389,116 @@
 
         <div class="row g-4">
 
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
 
-                <div class="feature-card h-100">
+                <div class="feature-card h-100 rv">
 
                     <div class="feature-icon">
-
                         <i class="bi bi-lightning-charge-fill"></i>
-
                     </div>
 
                     <h4>Instant Activation</h4>
 
                     <p>
-
-                        Receive your virtual number within seconds after
-                        requesting it.
-
+                        Numbers and logs are delivered within seconds of
+                        your request &mdash; no queues, no waiting rooms.
                     </p>
 
                 </div>
 
             </div>
 
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
 
-                <div class="feature-card h-100">
+                <div class="feature-card h-100 rv">
 
                     <div class="feature-icon">
-
                         <i class="bi bi-globe-americas"></i>
-
                     </div>
 
                     <h4>Global Coverage</h4>
 
                     <p>
-
-                        Access numbers from multiple countries for your
-                        verification needs.
-
+                        Access numbers from multiple countries and logs for
+                        the platforms you actually use.
                     </p>
 
                 </div>
 
             </div>
 
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
 
-                <div class="feature-card h-100">
+                <div class="feature-card h-100 rv">
 
                     <div class="feature-icon">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
 
+                    <h4>Smart Wallet</h4>
+
+                    <p>
+                        Fund your wallet with a permanent dedicated account
+                        number &mdash; transfers credit automatically, usually
+                        within a minute.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="feature-card h-100 rv">
+
+                    <div class="feature-icon">
                         <i class="bi bi-shield-lock-fill"></i>
-
                     </div>
 
                     <h4>Secure Platform</h4>
 
                     <p>
-
-                        Your account, wallet and verification history
-                        remain protected.
-
+                        Your account, wallet, numbers and purchased logs
+                        stay protected &mdash; purchases are locked to your
+                        account only.
                     </p>
 
                 </div>
 
             </div>
 
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
 
-                <div class="feature-card h-100">
+                <div class="feature-card h-100 rv">
 
                     <div class="feature-icon">
+                        <i class="bi bi-receipt"></i>
+                    </div>
 
+                    <h4>Full Order History</h4>
+
+                    <p>
+                        Every number, OTP and log is saved with order IDs,
+                        dates and copy buttons &mdash; nothing gets lost.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="feature-card h-100 rv">
+
+                    <div class="feature-icon">
                         <i class="bi bi-headset"></i>
-
                     </div>
 
                     <h4>24/7 Support</h4>
 
                     <p>
-
-                        Our support team is always available whenever
-                        you need assistance.
-
+                        Our support team is always one Telegram message
+                        away whenever you need assistance.
                     </p>
 
                 </div>
@@ -411,23 +515,16 @@
         HOW IT WORKS
 ========================================== -->
 
-<section id="how" class="py-5">
+<section id="how" class="how-section">
 
     <div class="container">
 
         <div class="text-center mb-5">
 
-            <span class="section-badge">
+            <span class="section-badge rv">HOW IT WORKS</span>
 
-                HOW IT WORKS
-
-            </span>
-
-            <h2 class="section-title">
-
-                Get Your Verification Number
-                In Six Simple Steps
-
+            <h2 class="section-title rv">
+                Your Number or Log in Six Simple Steps
             </h2>
 
         </div>
@@ -435,87 +532,51 @@
         <div class="row g-4">
 
             <div class="col-lg-2 col-md-4 col-6">
-
-                <div class="step-card">
-
+                <div class="step-card rv">
                     <div class="step-number">1</div>
-
                     <i class="bi bi-wallet2"></i>
-
                     <h6>Fund Wallet</h6>
-
                 </div>
-
             </div>
 
             <div class="col-lg-2 col-md-4 col-6">
-
-                <div class="step-card">
-
+                <div class="step-card rv">
                     <div class="step-number">2</div>
-
                     <i class="bi bi-globe"></i>
-
                     <h6>Select Country</h6>
-
                 </div>
-
             </div>
 
             <div class="col-lg-2 col-md-4 col-6">
-
-                <div class="step-card">
-
+                <div class="step-card rv">
                     <div class="step-number">3</div>
-
                     <i class="bi bi-grid"></i>
-
-                    <h6>Select Service</h6>
-
+                    <h6>Pick a Service or Log</h6>
                 </div>
-
             </div>
 
             <div class="col-lg-2 col-md-4 col-6">
-
-                <div class="step-card">
-
+                <div class="step-card rv">
                     <div class="step-number">4</div>
-
                     <i class="bi bi-check-circle"></i>
-
-                    <h6>Check Stock</h6>
-
+                    <h6>Confirm Price</h6>
                 </div>
-
             </div>
 
             <div class="col-lg-2 col-md-4 col-6">
-
-                <div class="step-card">
-
+                <div class="step-card rv">
                     <div class="step-number">5</div>
-
-                    <i class="bi bi-phone"></i>
-
-                    <h6>Request Number</h6>
-
+                    <i class="bi bi-bag-check-fill"></i>
+                    <h6>Pay from Wallet</h6>
                 </div>
-
             </div>
 
             <div class="col-lg-2 col-md-4 col-6">
-
-                <div class="step-card">
-
+                <div class="step-card rv">
                     <div class="step-number">6</div>
-
                     <i class="bi bi-chat-dots-fill"></i>
-
-                    <h6>Receive OTP</h6>
-
+                    <h6>Receive OTP / Creds</h6>
                 </div>
-
             </div>
 
         </div>
@@ -528,7 +589,7 @@
         COUNTRIES & SERVICES
 ========================================== -->
 
-<section class="py-5 bg-body-tertiary">
+<section class="offer-section">
 
     <div class="container">
 
@@ -536,52 +597,33 @@
 
             <div class="col-lg-6" id="countries">
 
-                <div class="offer-card h-100">
+                <div class="offer-card h-100 rv">
 
                     <h3>
-
                         <i class="bi bi-globe2"></i>
-
                         Available Countries
-
                     </h3>
 
                     <div class="row">
 
                         <div class="col-6">
-
                             <ul class="offer-list">
-
                                 <li>🇺🇸 United States</li>
-
                                 <li>🇬🇧 United Kingdom</li>
-
                                 <li>🇨🇦 Canada</li>
-
                                 <li>🇦🇺 Australia</li>
-
                                 <li>🇸🇬 Singapore</li>
-
                             </ul>
-
                         </div>
 
                         <div class="col-6">
-
                             <ul class="offer-list">
-
                                 <li>🇦🇹 Austria</li>
-
                                 <li>🇩🇪 Germany</li>
-
                                 <li>🇫🇷 France</li>
-
                                 <li>🇮🇹 Italy</li>
-
                                 <li>+ Many More</li>
-
                             </ul>
-
                         </div>
 
                     </div>
@@ -592,52 +634,33 @@
 
             <div class="col-lg-6" id="services">
 
-                <div class="offer-card h-100">
+                <div class="offer-card h-100 rv">
 
                     <h3>
-
                         <i class="bi bi-app-indicator"></i>
-
                         Supported Services
-
                     </h3>
 
                     <div class="row">
 
                         <div class="col-6">
-
                             <ul class="offer-list">
-
                                 <li>WhatsApp</li>
-
                                 <li>Telegram</li>
-
                                 <li>Facebook</li>
-
                                 <li>Instagram</li>
-
                                 <li>Google</li>
-
                             </ul>
-
                         </div>
 
                         <div class="col-6">
-
                             <ul class="offer-list">
-
                                 <li>TikTok</li>
-
                                 <li>Discord</li>
-
                                 <li>X (Twitter)</li>
-
                                 <li>Microsoft</li>
-
                                 <li>+ Hundreds More</li>
-
                             </ul>
-
                         </div>
 
                     </div>
@@ -651,45 +674,34 @@
     </div>
 
 </section>
+
 <!-- ==========================================
         CALL TO ACTION
 ========================================== -->
 
-<section class="cta-section py-5">
+<section class="cta-section">
 
     <div class="container text-center">
 
-        <span class="section-badge">
+        <span class="section-badge rv">GET STARTED</span>
 
-            GET STARTED
-
-        </span>
-
-        <h2 class="display-5 fw-bold mt-3">
-
-            Ready to Get Your Virtual Number?
-
+        <h2 class="display-5 fw-bold mt-3 rv">
+            Ready to Verify &mdash; or Fully Own the Account?
         </h2>
 
-        <p class="lead text-muted mt-3 mb-4">
-
-            Join thousands of users who trust ABFverify for fast,
-            secure and reliable SMS verification services.
-
+        <p class="lead mt-3 mb-4 rv">
+            Join thousands of users who trust ABFverify for fast, secure SMS
+            verification and instant account logs &mdash; all from one wallet.
         </p>
 
-        <div class="d-flex justify-content-center flex-wrap gap-3">
+        <div class="d-flex justify-content-center flex-wrap gap-3 rv">
 
-            <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4">
-
+            <a href="{% url 'register' %}" class="btn btn-cta-primary btn-lg px-4">
                 Create Free Account
-
             </a>
 
-            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg px-4">
-
+            <a href="{% url 'login' %}" class="btn btn-cta-outline btn-lg px-4">
                 Login
-
             </a>
 
         </div>
@@ -702,82 +714,55 @@
                 FOOTER
 ========================================== -->
 
-<footer class="footer">
+<footer class="footer" id="contact">
 
     <div class="container">
 
         <div class="row gy-5">
 
-            <!-- ABOUT -->
-
             <div class="col-lg-4">
 
                 <div class="footer-logo">
-
                     <img src="{% static 'images/mylogo1.png' %}" alt="ABFverify">
-
                     <span>ABFverify</span>
-
                 </div>
 
                 <p class="footer-text mt-3">
-
-                    ABFverify provides fast, secure and reliable
-                    virtual phone numbers for SMS verification across
-                    multiple countries and services.
-
+                    ABFverify provides fast, secure virtual numbers for SMS
+                    verification and a marketplace of verified account logs
+                    &mdash; delivered instantly, saved forever.
                 </p>
 
             </div>
 
-            <!-- QUICK LINKS -->
-
             <div class="col-lg-4">
 
-                <h5 class="footer-title">
-
-                    Quick Links
-
-                </h5>
+                <h5 class="footer-title">Quick Links</h5>
 
                 <ul class="footer-links">
-
                     <li><a href="#">Home</a></li>
-
                     <li><a href="#how">How It Works</a></li>
-
-                    <li><a href="#countries">Countries</a></li>
-
-                    <li><a href="#services">Services</a></li>
-
+                    <li><a href="#logs">Logs Shop</a></li>
+                    <li><a href="#why">Why Us</a></li>
                 </ul>
 
             </div>
-            <!-- SUPPORT -->
 
             <div class="col-lg-4">
 
-                <h5 class="footer-title">
-
-                    Support
-
-                </h5>
+                <h5 class="footer-title">Support</h5>
 
                 <a href="https://t.me/abflogs" target="_blank" class="btn btn-telegram w-100 mb-3">
-
                     <i class="bi bi-telegram"></i> Chat on Telegram
-
                 </a>
 
                 <p class="small text-muted mt-2">
-
-                    Need help? Message us on Telegram and we'll
-                    respond as quickly as possible.
-
+                    Need help? Message us on Telegram and we'll respond as
+                    quickly as possible.
                 </p>
 
             </div>
-            
+
         </div>
 
         <hr class="my-4">
@@ -785,19 +770,13 @@
         <div class="footer-bottom">
 
             <div>
-
                 <a href="{% url 'privacy_policy' %}">Privacy Policy</a>
-
-                <span class="mx-2">•</span>
-
+                <span class="mx-2">&bull;</span>
                 <a href="{% url 'terms_of_service' %}">Terms of Service</a>
-
             </div>
 
             <p class="mb-0 mt-3 mt-lg-0">
-
-                © 2026 ABFverify. All Rights Reserved.
-
+                &copy; 2026 ABFverify. All Rights Reserved.
             </p>
 
         </div>
@@ -807,13 +786,11 @@
 </footer>
 
 <!-- ==========================================
-        BACK TO TOP BUTTON
+        BACK TO TOP
 ========================================== -->
 
-<button id="backToTop" class="back-top">
-
+<button id="backToTop" class="back-top" aria-label="Back to top">
     <i class="bi bi-arrow-up"></i>
-
 </button>
 
 <!-- ==========================================
@@ -822,8 +799,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
-
 <script src="{% static 'js/landing.js' %}"></script>
 
 </body>
+
 </html>
