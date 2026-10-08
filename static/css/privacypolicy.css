@@ -1,508 +1,359 @@
-/* =====================================
-   ABFverify Privacy Policy
-===================================== */
+:root{
+    /* gradient accent shared with the panel */
+    --grad: linear-gradient(135deg, #38bdf8, #818cf8);
+    --grad-soft: rgba(56, 189, 248, 0.10);
+    --grad-line: rgba(56, 189, 248, 0.22);
+}
 
+/* ===============================
+   DARK MODE DEFAULT
+================================ */
 
-* {
+body{
+    --bg: #0f172a;
+    --card: #111827;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --border: #1f2937;
+    --accent: #38bdf8;
+}
+
+/* ===============================
+   LIGHT MODE
+================================ */
+
+body.light{
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --accent: #0ea5e9;
+
+    --grad: linear-gradient(135deg, #0ea5e9, #6366f1);
+    --grad-soft: rgba(14, 165, 233, 0.08);
+    --grad-line: rgba(14, 165, 233, 0.22);
+}
+
+/* ===============================
+   RESET / BASE
+================================ */
+
+*{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+html, body{
+    overflow-x: hidden;
+    max-width: 100%;
+}
 
-body {
-
+body{
     font-family: "Inter", Arial, sans-serif;
 
     background: var(--bg);
-
     color: var(--text);
 
     line-height: 1.7;
 
-    transition: .3s ease;
-
+    transition: background 0.3s ease, color 0.3s ease;
 }
-
-
 
 /* ===============================
-   THEME VARIABLES
+   HIDDEN GLOBAL CONTROLLER
 ================================ */
 
-
-html[data-theme="light"] {
-
-    --bg: #f8fafc;
-
-    --card: #ffffff;
-
-    --text: #0f172a;
-
-    --muted: #64748b;
-
-    --border: #e2e8f0;
-
-    --primary: #1d4ed8;
-
+.theme-btn{
+    display: none;
 }
-
-
-
-html[data-theme="dark"] {
-
-    --bg: #020617;
-
-    --card: #111827;
-
-    --text: #f8fafc;
-
-    --muted: #94a3b8;
-
-    --border: #1e293b;
-
-    --primary: #1d4ed8;
-
-}
-
-
 
 /* ===============================
    WRAPPER
 ================================ */
 
-
-.policy-wrapper {
-
+.policy-wrapper{
     min-height: 100vh;
-
     padding: 30px;
-
 }
-
-
 
 /* ===============================
    HEADER
 ================================ */
 
-
-.policy-header {
-
+.policy-header{
     max-width: 1100px;
-
-    margin: auto;
+    margin: 0 auto 30px;
 
     background: var(--card);
-
     border: 1px solid var(--border);
-
     border-radius: 18px;
 
     padding: 20px 25px;
 
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
+    gap: 16px;
 
-    margin-bottom: 30px;
-
+    position: relative;
+    overflow: hidden;
 }
 
+/* subtle gradient orb, panel language */
+.policy-header::before{
+    content: "";
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: var(--grad);
+    opacity: 0.10;
+    pointer-events: none;
+}
 
-
-.logo-section {
-
+.logo-section{
     display: flex;
-
     align-items: center;
-
     gap: 15px;
 
+    min-width: 0;
+    position: relative;
+    z-index: 1;
 }
 
-
-
-.logo {
-
+.logo{
     width: 55px;
-
     height: 55px;
-
     object-fit: contain;
+    flex-shrink: 0;
 
+    filter: drop-shadow(0 6px 16px rgba(56, 189, 248, 0.25));
 }
 
-
-
-.logo-section h2 {
-
+.logo-section h2{
     font-size: 22px;
-
-    color: var(--text);
-
     font-weight: 700;
-
+    color: var(--text);
 }
 
-
-
-.logo-section p {
-
+.logo-section p{
     font-size: 14px;
-
     color: var(--muted);
-
 }
-
-
-
 
 /* ===============================
    HEADER ACTIONS
 ================================ */
 
-
-.header-actions {
-
+.header-actions{
     display: flex;
-
     align-items: center;
-
     gap: 12px;
 
+    position: relative;
+    z-index: 1;
 }
 
-
-
-
-.theme-btn {
-
+/* visible theme circle */
+.theme-circle{
     width: 42px;
-
     height: 42px;
 
     border-radius: 50%;
 
     background: transparent;
-
     border: 1px solid var(--border);
-
-    color: var(--text);
+    color: var(--muted);
 
     cursor: pointer;
-
-    font-size: 18px;
-
-    transition: .3s;
-
-}
-
-
-
-.theme-btn:hover {
-
-    background: var(--primary);
-
-    color: white;
-
-}
-
-
-
-
-.back-btn {
+    font-size: 16px;
 
     display: flex;
-
     align-items: center;
+    justify-content: center;
 
+    transition: all 0.25s ease;
+}
+
+.theme-circle:hover{
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--grad-soft);
+}
+
+.back-btn{
+    display: flex;
+    align-items: center;
     gap: 8px;
 
     text-decoration: none;
 
-    background: #1d4ed8;
-
-    color: white;
+    background: var(--grad);
+    color: #ffffff;
 
     padding: 11px 18px;
-
     border-radius: 10px;
 
     font-size: 14px;
-
     font-weight: 600;
+    white-space: nowrap;
 
-    transition: .3s;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
 
+    transition: filter 0.25s ease, transform 0.25s ease;
 }
 
-
-
-.back-btn:hover {
-
-    opacity: .85;
-
+.back-btn:hover{
+    filter: brightness(1.1);
     transform: translateY(-2px);
-
+    color: #ffffff;
 }
-
-
 
 /* ===============================
    POLICY CARD
 ================================ */
 
-
-.policy-card {
-
+.policy-card{
     max-width: 1100px;
-
-    margin: auto;
+    margin: 0 auto;
 
     background: var(--card);
-
     border: 1px solid var(--border);
-
     border-radius: 20px;
 
     padding: 45px;
 
-    box-shadow: 0 15px 40px rgba(0,0,0,.08);
-
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.10);
 }
 
-
-
-
-.policy-card h1 {
-
+.policy-card h1{
     font-size: 36px;
-
+    font-weight: 800;
     color: var(--text);
-
     margin-bottom: 8px;
-
 }
 
-
-
-
-.last-updated {
-
+.last-updated{
     color: var(--muted);
-
     font-size: 14px;
-
     margin-bottom: 35px;
-
 }
-
-
 
 /* ===============================
    CONTENT
 ================================ */
 
-
-.policy-card section {
-
+.policy-card section{
     margin-bottom: 35px;
-
 }
 
+.policy-card section:last-child{
+    margin-bottom: 0;
+}
 
-
-.policy-card h3 {
-
-    color: #1d4ed8;
-
+.policy-card h3{
+    color: var(--accent);
     font-size: 20px;
-
+    font-weight: 700;
     margin-bottom: 12px;
-
 }
 
-
-
-.policy-card p {
-
+.policy-card p{
     color: var(--text);
-
     font-size: 15px;
-
 }
 
-
-
-.policy-card ul {
-
+.policy-card ul{
     padding-left: 25px;
-
 }
 
-
-
-.policy-card li {
-
+.policy-card li{
     color: var(--text);
-
     margin-bottom: 8px;
-
+    font-size: 15px;
 }
 
-
-
-
-.policy-card a {
-
-    color: #1d4ed8;
-
+.policy-card a{
+    color: var(--accent);
     text-decoration: none;
-
     font-weight: 600;
-
 }
 
-
-
-.policy-card a:hover {
-
+.policy-card a:hover{
     text-decoration: underline;
-
 }
-
-
 
 /* ===============================
    FOOTER
 ================================ */
 
-
-.policy-footer {
-
-    max-width:1100px;
-
-    margin:30px auto 0;
-
-    text-align:center;
-
-    color:var(--muted);
-
-    font-size:14px;
-
+.policy-footer{
+    max-width: 1100px;
+    margin: 30px auto 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
 }
-
-
-
-
 
 /* ===============================
    RESPONSIVE
 ================================ */
 
+@media (max-width: 768px){
 
-@media(max-width:768px) {
-
-
-    .policy-wrapper {
-
-        padding:15px;
-
+    .policy-wrapper{
+        padding: 15px;
     }
 
-
-
-    .policy-header {
-
+    .policy-header{
         flex-direction: column;
-
-        align-items:flex-start;
-
-        gap:20px;
-
+        align-items: flex-start;
+        gap: 18px;
     }
 
-
-
-    .header-actions {
-
-        width:100%;
-
-        justify-content:space-between;
-
+    .header-actions{
+        width: 100%;
+        justify-content: space-between;
     }
 
-
-
-    .policy-card {
-
-        padding:25px;
-
-        border-radius:15px;
-
+    .policy-card{
+        padding: 25px;
+        border-radius: 15px;
     }
 
-
-
-    .policy-card h1 {
-
-        font-size:28px;
-
+    .policy-card h1{
+        font-size: 28px;
     }
-
 
 }
 
+@media (max-width: 450px){
 
-
-@media(max-width:450px) {
-
-
-    .logo {
-
-        width:45px;
-
-        height:45px;
-
+    .logo{
+        width: 45px;
+        height: 45px;
     }
 
-
-
-    .logo-section h2 {
-
-        font-size:20px;
-
+    .logo-section h2{
+        font-size: 20px;
     }
 
-
-
-    .back-btn {
-
-        padding:10px 13px;
-
-        font-size:13px;
-
+    .back-btn{
+        padding: 10px 13px;
+        font-size: 13px;
     }
 
-
-
-    .policy-card {
-
-        padding:20px;
-
+    .policy-card{
+        padding: 20px;
     }
-
-
 
     .policy-card p,
-    .policy-card li {
-
-        font-size:14px;
-
+    .policy-card li{
+        font-size: 14px;
     }
-
 
 }
