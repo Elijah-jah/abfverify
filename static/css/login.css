@@ -427,3 +427,16 @@ body{
     }
 
 }
+
+/* ===============================
+   SHRINK LOCK — nothing may push the page wider than the screen
+================================ */
+
+html, body{
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+.login-wrapper{
+    width: 100%;
+}

@@ -1,722 +1,463 @@
-/* =====================================
-   ABFverify Register Page CSS
-   Responsive + Theme Support
-===================================== */
-
+:root{
+    /* gradient accent shared with the panel */
+    --grad: linear-gradient(135deg, #38bdf8, #818cf8);
+    --grad-soft: rgba(56, 189, 248, 0.12);
+    --grad-line: rgba(56, 189, 248, 0.25);
+}
 
 /* ===============================
-   THEME VARIABLES
+   DARK MODE DEFAULT
 ================================ */
 
-
-:root {
-
-    --bg:#0f172a;
-
-    --card:#111827;
-
-    --text:#e5e7eb;
-
-    --muted:#94a3b8;
-
-    --border:#1f2937;
-
-    --input:#0b1220;
-
-    --primary:#1d4ed8;
-
-    --primary-hover:#1e40af;
-
+body{
+    --bg: #0f172a;
+    --card: #111827;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --border: #1f2937;
+    --input: #0b1220;
 }
 
+/* ===============================
+   LIGHT MODE
+================================ */
 
+body.light{
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --input: #ffffff;
 
-body.light {
-
-    --bg:#f8fafc;
-
-    --card:#ffffff;
-
-    --text:#0f172a;
-
-    --muted:#64748b;
-
-    --border:#e2e8f0;
-
-    --input:#ffffff;
-
+    --grad: linear-gradient(135deg, #0ea5e9, #6366f1);
+    --grad-soft: rgba(14, 165, 233, 0.10);
+    --grad-line: rgba(14, 165, 233, 0.25);
 }
-
-
-
-
 
 /* ===============================
    RESET
 ================================ */
 
-
-* {
-
-    margin:0;
-
-    padding:0;
-
-    box-sizing:border-box;
-
-    font-family:"Inter",Arial,sans-serif;
-
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Inter", Arial, sans-serif;
 }
 
+/* ===============================
+   SHRINK LOCK — nothing may push the page wider than the screen
+================================ */
 
-
-
+html, body{
+    overflow-x: hidden;
+    max-width: 100%;
+}
 
 /* ===============================
    BODY
 ================================ */
 
-
-body {
-
-    min-height:100vh;
-
-    background:var(--bg);
-
-    color:var(--text);
-
-    transition:.3s ease;
-
+body{
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
-
-
-
-
+/* hidden theme controller */
+.theme-btn{
+    display: none;
+}
 
 /* ===============================
    WRAPPER
 ================================ */
 
-
-.register-wrapper {
-
-    min-height:100vh;
-
-    display:flex;
-
+.register-wrapper{
+    min-height: 100vh;
+    display: flex;
+    width: 100%;
 }
-
-
-
-
-
 
 /* ===============================
    BRAND SIDE
 ================================ */
 
+.register-brand{
+    flex: 1;
 
-.register-brand {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 
-    flex:1;
-
-    display:flex;
-
-    flex-direction:column;
-
-    justify-content:center;
-
-    align-items:center;
-
-    text-align:center;
-
-    padding:50px;
+    padding: 50px;
 
     background:
-    linear-gradient(
-        135deg,
-        var(--bg),
-        var(--card)
-    );
+        linear-gradient(135deg, var(--bg), var(--card));
 
-    border-right:1px solid var(--border);
+    border-right: 1px solid var(--border);
 
+    position: relative;
+    overflow: hidden;
 }
 
-
-
-
-.brand-logo {
-
-    width:110px;
-
-    height:110px;
-
-    object-fit:contain;
-
-    margin-bottom:20px;
-
+/* glowing orbs, panel language */
+.register-brand::before,
+.register-brand::after{
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    background: var(--grad);
+    opacity: 0.14;
+    pointer-events: none;
 }
 
-
-
-
-.register-brand h1 {
-
-    font-size:36px;
-
-    font-weight:800;
-
-    margin-bottom:10px;
-
+.register-brand::before{
+    width: 260px;
+    height: 260px;
+    top: -80px;
+    right: -80px;
 }
 
-
-
-
-.register-brand p {
-
-    max-width:320px;
-
-    color:var(--muted);
-
-    font-size:15px;
-
+.register-brand::after{
+    width: 180px;
+    height: 180px;
+    bottom: -60px;
+    left: -60px;
+    opacity: 0.10;
 }
 
+.brand-logo{
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    margin-bottom: 20px;
 
+    position: relative;
+    z-index: 1;
 
+    filter: drop-shadow(0 10px 24px rgba(56, 189, 248, 0.25));
+}
 
+.register-brand h1{
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 10px;
 
+    position: relative;
+    z-index: 1;
 
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.register-brand p{
+    max-width: 320px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.7;
+
+    position: relative;
+    z-index: 1;
+}
 
 /* ===============================
    FORM CARD
 ================================ */
 
+.register-card{
+    flex: 1;
 
-.register-card {
+    background: var(--card);
 
-    flex:1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 
-    background:var(--card);
+    padding: 60px;
 
-    display:flex;
-
-    flex-direction:column;
-
-    justify-content:center;
-
-    padding:60px;
-
+    min-width: 0;
 }
 
-
-
-
-.register-card h2 {
-
-    font-size:32px;
-
-    font-weight:700;
-
-    margin-bottom:8px;
-
+.register-card h2{
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
 }
 
-
-
-
-.register-subtext {
-
-    font-size:14px;
-
-    color:var(--muted);
-
-    margin-bottom:30px;
-
+.register-subtext{
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 28px;
 }
-
-
-
-
-
-
 
 /* ===============================
    INPUTS
 ================================ */
 
-
-.input-group {
-
-    margin-bottom:18px;
-
+.input-group{
+    margin-bottom: 18px;
+    min-width: 0;
 }
 
+.input-group label{
+    display: block;
 
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
 
-.input-group label {
-
-    display:block;
-
-    font-size:13px;
-
-    color:var(--muted);
-
-    margin-bottom:7px;
-
+    margin-bottom: 8px;
 }
 
+.input-group input{
+    width: 100%;
 
+    padding: 14px 15px;
 
+    border-radius: 12px;
+    border: 1px solid var(--border);
 
-.input-group input {
+    background: var(--input);
+    color: var(--text);
 
-    width:100%;
+    outline: none;
+    font-size: 14px;
 
-    padding:14px 15px;
-
-    border-radius:12px;
-
-    border:1px solid var(--border);
-
-    background:var(--input);
-
-    color:var(--text);
-
-    outline:none;
-
-    transition:.3s;
-
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-
-
-
-.input-group input::placeholder {
-
-    color:var(--muted);
-
+.input-group input::placeholder{
+    color: var(--muted);
 }
 
-
-
-
-.input-group input:focus {
-
-    border-color:var(--primary);
-
-    box-shadow:
-
-    0 0 0 3px rgba(29,78,216,.15);
-
+.input-group input:focus{
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
 }
-
-
-
-
-
-
-
 
 /* ===============================
    PASSWORD FIELD
 ================================ */
 
-
-.password-box {
-
-    position:relative;
-
+.password-box{
+    position: relative;
 }
 
-
-
-.password-box input {
-
-    padding-right:45px;
-
+.password-box input{
+    padding-right: 45px;
 }
 
+.password-box i{
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
 
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 14px;
 
-.password-box i {
-
-    position:absolute;
-
-    right:15px;
-
-    top:50%;
-
-    transform:translateY(-50%);
-
-    cursor:pointer;
-
-    color:var(--muted);
-
+    transition: color 0.2s ease;
 }
 
-
-
-.password-box i:hover {
-
-    color:var(--primary);
-
+.password-box i:hover{
+    color: #38bdf8;
 }
-
-
-
-
-
-
-
 
 /* ===============================
    TERMS CHECKBOX
 ================================ */
 
+.terms-box{
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
 
-.terms-box {
+    margin: 15px 0 20px;
 
-    display:flex;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted);
 
-    align-items:flex-start;
-
-    gap:10px;
-
-    margin:15px 0 20px;
-
-    font-size:13px;
-
-    line-height:1.5;
-
-    color:var(--muted);
-
+    min-width: 0;
 }
 
-
-
-.terms-box input {
-
-    width:16px;
-
-    height:16px;
-
-    margin-top:3px;
-
-    cursor:pointer;
-
+.terms-box input{
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
-
-
-.terms-box a {
-
-    color:var(--primary);
-
-    text-decoration:none;
-
-    font-weight:600;
-
+.terms-box label{
+    min-width: 0;
 }
 
-
-
-.terms-box a:hover {
-
-    text-decoration:underline;
-
+.terms-box a{
+    color: #38bdf8;
+    text-decoration: none;
+    font-weight: 600;
 }
 
-
-
-
-
-
+.terms-box a:hover{
+    text-decoration: underline;
+}
 
 /* ===============================
    BUTTON
 ================================ */
 
+.register-btn{
+    width: 100%;
 
-.register-btn {
+    padding: 14px;
 
-    width:100%;
+    border: none;
+    border-radius: 12px;
 
-    padding:14px;
+    margin-top: 5px;
 
-    border:none;
+    background: var(--grad);
+    color: #ffffff;
 
-    border-radius:12px;
+    font-size: 15px;
+    font-weight: 700;
 
-    margin-top:5px;
+    cursor: pointer;
 
-    background:var(--primary);
+    box-shadow: 0 6px 18px rgba(56, 189, 248, 0.28);
 
-    color:white;
+    transition: filter 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
 
-    font-size:15px;
-
-    font-weight:700;
-
-    cursor:pointer;
-
-    transition:.3s;
-
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
-
-
-.register-btn:hover {
-
-    background:var(--primary-hover);
-
-    transform:translateY(-2px);
-
+.register-btn:hover{
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(56, 189, 248, 0.34);
 }
 
-
-
-
-
-
+.register-btn:active{
+    transform: scale(0.98);
+}
 
 /* ===============================
    FOOTER
 ================================ */
 
-
-.register-footer {
-
-    margin-top:25px;
-
-    font-size:13px;
-
-    color:var(--muted);
-
+.register-footer{
+    margin-top: 25px;
+    font-size: 13px;
+    color: var(--muted);
 }
 
-
-
-.register-footer a {
-
-    color:var(--primary);
-
-    text-decoration:none;
-
-    font-weight:600;
-
+.register-footer a{
+    color: #38bdf8;
+    text-decoration: none;
+    font-weight: 600;
 }
 
-
-
-.register-footer a:hover {
-
-    text-decoration:underline;
-
+.register-footer a:hover{
+    text-decoration: underline;
 }
-
-
-
-
-
-
 
 /* ===============================
-   ALERTS
+   ALERTS (kept for compatibility)
 ================================ */
 
-
-.alert {
-
-    width:100%;
-
-    padding:12px 15px;
-
-    border-radius:10px;
-
-    margin-bottom:18px;
-
-    text-align:center;
-
-    font-size:14px;
-
+.alert{
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    text-align: center;
+    font-size: 14px;
 }
 
-
-
-
-
-.alert.success {
-
-    background:#d1fae5;
-
-    color:#065f46;
-
-}
-
-
-
-.alert.error {
-
-    background:#fee2e2;
-
-    color:#991b1b;
-
-}
-
-
-
-.alert.warning {
-
-    background:#fef3c7;
-
-    color:#92400e;
-
-}
-
-
-
-.alert.info {
-
-    background:#dbeafe;
-
-    color:#1e40af;
-
-}
-
-
-
-
-
-
+.alert.success{ background: #d1fae5; color: #065f46; }
+.alert.error{ background: #fee2e2; color: #991b1b; }
+.alert.warning{ background: #fef3c7; color: #92400e; }
+.alert.info{ background: #dbeafe; color: #1e40af; }
 
 /* ===============================
-   TABLET RESPONSIVE
+   TABLET
 ================================ */
 
+@media (max-width: 900px){
 
-@media(max-width:900px){
-
-
-    .register-wrapper {
-
-        flex-direction:column;
-
+    .register-wrapper{
+        flex-direction: column;
     }
 
-
-
-    .register-brand {
-
-        padding:40px 25px;
-
-        border-right:none;
-
-        border-bottom:1px solid var(--border);
-
+    .register-brand{
+        padding: 40px 25px 32px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
     }
 
-
-
-    .register-card {
-
-        padding:40px 30px;
-
+    .brand-logo{
+        width: 84px;
+        height: 84px;
+        margin-bottom: 14px;
     }
 
-
-
-    .brand-logo {
-
-        width:90px;
-
-        height:90px;
-
+    .register-brand h1{
+        font-size: 28px;
     }
 
-
-
-    .register-brand h1 {
-
-        font-size:30px;
-
+    .register-card{
+        padding: 40px 30px;
     }
-
 
 }
 
-
-
-
-
-
-
 /* ===============================
-   MOBILE RESPONSIVE
+   MOBILE
 ================================ */
 
+@media (max-width: 480px){
 
-@media(max-width:480px){
-
-
-    .register-brand {
-
-        padding:30px 20px;
-
+    .register-brand{
+        padding: 32px 20px 26px;
     }
 
-
-
-    .register-card {
-
-        padding:30px 20px;
-
+    .brand-logo{
+        width: 70px;
+        height: 70px;
     }
 
-
-
-    .brand-logo {
-
-        width:75px;
-
-        height:75px;
-
+    .register-card{
+        padding: 30px 20px;
     }
 
-
-
-    .register-card h2 {
-
-        font-size:25px;
-
+    .register-card h2{
+        font-size: 24px;
     }
 
-
-
-    .register-subtext {
-
-        font-size:13px;
-
+    .register-subtext{
+        font-size: 13px;
     }
 
-
-
-    .terms-box {
-
-        font-size:12px;
-
+    .terms-box{
+        font-size: 12px;
     }
 
-
-
-    .register-btn {
-
-        padding:13px;
-
+    .register-btn{
+        padding: 13px;
     }
-
 
 }
