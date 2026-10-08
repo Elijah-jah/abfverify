@@ -1,154 +1,72 @@
 document.addEventListener("DOMContentLoaded", function () {
+    "use strict";
 
-    console.log("Change Password JS Loaded");
+    /* ==========================
+       SHOW / HIDE PASSWORD
+    ========================== */
 
+    document.querySelectorAll(".cp-toggle").forEach(function (button) {
 
-    // ==========================
-    // SHOW / HIDE PASSWORD
-    // ==========================
+        button.addEventListener("click", function () {
 
-    const toggleButtons = document.querySelectorAll(".toggle-password");
+            var input = document.getElementById(this.getAttribute("data-target"));
+            var icon = this.querySelector("i");
 
-    toggleButtons.forEach(function(button){
+            if (!input || !icon) return;
 
-        button.addEventListener("click", function(){
+            var show = input.type === "password";
 
-            const input = document.getElementById(
-                this.dataset.target
-            );
-
-            const icon = this.querySelector("i");
-
-
-            if(input.type === "password"){
-
-                input.type = "text";
-
-                icon.classList.remove("fa-eye");
-                icon.classList.add("fa-eye-slash");
-
-            } else {
-
-                input.type = "password";
-
-                icon.classList.remove("fa-eye-slash");
-                icon.classList.add("fa-eye");
-
-            }
+            input.type = show ? "text" : "password";
+            icon.classList.toggle("fa-eye", !show);
+            icon.classList.toggle("fa-eye-slash", show);
 
         });
 
     });
 
 
+    /* ==========================
+       CHANGE PASSWORD VALIDATION
+    ========================== */
 
-    // ==========================
-    // CHANGE PASSWORD VALIDATION
-    // ==========================
+    var form = document.getElementById("changePasswordForm");
 
+    if (form) {
 
-    const form = document.querySelector("#changePasswordForm");
+        form.addEventListener("submit", function (e) {
 
+            var currentPassword = document.getElementById("currentPassword").value.trim();
+            var newPassword = document.getElementById("newPassword").value;
+            var confirmPassword = document.getElementById("confirmPassword").value;
 
-    if(form){
-
-        form.addEventListener("submit", function(e){
-
-
-            const currentPassword = document.getElementById(
-                "currentPassword"
-            ).value;
-
-
-            const newPassword = document.getElementById(
-                "newPassword"
-            ).value;
-
-
-            const confirmPassword = document.getElementById(
-                "confirmPassword"
-            ).value;
-
-
-
-            // Empty current password
-
-            if(!currentPassword){
-
+            if (!currentPassword) {
                 e.preventDefault();
-
-                showToast(
-                    "warning",
-                    "Please enter your current password."
-                );
-
+                showToast("warning", "Please enter your current password.");
                 return;
-
             }
 
-
-
-            // Empty new password
-
-            if(!newPassword){
-
+            if (!newPassword) {
                 e.preventDefault();
-
-                showToast(
-                    "warning",
-                    "Please enter your new password."
-                );
-
+                showToast("warning", "Please enter your new password.");
                 return;
-
             }
 
-
-
-            // New password same as old password
-
-            if(currentPassword === newPassword){
-
+            if (currentPassword === newPassword) {
                 e.preventDefault();
-
-                showToast(
-                    "error",
-                    "New password cannot be the same as your current password."
-                );
-
+                showToast("error", "New password cannot be the same as your current password.");
                 return;
-
             }
 
-
-
-            // Confirm password mismatch
-
-            if(newPassword !== confirmPassword){
-
+            if (newPassword !== confirmPassword) {
                 e.preventDefault();
-
-                showToast(
-                    "error",
-                    "New passwords do not match."
-                );
-
+                showToast("error", "New passwords do not match.");
                 return;
-
             }
 
-
-            // Everything passed
-
-            showToast(
-                "success",
-                "Password is being updated..."
-            );
-
+            showToast("success", "Password is being updated...");
 
         });
 
     }
-
 
 });
