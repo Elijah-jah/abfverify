@@ -18,8 +18,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    /* initial state (pre-paint script in <head> already set body.light) */
-    applyTheme(document.body.classList.contains("light"));
+    /* initial state: read the STORED preference (not the body class —
+       the pre-paint script marks <html>, so body.light isn't set yet).
+       Without this the navbar keeps its dark background after reload. */
+    var storedIsLight = false;
+    try {
+        storedIsLight = localStorage.getItem("theme") === "light";
+    } catch (e) {}
+
+    applyTheme(storedIsLight);
 
     if (themeToggle) {
         themeToggle.addEventListener("click", function () {
