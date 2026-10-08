@@ -154,6 +154,11 @@ class LogPurchase(models.Model):
         LogItem, on_delete=models.CASCADE, related_name="purchase"
     )
     product_title = models.CharField(max_length=200)
+    format_labels = models.CharField(
+        max_length=255,
+        default=LOG_FORMAT_LABELS,
+        help_text="Format of the log group at time of purchase"
+    )
     uid = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
     email_password = models.CharField(max_length=255, blank=True, default="")

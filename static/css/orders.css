@@ -139,7 +139,7 @@ body.light{
 }
 
 .mp-otp strong{
-    color: var(--accent);
+    color: var(--text);
 }
 
 .mp-otp-none{
@@ -192,13 +192,13 @@ body.light{
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--bg);
-    color: var(--muted);
-    font-size: 12px;
+    border: 1px solid var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 13px;
     cursor: pointer;
     transition: all 0.2s ease;
     vertical-align: middle;
@@ -475,7 +475,8 @@ body.light{
 }
 
 .mpm-copy:hover{
-    opacity: 0.88;
+    filter: brightness(1.1);
+    opacity: 1;
 }
 
 .mpm-copy-sm{
@@ -505,7 +506,7 @@ body.light{
 .mpm-otp strong{
     flex: 1;
     font-size: 16px;
-    color: var(--accent);
+    color: var(--text);
     text-align: left;
 }
 
@@ -635,4 +636,26 @@ body.light{
     .mp-side{
         padding-left: 0;
     }
+}
+/* =========================
+   VISIBILITY + SHRINK FIXES
+========================= */
+
+/* long service/product names can't blow out rows on small phones */
+.mp-head, .app-card, .mp-row, .mp-info, .mp-logline{
+    min-width: 0;
+}
+
+.mp-name{
+    word-break: normal;
+    overflow-wrap: anywhere;
+}
+
+.mp-format{
+    overflow-wrap: anywhere;
+}
+
+/* sensitive mono values stay neutral */
+.mp-detail, .mp-otp{
+    color: var(--text);
 }

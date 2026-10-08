@@ -32,7 +32,7 @@
          data-status="{{ o.status }}"
          data-order-id="{{ o.order_id|default:'' }}"
          data-format="{{ o.format_string|default:o.uid }}"
-         data-format-label="{{ o.format_labels|default:'EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL' }}"
+         data-format-label="{{ o.format_labels|default:'UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL' }}"
          data-desc="{{ o.description|default:'' }}"
          data-detail="{{ o.detail|default:'' }}"
          data-otp="{{ o.otp|default:'' }}">
@@ -282,7 +282,7 @@
 
         /* logs: show the format label pill, numbers: hide it */
         if (!isNumber) {
-            mpmFormatLabel.textContent = d("format-label") || "EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL";
+            mpmFormatLabel.textContent = d("format-label") || "UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL";
             mpmFormatWrap.hidden = false;
         } else {
             mpmFormatWrap.hidden = true;

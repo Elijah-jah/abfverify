@@ -113,8 +113,8 @@ def orders_view(request):
         })
 
     # ---- Log purchases ----
-    # LogPurchase has no status field — logs are delivered
-    # instantly, so they are always "completed".
+    # format_labels is snapshotted on LogPurchase at buy time, so the
+    # details card shows the format the log group actually had.
     for lp in log_purchases:
         purchases.append({
             "type": "log",
@@ -123,7 +123,7 @@ def orders_view(request):
             "otp": "",
             "uid": "",
             "format_string": lp.creds,
-            "format_labels": "EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL",
+            "format_labels": lp.format_labels or "UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL",
             "description": "",
             "price": lp.price,
             "status": "completed",

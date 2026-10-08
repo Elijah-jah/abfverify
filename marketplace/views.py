@@ -120,6 +120,7 @@ def purchase_log(request, product_id):
                 user=request.user,
                 log_item=log_item,
                 product_title=product.title,
+                format_labels=product.format_labels,
                 uid=log_item.uid,
                 password=log_item.password,
                 email_password=log_item.email_password,
