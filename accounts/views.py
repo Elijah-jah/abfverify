@@ -144,10 +144,6 @@ def orders_view(request):
     )
 
 
-# ==========================
-# SMS / BUY NUMBER
-# ==========================
-
 @login_required
 def sms_view(request):
 
@@ -158,6 +154,25 @@ def sms_view(request):
         user=request.user
     )
 
+    # --- AJAX support: fetch() requests get JSON back so the page never reloads ---
+    ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+    def ajax_error_response(redirect_to="sms"):
+        # Every error branch adds a message then redirects. For AJAX we
+        # return that message as JSON instead. Normal posts redirect as before.
+        if ajax:
+            msg_text, msg_level = "", "error"
+            for m in messages.get_messages(request):
+                msg_text = str(m)
+                msg_level = m.level_tag
+            return JsonResponse({
+                "success": False,
+                "message": msg_text,
+                "level": msg_level,
+                "redirect": reverse(redirect_to),
+            })
+        return redirect(redirect_to)
+
     if request.method == "POST":
 
         # Get server selection
@@ -166,12 +181,12 @@ def sms_view(request):
         # Validate server
         if server not in ("server1", "server2"):
             messages.error(request, "Invalid server selected.")
-            return redirect("sms")
+            return ajax_error_response("sms")
 
         # Server 1 - Coming Soon
         if server == "server1":
             messages.error(request, "Server 1 is coming soon.")
-            return redirect("sms")
+            return ajax_error_response("sms")
 
         country = get_object_or_404(
             Country,
@@ -188,7 +203,7 @@ def sms_view(request):
         # Server 2 (DaisySMS) — USA only validation
         if server == "server2" and country.iso_code.upper() not in ("US", "USA"):
             messages.error(request, "Server 2 only supports USA numbers.")
-            return redirect("sms")
+            return ajax_error_response("sms")
 
         try:
             pricing = Pricing.objects.get(
@@ -199,7 +214,7 @@ def sms_view(request):
             )
         except Pricing.DoesNotExist:
             messages.error(request, "This service is currently unavailable.")
-            return redirect("sms")
+            return ajax_error_response("sms")
 
         # Check wallet balance including pending orders
         pending_total = Order.objects.filter(
@@ -217,7 +232,7 @@ def sms_view(request):
                 )
             else:
                 messages.error(request, "Your wallet balance is too low. Add funds to continue.")
-            return redirect("wallet")
+            return ajax_error_response("wallet")
 
         # Prevent duplicate requests within 10 seconds
         recent_order = Order.objects.filter(
@@ -230,20 +245,17 @@ def sms_view(request):
 
         if recent_order:
             messages.warning(request, "Your previous request is still being processed.")
-            return redirect("sms")
+            return ajax_error_response("sms")
 
         # Get provider based on server
         provider = get_provider(server=server)
 
-        # Use correct identifiers based on server
-        # (defaults keep provider.purchase() safe for any server)
         service_identifier = service.code
         country_identifier = country.id
         if server == "server2":
             country_identifier = 187
 
         try:
-            # Purchase number from provider
             result = provider.purchase(
                 service=service_identifier,
                 country=country_identifier,
@@ -253,10 +265,10 @@ def sms_view(request):
             logger.exception("Provider purchase failed for user %s, country %s, service %s, server %s: %s",
                              request.user.id, country.name, service.name, server, str(e))
             messages.error(request, "Unable to complete your request. Please try again later.")
-            return redirect("sms")
+            return ajax_error_response("sms")
 
         # Create order — NO wallet deduction yet
-        Order.objects.create(
+        order = Order.objects.create(
             user=request.user,
             country=country,
             service=service,
@@ -266,6 +278,21 @@ def sms_view(request):
             price=pricing.selling_price,
             status="waiting",
         )
+
+        # --- AJAX success: return the order as JSON, page stays put ---
+        if ajax:
+            return JsonResponse({
+                "success": True,
+                "message": "Virtual number reserved. You will only be charged if SMS is received.",
+                "order": {
+                    "id": order.id,
+                    "phone_number": order.phone_number,
+                    "country_iso": country.iso_code,
+                    "service_name": service.name,
+                    "provider_order_id": order.provider_order_id,
+                    "created_at": order.created_at.isoformat(),
+                },
+            })
 
         messages.success(request, "Virtual number reserved. You will only be charged if SMS is received.")
         return redirect("sms")

@@ -9,7 +9,7 @@
 
 <link rel="stylesheet" href="{% static 'css/sms.css' %}">
 
-<div class="sms-container">
+<div class="sms-container" data-cancel-url="{% url 'cancel_order' %}" data-csrf="{{ csrf_token }}">
 
     <!-- HEADER -->
     <div class="sms-head">

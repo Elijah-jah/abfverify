@@ -110,7 +110,6 @@ async function updatePrice() {
     priceDisplay.innerText = "Loading...";
 
     try {
-        // Calls /api/get-price/ which reads from database cache (INSTANT)
         const response = await fetch(
             `/api/get-price/?country=${country}&service=${service}&server=${server}`
         );
@@ -150,15 +149,12 @@ if (countrySelect && serviceSelect) {
 // COUNTDOWN TIMERS
 // ======================
 
-document.querySelectorAll(".sms-timer").forEach(timer => {
+function initCountdown(timer) {
 
     const createdAt = timer.dataset.created;
     const session = timer.closest(".sms-session");
 
-    console.log("Timer found, created:", createdAt, "session:", session);
-
     if (!createdAt || !session) {
-        console.log("Missing createdAt or session, hiding container");
         if (session) session.style.display = "none";
         return;
     }
@@ -202,50 +198,62 @@ document.querySelectorAll(".sms-timer").forEach(timer => {
 
     const timerInterval = setInterval(updateTimer, 1000);
 
-});
+}
+
+document.querySelectorAll(".sms-timer").forEach(initCountdown);
 
 
 // ======================
 // COPY BUTTONS
 // ======================
 
-document.querySelectorAll(".copy-btn")
-.forEach(button => {
+function initCopyButtons(scope) {
 
-    button.addEventListener("click", () => {
+    scope.querySelectorAll(".copy-btn")
+    .forEach(button => {
 
-        const text = button.dataset.copy;
+        // Skip buttons already wired up (e.g. injected order cards)
+        if (button.dataset.copyBound) return;
+        button.dataset.copyBound = "1";
 
-        if (!text) return;
+        button.addEventListener("click", () => {
 
-        navigator.clipboard.writeText(text)
-        .then(() => {
+            const text = button.dataset.copy;
 
-            const icon =
-                button.querySelector("i");
+            if (!text) return;
 
-            icon.classList.remove("fa-copy");
-            icon.classList.add("fa-check");
+            navigator.clipboard.writeText(text)
+            .then(() => {
 
-            setTimeout(() => {
+                const icon =
+                    button.querySelector("i");
 
-                icon.classList.remove("fa-check");
-                icon.classList.add("fa-copy");
+                icon.classList.remove("fa-copy");
+                icon.classList.add("fa-check");
 
-            }, 1500);
+                setTimeout(() => {
+
+                    icon.classList.remove("fa-check");
+                    icon.classList.add("fa-copy");
+
+                }, 1500);
+
+            });
 
         });
 
     });
 
-});
+}
+
+initCopyButtons(document);
 
 
 // ======================
 // AUTO CHECK SMS
 // ======================
 
-document.querySelectorAll(".sms-session").forEach(session => {
+function initSmsPolling(session) {
 
     const statusBox = session.querySelector(".sms-status");
     if (!statusBox) return;
@@ -288,13 +296,256 @@ document.querySelectorAll(".sms-session").forEach(session => {
 
     checkSMS();
     const smsInterval = setInterval(checkSMS, 5000);
-});
+}
+
+document.querySelectorAll(".sms-session").forEach(initSmsPolling);
+
+
+// ======================
+// TOAST (for errors / success without reload)
+// ======================
+
+function showToast(message, type) {
+
+    let wrap = document.querySelector(".sms-toast-wrap");
+
+    if (!wrap) {
+        wrap = document.createElement("div");
+        wrap.className = "sms-toast-wrap";
+        document.body.appendChild(wrap);
+    }
+
+    const toast = document.createElement("div");
+    toast.className = "sms-toast" + (type === "success" ? " sms-toast--success" : "");
+    toast.innerText = message;
+
+    wrap.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add("show"));
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+
+// ======================
+// INJECT NEW ORDER CARD (after successful AJAX request)
+// ======================
+
+function addOrderCard(order) {
+
+    const container = document.querySelector(".sms-container");
+    const cancelUrl = container ? container.dataset.cancelUrl : "";
+    const csrfToken = container ? container.dataset.csrf : "";
+
+    let wrap = document.querySelector(".sessions-wrap");
+
+    // Create the sessions section if there were no active orders
+    if (!wrap) {
+        wrap = document.createElement("div");
+        wrap.className = "sessions-wrap";
+        container.appendChild(wrap);
+
+        const title = document.createElement("h3");
+        title.className = "sessions-title";
+        title.innerHTML = '<span class="live-dot"></span> Active Numbers';
+        wrap.appendChild(title);
+    }
+
+    const card = document.createElement("div");
+    card.className = "sms-session";
+    card.dataset.orderId = order.id;
+
+    card.innerHTML = `
+
+        <div class="sms-session-header">
+
+            <span class="sms-country">
+                ${escapeHtml(order.country_iso)}
+            </span>
+
+            <span class="sms-service">
+                ${escapeHtml(order.service_name)}
+            </span>
+
+            <strong class="sms-timer" data-created="${escapeHtml(order.created_at)}">
+                20:00
+            </strong>
+
+        </div>
+
+        <div class="sms-session-item">
+
+            <span>Number</span>
+
+            <div class="sms-copy-box">
+
+                <strong class="active-number">
+                    ${escapeHtml(order.phone_number)}
+                </strong>
+
+                <button
+                    type="button"
+                    class="copy-btn"
+                    data-copy="${escapeHtml(order.phone_number)}"
+                    title="Copy Number">
+                    <i class="fa-regular fa-copy"></i>
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="sms-session-item">
+
+            <span>OTP</span>
+
+            <div class="sms-copy-box">
+
+                <div class="otp-box">Waiting...</div>
+
+                <button
+                    type="button"
+                    class="copy-btn otp-copy-btn"
+                    disabled
+                    data-copy="">
+                    <i class="fa-regular fa-copy"></i>
+                </button>
+
+            </div>
+
+        </div>
+
+        <div
+            class="sms-session-item sms-status"
+            data-provider-order="${escapeHtml(order.provider_order_id)}">
+
+            <span class="waiting-pulse"><i class="fa-solid fa-spinner fa-spin"></i> Waiting for SMS...</span>
+
+        </div>
+
+        <form method="POST" action="${escapeHtml(cancelUrl)}" class="js-cancel-form">
+            <input type="hidden" name="csrfmiddlewaretoken" value="${escapeHtml(csrfToken)}">
+            <input
+                type="hidden"
+                name="order_id"
+                value="${order.id}">
+            <button
+                type="submit"
+                class="sms-cancel-btn">
+                Cancel Order
+            </button>
+        </form>
+
+    `;
+
+    // Insert right below the "Active Numbers" heading
+    const title = wrap.querySelector(".sessions-title");
+    if (title) {
+        title.after(card);
+    } else {
+        wrap.prepend(card);
+    }
+
+    // Wire up timer, SMS polling and copy buttons for the new card
+    const timer = card.querySelector(".sms-timer");
+    if (timer) initCountdown(timer);
+    initSmsPolling(card);
+    initCopyButtons(card);
+
+}
+
+
+// ======================
+// REQUEST NUMBER — AJAX (no page reload, no blank screen)
+// ======================
+
+const requestForm = document.getElementById("requestNumberForm");
+
+if (requestForm) {
+
+    requestForm.addEventListener("submit", async (e) => {
+
+        e.preventDefault();
+
+        const originalBtnContent = requestBtn.innerHTML;
+
+        requestBtn.disabled = true;
+        requestBtn.innerHTML =
+            '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+
+        try {
+
+            const response = await fetch(
+                requestForm.action || window.location.href,
+                {
+                    method: "POST",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                    },
+                    body: new FormData(requestForm),
+                }
+            );
+
+            if (!response.ok) throw new Error("Server error");
+
+            const data = await response.json();
+
+            if (data.success && data.order) {
+
+                addOrderCard(data.order);
+                showToast(data.message, "success");
+
+            } else if (data.redirect) {
+
+                // Insufficient balance → go to wallet page as before.
+                // Same-page redirect (warnings) → stay and just toast.
+                const targetPath =
+                    new URL(data.redirect, window.location.href).pathname;
+
+                if (targetPath === window.location.pathname) {
+                    showToast(data.message || "Please try again.");
+                } else {
+                    window.location.assign(data.redirect);
+                    return;
+                }
+
+            } else {
+
+                showToast(data.message || "Something went wrong. Please try again.");
+
+            }
+
+        } catch (error) {
+
+            console.error(error);
+            showToast("Network error. Please try again.");
+
+        }
+
+        requestBtn.disabled = false;
+        requestBtn.innerHTML = originalBtnContent;
+
+    });
+
+}
 
 
 // ======================
 // PROCESSING OVERLAY
-// Covers the blank wait while the server talks to the provider
-// (request form + cancel forms are synchronous POSTs)
+// Still used by the CANCEL forms until cancel goes AJAX (part 2).
+// The request form no longer needs it.
 // ======================
 
 const smsOverlay = document.getElementById("smsOverlay");
@@ -307,26 +558,6 @@ function showOverlay(message) {
     document.body.style.overflow = "hidden";
 }
 
-// Prevent double submit + show overlay on the request form
-const requestForm =
-    document.getElementById("requestNumberForm");
-
-if (requestForm) {
-
-    requestForm.addEventListener("submit", () => {
-
-        requestBtn.disabled = true;
-
-        requestBtn.innerText =
-            "Processing...";
-
-        showOverlay("Requesting your number…");
-
-    });
-
-}
-
-// Show overlay on every cancel-order form
 document.querySelectorAll(".js-cancel-form")
 .forEach(form => {
 
