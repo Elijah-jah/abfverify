@@ -44,13 +44,12 @@
 
 <!-- PRODUCT GRID -->
 <div class="prod-grid" id="prodGrid">
-    {% for cat in categories %}
-        {% for product in cat.products %}
+    {% for product in products %}
         <div class="prod-card" data-cat="{{ cat.id }}" data-name="{{ product.title|lower }}"
              data-id="{{ product.id }}" data-price="{{ product.price }}" data-stock="{{ product.stock }}"
              data-desc="{{ product.description|default:''|lower }}">
             <div class="prod-top">
-                <span class="prod-cat">{{ cat.name }}</span>
+                <span class="prod-cat">{{ product.category.name|default:"Logs" }}</span>
                 <span class="prod-stock {% if product.stock == 0 %}out{% endif %}">
                     {% if product.stock == 0 %}Sold out{% else %}{{ product.stock }} in stock{% endif %}
                 </span>
@@ -64,7 +63,6 @@
                 </button>
             </div>
         </div>
-        {% endfor %}
     {% endfor %}
 </div>
 
@@ -139,7 +137,13 @@
 <!-- TOAST -->
 <div class="lm-toast" id="lmToast" hidden>Copied!</div>
 
-{{ categories|json_script:"catData" }}
+<script type="application/json" id="catData">
+[
+    {% for cat in categories %}
+    {"id": {{ cat.id }}, "name": "{{ cat.name|escapejs }}", "description": "{{ cat.description|default:''|escapejs }}"}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+]
+</script>
 
 <script>
 (function () {
@@ -151,8 +155,9 @@
         catData = JSON.parse(document.getElementById("catData").textContent) || [];
     } catch (e) { catData = []; }
 
-    var purchaseUrl = document.body.dataset.purchaseUrl || "{{ purchase_url|escapejs }}";
-    var walletBalance = parseFloat(document.body.dataset.balance || "{{ wallet_balance|default:0 }}");
+    /* marketplace/urls.py: /buy-logs/purchase/<product_id>/ — reversed with a placeholder we swap in JS */
+    var purchaseBaseUrl = "{% url 'purchase_log' 0 %}".replace(/0\/$/, "");
+    var walletBalance = parseFloat("{{ user_wallet.balance|default:0 }}");
 
     /* ---------- ELEMENTS ---------- */
     var pills = document.querySelectorAll(".cat-pill");
@@ -284,14 +289,12 @@
         modalYesBtn.classList.add("paying");
         modalYesBtn.textContent = "Processing...";
 
-        fetch(purchaseUrl, {
+        fetch(purchaseBaseUrl + productId + "/", {
             method: "POST",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
                 "X-CSRFToken": csrf,
                 "X-Requested-With": "XMLHttpRequest"
-            },
-            body: "product_id=" + encodeURIComponent(productId)
+            }
         })
         .then(function (r) { return r.json(); })
         .then(function (data) {
@@ -304,6 +307,7 @@
 
                 if (data.format_label) logFormatLabel.textContent = data.format_label;
 
+                if (data.format_label) logFormatLabel.textContent = data.format_label;
                 var creds = data.creds
                     || (data.username ? data.username + ":" + (data.password || "") : "");
                 logCredsText.textContent = creds || "\u2014";
