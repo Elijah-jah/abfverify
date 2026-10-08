@@ -86,12 +86,55 @@ def orders_view(request):
     log_purchases = LogPurchase.objects.filter(user=request.user).order_by("-created_at")
     wallet, _ = Wallet.objects.get_or_create(user=request.user)
 
+    # Build one unified list the template can loop over.
+    # Keys used by orders.html: type, name, detail, otp, uid,
+    # format_string, format_labels, description, price, status,
+    # created_at, order_id
+    purchases = []
+
+    # ---- SMS / number orders ----
+    for o in user_orders:
+        purchases.append({
+            "type": "number",
+            "name": o.service.name,
+            "detail": o.phone_number or "",
+            "otp": o.sms_code or "",
+            "uid": "",
+            "format_string": "",
+            "format_labels": "",
+            "description": "",
+            "price": o.price,
+            "status": o.status,
+            "created_at": o.created_at,
+            "order_id": getattr(o, "order_id", "") or "",
+        })
+
+    # ---- Log purchases ----
+    for lp in log_purchases:
+        purchases.append({
+            "type": "log",
+            # adjust "lp.name" / "lp.product.name" to your real field:
+            "name": getattr(lp, "name", "") or getattr(getattr(lp, "product", None), "name", "Log"),
+            "detail": "",
+            "otp": "",
+            "uid": getattr(lp, "uid", "") or "",
+            "format_string": getattr(lp, "format_string", "") or "",
+            "format_labels": getattr(lp, "format_labels", "") or "",
+            "description": getattr(lp, "description", "") or "",
+            "price": lp.price,
+            "status": lp.status,
+            "created_at": lp.created_at,
+            "order_id": getattr(lp, "order_id", "") or "",
+        })
+
+    # newest first across both types
+    purchases.sort(key=lambda x: x["created_at"], reverse=True)
+
     return render(
         request,
         "panel/orders.html",
         {
-            "orders": user_orders,
-            "log_purchases": log_purchases,
+            "orders": purchases,
             "user_wallet": wallet,
         },
     )

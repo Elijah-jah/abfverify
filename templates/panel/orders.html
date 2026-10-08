@@ -9,260 +9,337 @@
 
 <link rel="stylesheet" href="{% static 'css/orders.css' %}">
 
-<div class="orders-container">
-
-    <!-- HEADER -->
-    <div class="orders-header">
-
-        <div>
-            <h2 class="orders-title">My Orders</h2>
-
-            <p class="orders-subtitle">
-                Track your purchased numbers and OTP sessions
-            </p>
-        </div>
-
-        <div class="orders-badge">
-            Total: {{ orders|length }}
-        </div>
-
-    </div>
-
-    <!-- FILTER BAR -->
-    <!-- <div class="orders-filter-bar">
-
-        <input
-            type="text"
-            class="orders-input"
-            placeholder="Search order ID..."
-        >
-
-        <select class="orders-select">
-            <option value="">Status</option>
-            <option value="waiting">Waiting</option>
-            <option value="completed">Completed</option>
-            <option value="expired">Expired</option>
-            <option value="cancelled">Cancelled</option>
-        </select>
-
-    </div> -->
-
-    <!-- TABLE -->
-    <div class="orders-table-wrap">
-
-        <table class="orders-table">
-
-            <thead>
-
-                <tr>
-
-                    <th>ID</th>
-                    <th>Service</th>
-                    <th>Number</th>
-                    <th>Amount</th>
-                    <th>OTP</th>
-                    <th>Status</th>
-                    <th>Date</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-            {% if orders %}
-
-                {% for order in orders %}
-
-                <tr>
-
-                    <td class="orders-id-cell">
-                        {{ order.order_id }}
-                    </td>
-
-                    <td>
-                        {{ order.service.name }}
-                    </td>
-
-                    <td class="orders-num-cell">
-                        {{ order.phone_number }}
-                    </td>
-
-                    <td>
-                        ₦{{ order.price }}
-                    </td>
-
-                    <td>
-                        {% if order.sms_code %}
-                            <span class="orders-otp-cell">
-                                {{ order.sms_code }}
-                            </span>
-                        {% else %}
-                            <span class="orders-otp-cell orders-otp-waiting">
-                                Waiting...
-                            </span>
-                        {% endif %}
-                    </td>
-
-                    <td>
-
-                        {% if order.status == "waiting" %}
-
-                            <span class="status-active">
-                                Waiting
-                            </span>
-
-                        {% elif order.status == "completed" %}
-
-                            <span class="status-completed">
-                                Completed
-                            </span>
-
-                        {% elif order.status == "cancelled" %}
-
-                            <span class="status-cancelled">
-                                Cancelled
-                            </span>
-
-                        {% elif order.status == "expired" %}
-
-                            <span class="status-expired">
-                                Expired
-                            </span>
-
-                        {% else %}
-
-                            {{ order.status }}
-
-                        {% endif %}
-
-                    </td>
-
-                    <td class="orders-date-cell">
-                        {{ order.created_at|date:"d M Y H:i" }}
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            {% else %}
-
-                <tr>
-
-                    <td colspan="7" class="orders-empty">
-                        No orders yet
-                    </td>
-
-                </tr>
-
-            {% endif %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-    <!-- MOBILE VIEW -->
-
-    <div class="orders-mobile-list">
-
-    {% if orders %}
-
-        {% for order in orders %}
-
-        <div class="orders-card">
-
-            <div class="orders-card-top">
-
-                <span class="orders-id">
-                    {{ order.order_id }}
-                </span>
-
-                {% if order.status == "waiting" %}
-
-                    <span class="status-active">
-                        Waiting
-                    </span>
-
-                {% elif order.status == "completed" %}
-
-                    <span class="status-completed">
-                        Completed
-                    </span>
-
-                {% elif order.status == "cancelled" %}
-
-                    <span class="status-cancelled">
-                        Cancelled
-                    </span>
-
-                {% elif order.status == "expired" %}
-
-                    <span class="status-expired">
-                        Expired
-                    </span>
-
-                {% endif %}
-
-            </div>
-
-            <div class="orders-card-body">
-
-                <p>
-                    <strong>Service</strong>
-                    {{ order.service.name }}
-                </p>
-
-                <p>
-                    <strong>Country</strong>
-                    {{ order.country.name }}
-                </p>
-
-                <p>
-                    <strong>Number</strong>
-                    {{ order.phone_number }}
-                </p>
-
-                <p>
-                    <strong>Amount</strong>
-                    ₦{{ order.price }}
-                </p>
-
-                <p class="orders-otp-full">
-                    <strong>OTP</strong>
-
-                    {% if order.sms_code %}
-                        <span class="orders-otp-inline">
-                            {{ order.sms_code }}
-                        </span>
+<!-- PAGE HEAD -->
+<div class="mp-head">
+    <h2 class="page-heading">My Orders</h2>
+    <p class="page-sub">Every number and log you've bought &mdash; full history, no surprises.</p>
+</div>
+
+<!-- TABS -->
+<div class="mp-tabs" id="mpTabs">
+    <button class="mp-tab active" data-type="all">All</button>
+    <button class="mp-tab" data-type="number">Numbers</button>
+    <button class="mp-tab" data-type="log">Logs</button>
+</div>
+
+<!-- LIST -->
+<div class="app-card">
+    {% for o in orders %}
+    <div class="mp-row mp-clickable" data-type="{{ o.type }}"
+         data-name="{{ o.name }}"
+         data-price="{{ o.price }}"
+         data-date="{{ o.created_at|date:'M j, Y · H:i' }}"
+         data-status="{{ o.status }}"
+         data-order-id="{{ o.order_id|default:'' }}"
+         data-format="{{ o.format_string|default:o.uid }}"
+         data-format-label="{{ o.format_labels|default:'Email/UID | Password | Email | Email password | 2FA' }}"
+         data-desc="{{ o.description|default:'' }}"
+         data-detail="{{ o.detail|default:'' }}"
+         data-otp="{{ o.otp|default:'' }}">
+
+        <span class="mp-icon {% if o.type == 'number' %}mp-number{% else %}mp-log{% endif %}">
+            <i class="bi bi-{% if o.type == 'number' %}phone{% else %}box-seam{% endif %}"></i>
+        </span>
+
+        <div class="mp-info">
+            <!-- NAME -->
+            <p class="mp-name">{{ o.name }}</p>
+
+            {% if o.type == 'number' %}
+                <!-- NUMBER purchase -->
+                <p class="mp-detail mono">
+                    {% if o.detail %}
+                        {{ o.detail }}
+                        <button class="mp-copy" data-copy="{{ o.detail|cut:' ' }}" title="Copy number">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
                     {% else %}
-                        Waiting...
+                        &mdash;
                     {% endif %}
                 </p>
-
-                <p>
-                    <strong>Date</strong>
-                    {{ order.created_at|date:"d M Y H:i" }}
+                <p class="mp-otp mono">
+                    OTP:
+                    {% if o.otp %}
+                        <strong>{{ o.otp }}</strong>
+                        <button class="mp-copy" data-copy="{{ o.otp }}" title="Copy OTP">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    {% else %}
+                        <strong class="mp-otp-none">-- --</strong>
+                    {% endif %}
                 </p>
+            {% else %}
+                <!-- LOG purchase: order badge + compact format line -->
+                <div class="mp-logline">
+                    {% if o.order_id %}
+                    <span class="mp-order mono">{{ o.order_id }}</span>
+                    {% endif %}
+                    <span class="mp-format mono">{% if o.format_string %}{{ o.format_string|truncatechars:52 }}{% else %}{{ o.uid|default:"—" }}{% endif %}</span>
+                    {% if o.format_string or o.uid %}
+                    <button class="mp-copy" data-copy="{% if o.format_string %}{{ o.format_string }}{% else %}{{ o.uid }}{% endif %}" title="Copy login">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                    {% endif %}
+                </div>
+                <span class="mp-tap">Tap for details <i class="bi bi-chevron-right"></i></span>
+            {% endif %}
 
-            </div>
-
+            <p class="mp-date">{{ o.created_at|date:"M j, Y · H:i" }}</p>
         </div>
 
-        {% endfor %}
+        <div class="mp-side">
+            <p class="mp-price mono">&#8358;{{ o.price }}</p>
+            {% if o.status == 'completed' %}
+                <span class="mp-badge mp-done">Completed</span>
+            {% elif o.status == 'pending' or o.status == 'waiting' %}
+                <span class="mp-badge mp-pending">{% if o.status == 'waiting' %}Waiting{% else %}Pending{% endif %}</span>
+            {% elif o.status == 'expired' %}
+                <span class="mp-badge mp-expired">Expired &middot; &#8358;0</span>
+            {% elif o.status == 'cancelled' %}
+                <span class="mp-badge mp-failed">Cancelled</span>
+            {% else %}
+                <span class="mp-badge mp-failed">Failed</span>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="mp-empty">
+        <i class="bi bi-bag"></i>
+        <p>No orders yet.</p>
+        <div class="mp-empty-btns">
+            <a href="{% url 'order_page' %}" class="mp-btn">Get a number</a>
+            <a href="{% url 'buy_logs' %}" class="mp-btn mp-btn-outline">Buy logs</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
 
-    {% else %}
+<p class="mp-none" id="mpNone" hidden>Nothing here for this filter.</p>
 
-        <p class="orders-mobile-empty">
-            No orders yet
-        </p>
+<!-- ================= ORDER DETAILS CARD ================= -->
+<div class="mp-overlay" id="mpModal" hidden>
+    <div class="mp-modal" role="dialog" aria-modal="true">
 
-    {% endif %}
+        <div class="mpm-icon" id="mpmIcon"><i class="bi bi-box-seam"></i></div>
+        <h5 class="mpm-title" id="mpmTitle"></h5>
+        <span class="mpm-order mono" id="mpmOrder" hidden></span>
+        <p class="mpm-desc" id="mpmDesc" hidden></p>
+
+        <!-- format pill (logs only) -->
+        <div class="mpm-format" id="mpmFormatWrap" hidden>
+            <span class="mpm-format-label">Format</span>
+            <span class="mpm-format-val mono" id="mpmFormat"></span>
+        </div>
+
+        <!-- combined line: login info or phone number -->
+        <p class="mpm-box-label" id="mpmBoxLabel">Details</p>
+        <div class="mpm-box" id="mpmBox">
+            <span class="mpm-box-text mono" id="mpmText"></span>
+            <button type="button" class="mpm-copy" id="mpmCopy">
+                <i class="bi bi-clipboard"></i><span>Copy</span>
+            </button>
+        </div>
+
+        <!-- OTP (numbers only) -->
+        <div class="mpm-otp" id="mpmOtpRow" hidden>
+            <span class="mpm-otp-label">OTP</span>
+            <strong class="mono" id="mpmOtp"></strong>
+            <button type="button" class="mpm-copy mpm-copy-sm" id="mpmOtpCopy">
+                <i class="bi bi-clipboard"></i>
+            </button>
+        </div>
+
+        <!-- meta: price, date, status -->
+        <div class="mpm-meta">
+            <div class="mpm-meta-item">
+                <em>Price</em>
+                <span class="mono" id="mpmPrice"></span>
+            </div>
+            <div class="mpm-meta-item">
+                <em>Date</em>
+                <span id="mpmDate"></span>
+            </div>
+            <span class="mp-badge" id="mpmStatus"></span>
+        </div>
+
+        <button type="button" class="mpm-done" id="mpmDone">
+            <i class="bi bi-check2"></i> Done
+        </button>
 
     </div>
-
 </div>
+
+<!-- TOAST -->
+<div class="mp-toast" id="mpToast" hidden>Copied!</div>
+
+<script>
+(function () {
+    "use strict";
+
+    /* ---------- TABS ---------- */
+    var tabs = document.querySelectorAll(".mp-tab");
+    var rows = document.querySelectorAll(".mp-row");
+    var mpNone = document.getElementById("mpNone");
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+            tabs.forEach(function (t) { t.classList.remove("active"); });
+            tab.classList.add("active");
+
+            var type = tab.getAttribute("data-type");
+            var visible = 0;
+
+            rows.forEach(function (row) {
+                var show = (type === "all" || row.getAttribute("data-type") === type);
+                row.style.display = show ? "" : "none";
+                if (show) visible++;
+            });
+
+            mpNone.hidden = visible !== 0;
+        });
+    });
+
+    /* ---------- TOAST ---------- */
+    var toast = document.getElementById("mpToast");
+    var toastTimer = null;
+
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { toast.hidden = true; }, 1800);
+    }
+
+    /* ---------- COPY ---------- */
+    function doCopy(text, btn) {
+        if (!text) return;
+        var done = function () {
+            showToast("Copied to clipboard");
+            if (btn) {
+                var icon = btn.querySelector("i");
+                if (icon) {
+                    var old = icon.className;
+                    icon.className = "bi bi-check2";
+                    setTimeout(function () { icon.className = old; }, 1500);
+                }
+            }
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+        } else {
+            fallback();
+        }
+        function fallback() {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand("copy"); done(); }
+            catch (e) { showToast("Copy failed"); }
+            document.body.removeChild(ta);
+        }
+    }
+
+    document.querySelectorAll(".mp-copy").forEach(function (btn) {
+        btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            doCopy(btn.getAttribute("data-copy"), btn);
+        });
+    });
+
+    /* ---------- MODAL ---------- */
+    var modal = document.getElementById("mpModal");
+    var mpmIcon = document.getElementById("mpmIcon");
+    var mpmTitle = document.getElementById("mpmTitle");
+    var mpmOrder = document.getElementById("mpmOrder");
+    var mpmDesc = document.getElementById("mpmDesc");
+    var mpmFormatWrap = document.getElementById("mpmFormatWrap");
+    var mpmFormat = document.getElementById("mpmFormat");
+    var mpmBoxLabel = document.getElementById("mpmBoxLabel");
+    var mpmText = document.getElementById("mpmText");
+    var mpmOtpRow = document.getElementById("mpmOtpRow");
+    var mpmOtp = document.getElementById("mpmOtp");
+    var mpmPrice = document.getElementById("mpmPrice");
+    var mpmDate = document.getElementById("mpmDate");
+    var mpmStatus = document.getElementById("mpmStatus");
+
+    var STATUS_MAP = {
+        completed: ["mp-done", "Completed"],
+        waiting:   ["mp-pending", "Waiting"],
+        pending:   ["mp-pending", "Pending"],
+        expired:   ["mp-expired", "Expired"],
+        cancelled: ["mp-failed", "Cancelled"],
+        failed:    ["mp-failed", "Failed"]
+    };
+
+    function openModal(row) {
+        var d = function (k) { return row.getAttribute("data-" + k) || ""; };
+        var isNumber = d("type") === "number";
+
+        mpmIcon.className = "mpm-icon " + (isNumber ? "mpm-icon-number" : "mpm-icon-log");
+        mpmIcon.innerHTML = '<i class="bi bi-' + (isNumber ? "phone" : "box-seam") + '"></i>';
+
+        mpmTitle.textContent = d("name");
+
+        if (d("order-id")) { mpmOrder.textContent = d("order-id"); mpmOrder.hidden = false; }
+        else { mpmOrder.hidden = true; }
+
+        if (d("desc")) { mpmDesc.textContent = d("desc"); mpmDesc.hidden = false; }
+        else { mpmDesc.hidden = true; }
+
+        if (!isNumber && d("format")) {
+            mpmFormat.textContent = d("format");
+            mpmFormatWrap.hidden = false;
+        } else {
+            mpmFormatWrap.hidden = true;
+        }
+
+        mpmBoxLabel.textContent = isNumber ? "Phone Number" : "Login Details";
+        mpmText.textContent = d("detail") || d("format") || "—";
+
+        if (isNumber && d("otp")) {
+            mpmOtp.textContent = d("otp");
+            mpmOtpRow.hidden = false;
+        } else {
+            mpmOtpRow.hidden = true;
+        }
+
+        mpmPrice.textContent = "₦" + d("price");
+        mpmDate.textContent = d("date");
+
+        var st = STATUS_MAP[d("status")] || ["mp-failed", d("status") || "Unknown"];
+        mpmStatus.className = "mp-badge " + st[0];
+        mpmStatus.textContent = st[1];
+
+        modal.hidden = false;
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeModal() {
+        modal.hidden = true;
+        document.body.style.overflow = "";
+    }
+
+    rows.forEach(function (row) {
+        row.addEventListener("click", function (e) {
+            if (e.target.closest(".mp-copy")) return;
+            openModal(row);
+        });
+    });
+
+    document.getElementById("mpmDone").addEventListener("click", closeModal);
+    modal.addEventListener("click", function (e) { if (e.target === modal) closeModal(); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !modal.hidden) closeModal(); });
+
+    document.getElementById("mpmCopy").addEventListener("click", function () {
+        doCopy(mpmText.textContent, this);
+    });
+    document.getElementById("mpmOtpCopy").addEventListener("click", function () {
+        doCopy(mpmOtp.textContent, this);
+    });
+})();
+</script>
 
 {% endblock %}
