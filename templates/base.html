@@ -3,13 +3,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+
     <!-- ADD THESE LINES HERE -->
     <meta name="description" content="ABFverify - Secure SMS verification and virtual number platform">
     <meta property="og:title" content="ABFverify">
     <meta property="og:description" content="Secure SMS verification and virtual number platform">
     <meta property="og:image" content="{% static 'images/mylogo1.png' %}">
     <meta name="google-site-verification" content="dB107PkjCje9eLimA_JTSOO689oGJhHYKb1RD-cJY6A" />
+
+    <link rel="icon" href="{% static 'images/mylogo1.png' %}" type="image/png">
+
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-XPxZ8G9FaD0vXL5jswvJX.js"></script>
 <script>
@@ -23,8 +27,20 @@
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
 
     {% block css %}{% endblock %}
+<base target="_blank">
 </head>
 <body>
+
+<!-- Apply saved theme BEFORE first paint (must match dashboard_base.js storage key) -->
+<script>
+(function () {
+    try {
+        if (localStorage.getItem("theme") === "light") {
+            document.body.classList.add("light");
+        }
+    } catch (e) {}
+})();
+</script>
 
 {% block content %}
 
