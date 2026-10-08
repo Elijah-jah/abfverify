@@ -699,3 +699,28 @@ body.light{
     }
     /* sections start collapsed to 4 cards (2x2) via JS sm-hidden */
 }
+/* =========================
+   MOBILE SHRINK FIXES
+   Long unbroken product names blew out the 2-column grid on
+   small phones, making the page wider than the viewport, so
+   iOS zoomed the whole page out. These guards fix the root
+   cause. No visual change for normal titles.
+========================= */
+
+.logs-head, .logs-tools, .sec-head,
+.prod-grid, .prod-card, .prod-top, .prod-foot{
+    min-width: 0;
+}
+
+.prod-name{
+    word-break: normal;
+    overflow-wrap: anywhere;
+}
+
+.prod-price{
+    white-space: nowrap;
+}
+
+.prod-stock{
+    flex-shrink: 0;
+}
