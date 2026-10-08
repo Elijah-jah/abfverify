@@ -97,6 +97,7 @@ body.light{
 .mp-row{
     display: flex;
     align-items: flex-start;
+    justify-content: space-between;
     gap: 14px;
     padding: 16px;
     border-bottom: 1px solid var(--border);
@@ -113,27 +114,6 @@ body.light{
 
 .mp-clickable{
     cursor: pointer;
-}
-
-/* icon */
-.mp-icon{
-    width: 42px;
-    height: 42px;
-    flex-shrink: 0;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    color: #ffffff;
-}
-
-.mp-icon.mp-number{
-    background: var(--grad);
-}
-
-.mp-icon.mp-log{
-    background: linear-gradient(135deg, #8b5cf6, #d946ef);
 }
 
 /* info */
@@ -222,6 +202,7 @@ body.light{
     cursor: pointer;
     transition: all 0.2s ease;
     vertical-align: middle;
+    flex-shrink: 0;
 }
 
 .mp-copy:hover{
@@ -245,6 +226,7 @@ body.light{
     font-weight: 700;
     color: var(--text);
     margin: 0;
+    white-space: nowrap;
 }
 
 /* badges */
@@ -390,26 +372,6 @@ body.light{
     to{ transform: scale(1); opacity: 1; }
 }
 
-.mpm-icon{
-    width: 56px;
-    height: 56px;
-    margin: 0 auto 14px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    color: #ffffff;
-}
-
-.mpm-icon-number{
-    background: var(--grad);
-}
-
-.mpm-icon-log{
-    background: linear-gradient(135deg, #8b5cf6, #d946ef);
-}
-
 .mpm-title{
     font-size: 17px;
     font-weight: 700;
@@ -437,31 +399,32 @@ body.light{
     line-height: 1.6;
 }
 
+/* format pill (logs) */
 .mpm-format{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
     margin-bottom: 14px;
 }
 
 .mpm-format-label{
+    display: block;
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--muted);
+    margin-bottom: 6px;
 }
 
 .mpm-format-val{
-    font-size: 12px;
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     color: var(--accent);
-    background: var(--bg);
+    background: rgba(56, 189, 248, 0.08);
     border: 1px dashed var(--border);
     border-radius: 8px;
-    padding: 5px 10px;
-    word-break: break-all;
+    padding: 6px 12px;
+    word-break: break-word;
 }
 
 .mpm-box-label{
@@ -519,6 +482,7 @@ body.light{
     padding: 6px 10px;
 }
 
+/* OTP (numbers only) */
 .mpm-otp{
     display: flex;
     align-items: center;
@@ -650,13 +614,6 @@ body.light{
         gap: 10px;
     }
 
-    .mp-icon{
-        width: 36px;
-        height: 36px;
-        font-size: 15px;
-        border-radius: 10px;
-    }
-
     .mp-side{
         gap: 4px;
     }
@@ -675,15 +632,7 @@ body.light{
 }
 
 @media (max-width: 380px){
-    .mp-row{
-        flex-wrap: wrap;
-    }
-
     .mp-side{
-        width: 100%;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        padding-left: 46px;
+        padding-left: 0;
     }
 }

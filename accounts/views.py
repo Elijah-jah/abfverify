@@ -118,7 +118,7 @@ def orders_view(request):
             "otp": "",
             "uid": "",
             "format_string": f"{lp.username}:{lp.password}",
-            "format_labels": "Username | Password",
+            "format_labels": "EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL",
             "description": "",
             "price": lp.price,
             "status": "completed",

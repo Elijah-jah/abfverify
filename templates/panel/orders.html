@@ -32,21 +32,17 @@
          data-status="{{ o.status }}"
          data-order-id="{{ o.order_id|default:'' }}"
          data-format="{{ o.format_string|default:o.uid }}"
-         data-format-label="{{ o.format_labels|default:'Email/UID | Password | Email | Email password | 2FA' }}"
+         data-format-label="{{ o.format_labels|default:'EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL' }}"
          data-desc="{{ o.description|default:'' }}"
          data-detail="{{ o.detail|default:'' }}"
          data-otp="{{ o.otp|default:'' }}">
-
-        <span class="mp-icon {% if o.type == 'number' %}mp-number{% else %}mp-log{% endif %}">
-            <i class="bi bi-{% if o.type == 'number' %}phone{% else %}box-seam{% endif %}"></i>
-        </span>
 
         <div class="mp-info">
             <!-- NAME -->
             <p class="mp-name">{{ o.name }}</p>
 
             {% if o.type == 'number' %}
-                <!-- NUMBER purchase -->
+                <!-- NUMBER purchase: number + OTP -->
                 <p class="mp-detail mono">
                     {% if o.detail %}
                         {{ o.detail }}
@@ -69,14 +65,14 @@
                     {% endif %}
                 </p>
             {% else %}
-                <!-- LOG purchase: order badge + compact format line -->
+                <!-- LOG purchase: email + password only -->
                 <div class="mp-logline">
                     {% if o.order_id %}
                     <span class="mp-order mono">{{ o.order_id }}</span>
                     {% endif %}
-                    <span class="mp-format mono">{% if o.format_string %}{{ o.format_string|truncatechars:52 }}{% else %}{{ o.uid|default:"—" }}{% endif %}</span>
-                    {% if o.format_string or o.uid %}
-                    <button class="mp-copy" data-copy="{% if o.format_string %}{{ o.format_string }}{% else %}{{ o.uid }}{% endif %}" title="Copy login">
+                    <span class="mp-format mono">{% if o.format_string %}{{ o.format_string|truncatechars:52 }}{% else %}&mdash;{% endif %}</span>
+                    {% if o.format_string %}
+                    <button class="mp-copy" data-copy="{{ o.format_string }}" title="Copy login">
                         <i class="bi bi-clipboard"></i>
                     </button>
                     {% endif %}
@@ -120,7 +116,6 @@
 <div class="mp-overlay" id="mpModal" hidden>
     <div class="mp-modal" role="dialog" aria-modal="true">
 
-        <div class="mpm-icon" id="mpmIcon"><i class="bi bi-box-seam"></i></div>
         <h5 class="mpm-title" id="mpmTitle"></h5>
         <span class="mpm-order mono" id="mpmOrder" hidden></span>
         <p class="mpm-desc" id="mpmDesc" hidden></p>
@@ -128,7 +123,7 @@
         <!-- format pill (logs only) -->
         <div class="mpm-format" id="mpmFormatWrap" hidden>
             <span class="mpm-format-label">Format</span>
-            <span class="mpm-format-val mono" id="mpmFormat"></span>
+            <span class="mpm-format-val" id="mpmFormatLabel"></span>
         </div>
 
         <!-- combined line: login info or phone number -->
@@ -251,12 +246,11 @@
 
     /* ---------- MODAL ---------- */
     var modal = document.getElementById("mpModal");
-    var mpmIcon = document.getElementById("mpmIcon");
     var mpmTitle = document.getElementById("mpmTitle");
     var mpmOrder = document.getElementById("mpmOrder");
     var mpmDesc = document.getElementById("mpmDesc");
     var mpmFormatWrap = document.getElementById("mpmFormatWrap");
-    var mpmFormat = document.getElementById("mpmFormat");
+    var mpmFormatLabel = document.getElementById("mpmFormatLabel");
     var mpmBoxLabel = document.getElementById("mpmBoxLabel");
     var mpmText = document.getElementById("mpmText");
     var mpmOtpRow = document.getElementById("mpmOtpRow");
@@ -278,9 +272,6 @@
         var d = function (k) { return row.getAttribute("data-" + k) || ""; };
         var isNumber = d("type") === "number";
 
-        mpmIcon.className = "mpm-icon " + (isNumber ? "mpm-icon-number" : "mpm-icon-log");
-        mpmIcon.innerHTML = '<i class="bi bi-' + (isNumber ? "phone" : "box-seam") + '"></i>';
-
         mpmTitle.textContent = d("name");
 
         if (d("order-id")) { mpmOrder.textContent = d("order-id"); mpmOrder.hidden = false; }
@@ -289,16 +280,18 @@
         if (d("desc")) { mpmDesc.textContent = d("desc"); mpmDesc.hidden = false; }
         else { mpmDesc.hidden = true; }
 
-        if (!isNumber && d("format")) {
-            mpmFormat.textContent = d("format");
+        /* logs: show the format label pill, numbers: hide it */
+        if (!isNumber) {
+            mpmFormatLabel.textContent = d("format-label") || "EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL";
             mpmFormatWrap.hidden = false;
         } else {
             mpmFormatWrap.hidden = true;
         }
 
         mpmBoxLabel.textContent = isNumber ? "Phone Number" : "Login Details";
-        mpmText.textContent = d("detail") || d("format") || "—";
+        mpmText.textContent = d("detail") || d("format") || "\u2014";
 
+        /* OTP row only exists for numbers */
         if (isNumber && d("otp")) {
             mpmOtp.textContent = d("otp");
             mpmOtpRow.hidden = false;
@@ -306,7 +299,7 @@
             mpmOtpRow.hidden = true;
         }
 
-        mpmPrice.textContent = "₦" + d("price");
+        mpmPrice.textContent = "\u20A6" + d("price");
         mpmDate.textContent = d("date");
 
         var st = STATUS_MAP[d("status")] || ["mp-failed", d("status") || "Unknown"];
