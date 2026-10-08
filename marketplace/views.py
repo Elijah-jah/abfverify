@@ -18,12 +18,14 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def services_view(request):
-    query = request.GET.get("q", "").strip().lower()
+    query = request.GET.get("q", "").strip()
 
-    # Show ALL products, annotate stock count
-    products = LogProduct.objects.annotate(
-        stock=Count("items", filter=Q(items__status="available"))
-    ).select_related("category", "sub_category")
+    # All products with live stock annotation
+    products = (
+        LogProduct.objects
+        .annotate(stock=Count("items", filter=Q(items__status="available")))
+        .select_related("category", "sub_category")
+    )
 
     categories = LogCategory.objects.prefetch_related("subcategories").all()
     log_purchases = LogPurchase.objects.filter(user=request.user).select_related("log_item")
@@ -36,16 +38,36 @@ def services_view(request):
             | models.Q(category__name__icontains=query)
         )
 
+    # ---- Group products into sections keyed by SUBCATEGORY ----
+    # Under "Facebook" you can have many LogProducts:
+    # "United States Facebook", "Mexico Facebook", "US Facebook 2022", etc.
+    sections = []
+    seen = {}
+    for p in products:
+        key = p.sub_category_id or f"cat-{p.category_id or 'none'}"
+        if key not in seen:
+            seen[key] = {
+                "key": str(key),
+                "name": (
+                    p.sub_category.name if p.sub_category
+                    else (p.category.name if p.category else "Other Logs")
+                ),
+                "category_id": p.category_id or "",
+                "products": [],
+            }
+            sections.append(seen[key])
+        seen[key]["products"].append(p)
+
     wallet, _ = Wallet.objects.get_or_create(user=request.user)
 
     return render(
         request,
         "panel/services.html",
         {
-            "products": products,
+            "sections": sections,
             "categories": categories,
             "log_purchases": log_purchases,
-            "query": request.GET.get("q", ""),
+            "query": query,
             "user_wallet": wallet,
         },
     )
@@ -100,7 +122,7 @@ def purchase_log(request, product_id):
                 user=request.user,
                 log_item=log_item,
                 product_title=product.title,
-                username=log_item.username,
+                uid=log_item.uid,
                 password=log_item.password,
                 email_password=log_item.email_password,
                 two_fa=log_item.two_fa,
@@ -120,7 +142,6 @@ def purchase_log(request, product_id):
                 {
                     "success": True,
                     "order_id": purchase.order_id,
-                    "product_title": purchase.product_title,
                     "creds": purchase.creds,
                     "format_label": product.format_labels,
                     "price": str(purchase.price),

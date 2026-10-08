@@ -591,3 +591,111 @@ body.light{
 
 /* legacy helpers kept for compatibility */
 .rug{ display: none; }
+
+/* =========================
+   PRODUCT SECTIONS (by subcategory)
+========================= */
+
+.prod-section{
+    margin-bottom: 22px;
+}
+
+.prod-section.section-hidden{
+    display: none;
+}
+
+/* slim section banner */
+.sec-head{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-radius: 14px;
+    padding: 10px 16px;
+    margin-bottom: 12px;
+}
+
+.sec-title{
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* See More button */
+.see-more-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px dashed var(--accent-line);
+    background: transparent;
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+.see-more-btn:hover{
+    background: var(--accent-soft);
+    border-style: solid;
+}
+.see-more-btn .sm-icon{
+    font-size: 11px;
+}
+
+/* hide states driven by JS */
+.prod-card.filtered-out,
+.prod-card.sm-hidden{
+    display: none !important;
+}
+
+/* =========================
+   CONFIRM CARD: DESCRIPTION
+========================= */
+
+.lm-desc-wrap{
+    width: 100%;
+    max-height: 120px;
+    overflow-y: auto;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin: 0 0 14px;
+    text-align: left;
+    scrollbar-width: thin;
+}
+
+.lm-desc{
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted);
+    margin: 0;
+    word-break: break-word;
+}
+
+/* ---------- responsive additions ---------- */
+
+@media (max-width: 575.98px){
+    .sec-head{
+        padding: 8px 12px;
+        border-radius: 12px;
+    }
+    .sec-title{
+        font-size: 12.5px;
+    }
+    .see-more-btn{
+        padding: 5px 12px;
+        font-size: 11px;
+    }
+    /* sections start collapsed to 4 cards (2x2) via JS sm-hidden */
+}

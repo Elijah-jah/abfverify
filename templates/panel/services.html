@@ -25,44 +25,58 @@
     {% endfor %}
 </div>
 
-<!-- CATEGORY DESCRIPTION PANEL -->
-<div class="cat-panel" id="catPanel" hidden>
-    <div class="cat-panel-icon"><i class="bi bi-grid-fill"></i></div>
-    <div class="cat-panel-text">
-        <h6 id="catPanelName"></h6>
-        <p id="catPanelDesc"></p>
-    </div>
-</div>
-
 <!-- SEARCH -->
 <div class="logs-tools">
     <div class="logs-search-wrap">
         <i class="bi bi-search"></i>
-        <input type="text" id="logSearch" placeholder="Search products..." autocomplete="off">
+        <input type="text" id="logSearch" placeholder="Search products..." value="{{ query }}" autocomplete="off">
     </div>
 </div>
 
-<!-- PRODUCT GRID -->
-<div class="prod-grid" id="prodGrid">
-    {% for product in products %}
-        <div class="prod-card" data-cat="{{ cat.id }}" data-name="{{ product.title|lower }}"
-             data-id="{{ product.id }}" data-price="{{ product.price }}" data-stock="{{ product.stock }}"
-             data-desc="{{ product.description|default:''|lower }}">
-            <div class="prod-top">
-                <span class="prod-cat">{{ product.category.name|default:"Logs" }}</span>
-                <span class="prod-stock {% if product.stock == 0 %}out{% endif %}">
-                    {% if product.stock == 0 %}Sold out{% else %}{{ product.stock }} in stock{% endif %}
-                </span>
-            </div>
-            <h6 class="prod-name">{{ product.title }}</h6>
-            <p class="prod-desc">{{ product.description|default:''|truncatechars:80 }}</p>
-            <div class="prod-foot">
-                <span class="prod-price mono">&#8358;{{ product.price }}</span>
-                <button class="prod-buy" {% if product.stock == 0 %}disabled{% endif %}>
-                    {% if product.stock == 0 %}Sold out{% else %}<i class="bi bi-bag-plus"></i>Buy{% endif %}
-                </button>
-            </div>
+<!-- PRODUCT SECTIONS (grouped by subcategory) -->
+<div id="sectionsWrap">
+    {% for section in sections %}
+    <div class="prod-section" data-section="{{ section.key }}">
+
+        <div class="sec-head">
+            <span class="sec-title">{{ section.name }}</span>
+            {% if section.products|length > 4 %}
+            <button class="see-more-btn" data-see-more>
+                <span class="sm-label">See More</span>
+                <i class="bi bi-chevron-right sm-icon"></i>
+            </button>
+            {% endif %}
         </div>
+
+        <div class="prod-grid">
+            {% for product in section.products %}
+            <div class="prod-card" data-cat="{{ product.category_id|default:'' }}"
+                 data-name="{{ product.title|lower }}"
+                 data-id="{{ product.id }}" data-price="{{ product.price }}" data-stock="{{ product.stock }}"
+                 data-desc="{{ product.description|default:''|lower }}"
+                 data-fulldesc="{{ product.description|default:'' }}"
+                 data-format="{{ product.format_labels|default:'UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL' }}">
+                <div class="prod-top">
+                    <span class="prod-cat">{{ section.name }}</span>
+                    <span class="prod-stock {% if product.stock == 0 %}out{% endif %}">
+                        {% if product.stock == 0 %}Sold out{% else %}{{ product.stock }} in stock{% endif %}
+                    </span>
+                </div>
+                <h6 class="prod-name">{{ product.title }}</h6>
+                <p class="prod-desc">{{ product.description|default:''|truncatechars:80 }}</p>
+                <div class="prod-foot">
+                    <span class="prod-price mono">&#8358;{{ product.price }}</span>
+                    <button class="prod-buy" {% if product.stock == 0 %}disabled{% endif %}>
+                        {% if product.stock == 0 %}Sold out{% else %}<i class="bi bi-bag-plus"></i>Buy{% endif %}
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+    {% empty %}
+    <p class="flow-empty">No products available yet. Check back soon.</p>
     {% endfor %}
 </div>
 
@@ -80,12 +94,18 @@
         <p class="lm-sub">Are you sure you want to buy this item?</p>
 
         <h6 class="lm-product" id="modalProductName"></h6>
+
+        <!-- product description (card extends / scrolls when long) -->
+        <div class="lm-desc-wrap">
+            <p class="lm-desc" id="modalProductDesc"></p>
+        </div>
+
         <div class="lm-price mono" id="modalPrice">&#8358;0.00</div>
 
         <!-- format hint -->
         <div class="lm-format">
             <span class="lm-format-label">Format</span>
-            <span class="lm-format-val mono">EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL</span>
+            <span class="lm-format-val mono" id="modalFormatLabel">UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL</span>
         </div>
 
         <div class="lm-actions">
@@ -106,20 +126,17 @@
 
         <h5 class="lm-title">Purchase Successful!</h5>
 
-        <!-- order id badge -->
         <span class="lm-order mono" id="logOrderId" hidden></span>
 
         <p class="lm-save">Save these credentials immediately. They are also saved in My&nbsp;Orders.</p>
 
-        <!-- dynamic format label -->
         <div class="lm-format">
             <span class="lm-format-label">Format</span>
-            <span class="lm-format-val mono" id="logFormatLabel">EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL</span>
+            <span class="lm-format-val mono" id="logFormatLabel">UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL</span>
         </div>
 
         <p class="creds-label">Your login details</p>
 
-        <!-- combined pipe-separated log line -->
         <div class="lm-cred-box" id="logCredBox">
             <span class="lm-cred-text mono" id="logCredsText"></span>
             <button type="button" class="lm-copy-btn" id="logCopyBtn">
@@ -137,41 +154,26 @@
 <!-- TOAST -->
 <div class="lm-toast" id="lmToast" hidden>Copied!</div>
 
-<script type="application/json" id="catData">
-[
-    {% for cat in categories %}
-    {"id": {{ cat.id }}, "name": "{{ cat.name|escapejs }}", "description": "{{ cat.description|default:''|escapejs }}"}{% if not forloop.last %},{% endif %}
-    {% endfor %}
-]
-</script>
-
 <script>
 (function () {
     "use strict";
 
-    /* ---------- CATEGORY DATA (descriptions for the panel) ---------- */
-    var catData = [];
-    try {
-        catData = JSON.parse(document.getElementById("catData").textContent) || [];
-    } catch (e) { catData = []; }
-
-    /* marketplace/urls.py: /buy-logs/purchase/<product_id>/ — reversed with a placeholder we swap in JS */
     var purchaseBaseUrl = "{% url 'purchase_log' 0 %}".replace(/0\/$/, "");
     var walletBalance = parseFloat("{{ user_wallet.balance|default:0 }}");
 
     /* ---------- ELEMENTS ---------- */
     var pills = document.querySelectorAll(".cat-pill");
-    var cards = Array.prototype.slice.call(document.querySelectorAll(".prod-card"));
     var searchInput = document.getElementById("logSearch");
     var prodEmpty = document.getElementById("prodEmpty");
-    var catPanel = document.getElementById("catPanel");
-    var catPanelName = document.getElementById("catPanelName");
-    var catPanelDesc = document.getElementById("catPanelDesc");
+    var sections = document.querySelectorAll(".prod-section");
+    var allCards = Array.prototype.slice.call(document.querySelectorAll(".prod-card"));
 
     var buyModal = document.getElementById("buyModal");
     var logModal = document.getElementById("logModal");
     var modalProductName = document.getElementById("modalProductName");
+    var modalProductDesc = document.getElementById("modalProductDesc");
     var modalPrice = document.getElementById("modalPrice");
+    var modalFormatLabel = document.getElementById("modalFormatLabel");
     var modalYesBtn = document.getElementById("modalYesBtn");
     var modalNoBtn = document.getElementById("modalNoBtn");
     var modalError = document.getElementById("modalError");
@@ -196,49 +198,6 @@
         toastTimer = setTimeout(function () { toast.hidden = true; }, 1800);
     }
 
-    /* ---------- FILTER (category + search) ---------- */
-    function applyFilter() {
-        var term = searchInput.value.toLowerCase().trim();
-        var activeCat = document.querySelector(".cat-pill.active");
-        var cat = activeCat ? activeCat.getAttribute("data-cat") : "all";
-        var visible = 0;
-
-        cards.forEach(function (card) {
-            var matchCat = (cat === "all" || card.getAttribute("data-cat") === cat);
-            var matchTerm = !term ||
-                (card.getAttribute("data-name") || "").indexOf(term) !== -1 ||
-                (card.getAttribute("data-desc") || "").indexOf(term) !== -1;
-            var show = matchCat && matchTerm;
-            card.style.display = show ? "" : "none";
-            if (show) visible++;
-        });
-
-        prodEmpty.hidden = visible !== 0;
-    }
-
-    pills.forEach(function (pill) {
-        pill.addEventListener("click", function () {
-            pills.forEach(function (p) { p.classList.remove("active"); });
-            pill.classList.add("active");
-            applyFilter();
-
-            /* category description panel */
-            var catId = pill.getAttribute("data-cat");
-            var found = null;
-            catData.forEach(function (c) { if (String(c.id) === String(catId)) found = c; });
-
-            if (found && found.description) {
-                catPanelName.textContent = found.name;
-                catPanelDesc.textContent = found.description;
-                catPanel.hidden = false;
-            } else {
-                catPanel.hidden = true;
-            }
-        });
-    });
-
-    searchInput.addEventListener("input", applyFilter);
-
     /* ---------- MODALS ---------- */
     function open(el) { el.hidden = false; document.body.style.overflow = "hidden"; }
     function close(el) { el.hidden = true; document.body.style.overflow = ""; }
@@ -254,15 +213,89 @@
         return "\u20A6" + parseFloat(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    /* ---------- BUY FLOW ---------- */
-    cards.forEach(function (card) {
-        var btn = card.querySelector(".prod-buy");
-        if (!btn || btn.disabled) return;
-        btn.addEventListener("click", function () {
+    /* ---------- FILTER + SEE MORE ---------- */
+    var SEE_MORE_COUNT = 4;
+
+    function applySeeMore(sec) {
+        var expanded = sec.classList.contains("expanded");
+        var visibleIndex = 0;
+        sec.querySelectorAll(".prod-card").forEach(function (card) {
+            if (card.classList.contains("filtered-out")) return;
+            visibleIndex++;
+            card.classList.toggle("sm-hidden", !expanded && visibleIndex > SEE_MORE_COUNT);
+        });
+        var btn = sec.querySelector("[data-see-more]");
+        if (btn) {
+            var label = btn.querySelector(".sm-label");
+            var icon = btn.querySelector(".sm-icon");
+            if (label) label.textContent = expanded ? "See Less" : "See More";
+            if (icon) icon.className = "bi " + (expanded ? "bi-chevron-up" : "bi-chevron-right") + " sm-icon";
+        }
+    }
+
+    function applyFilter() {
+        var term = searchInput.value.toLowerCase().trim();
+        var activeCat = document.querySelector(".cat-pill.active");
+        var cat = activeCat ? activeCat.getAttribute("data-cat") : "all";
+
+        allCards.forEach(function (card) {
+            var matchCat = (cat === "all" || card.getAttribute("data-cat") === cat);
+            var matchTerm = !term ||
+                (card.getAttribute("data-name") || "").indexOf(term) !== -1 ||
+                (card.getAttribute("data-desc") || "").indexOf(term) !== -1;
+            card.classList.toggle("filtered-out", !(matchCat && matchTerm));
+        });
+
+        var totalVisible = 0;
+        sections.forEach(function (sec) {
+            var vis = 0;
+            sec.querySelectorAll(".prod-card").forEach(function (card) {
+                if (!card.classList.contains("filtered-out")) vis++;
+            });
+            sec.classList.toggle("section-hidden", vis === 0);
+            if (term && vis > 0) sec.classList.add("expanded"); /* searching reveals everything */
+            applySeeMore(sec);
+            totalVisible += vis;
+        });
+
+        prodEmpty.hidden = totalVisible !== 0;
+    }
+
+    pills.forEach(function (pill) {
+        pill.addEventListener("click", function () {
+            pills.forEach(function (p) { p.classList.remove("active"); });
+            pill.classList.add("active");
+            applyFilter();
+        });
+    });
+
+    searchInput.addEventListener("input", applyFilter);
+
+    sections.forEach(function (sec) {
+        var btn = sec.querySelector("[data-see-more]");
+        if (btn) {
+            btn.addEventListener("click", function () {
+                sec.classList.toggle("expanded");
+                applySeeMore(sec);
+            });
+        }
+    });
+
+    /* ---------- CARD CLICK -> CONFIRM (available OR sold out) ---------- */
+    allCards.forEach(function (card) {
+        card.addEventListener("click", function () {
             currentCard = card;
+
             modalProductName.textContent = card.querySelector(".prod-name").textContent;
+            modalProductDesc.textContent = card.getAttribute("data-fulldesc") || "No description for this product.";
             modalPrice.textContent = naira(card.getAttribute("data-price"));
+            modalFormatLabel.textContent = card.getAttribute("data-format") || "UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL";
             modalError.hidden = true;
+
+            var stock = parseInt(card.getAttribute("data-stock") || "0", 10);
+            modalYesBtn.disabled = stock <= 0;
+            modalYesBtn.textContent = stock > 0 ? "Yes, Continue" : "Sold Out";
+
             open(buyModal);
         });
     });
@@ -270,7 +303,7 @@
     modalNoBtn.addEventListener("click", function () { close(buyModal); });
 
     modalYesBtn.addEventListener("click", function () {
-        if (!currentCard) { close(buyModal); return; }
+        if (!currentCard || modalYesBtn.disabled) { return; }
 
         var price = parseFloat(currentCard.getAttribute("data-price") || "0");
 
@@ -301,20 +334,18 @@
             if (data.success) {
                 close(buyModal);
 
-                /* fill success card */
                 if (data.order_id) { logOrderId.textContent = data.order_id; logOrderId.hidden = false; }
                 else { logOrderId.hidden = true; }
 
                 if (data.format_label) logFormatLabel.textContent = data.format_label;
 
-                if (data.format_label) logFormatLabel.textContent = data.format_label;
                 var creds = data.creds
+                    || (data.uid ? data.uid + ":" + (data.password || "") : "")
                     || (data.username ? data.username + ":" + (data.password || "") : "");
                 logCredsText.textContent = creds || "\u2014";
 
                 if (data.new_balance) {
                     walletBalance = parseFloat(data.new_balance);
-                    document.body.dataset.balance = String(walletBalance);
                     var walletEl = document.querySelector(".wallet, .wallet-balance");
                     if (walletEl) walletEl.textContent = naira(walletBalance);
                 }
@@ -339,16 +370,18 @@
             } else {
                 modalError.textContent = data.error || "Purchase failed. Please try again.";
                 modalError.hidden = false;
+                modalYesBtn.disabled = false;
             }
         })
         .catch(function () {
             modalError.textContent = "Network error. Please try again.";
             modalError.hidden = false;
+            modalYesBtn.disabled = false;
         })
         .finally(function () {
-            modalYesBtn.disabled = false;
             modalYesBtn.classList.remove("paying");
-            modalYesBtn.textContent = "Yes, Continue";
+            if (!modalYesBtn.disabled) modalYesBtn.textContent = "Yes, Continue";
+            else if (modalYesBtn.textContent === "Processing...") modalYesBtn.textContent = "Yes, Continue";
         });
     });
 
@@ -390,6 +423,9 @@
     });
 
     logDoneBtn.addEventListener("click", function () { close(logModal); });
+
+    /* ---------- INIT ---------- */
+    applyFilter();
 })();
 </script>
 

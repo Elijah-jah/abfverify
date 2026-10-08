@@ -8,15 +8,14 @@ def log_image_path(instance, filename):
     return f'log_images/{instance.id or "new"}_{instance.title[:20]}.{ext}'
 
 
-# Segments a log can carry, in display order. Used to build the
-# "EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL" format line.
-LOG_FORMAT_LABELS = "EMAIL | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL"
+# Segments a log can carry, in display order.
+LOG_FORMAT_LABELS = "UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL"
 
 
-def build_creds(username="", password="", email_password="",
+def build_creds(uid="", password="", email_password="",
                 two_fa="", recovery_email=""):
     """Pipe-separated login line with only the parts that exist."""
-    parts = [p for p in (username, password, email_password, two_fa, recovery_email) if p]
+    parts = [p for p in (uid, password, email_password, two_fa, recovery_email) if p]
     return ":".join(parts) if len(parts) <= 2 else " | ".join(parts)
 
 
@@ -67,7 +66,7 @@ class LogProduct(models.Model):
     format_labels = models.CharField(
         max_length=255,
         default=LOG_FORMAT_LABELS,
-        help_text="Pipe-separated format shown on the buy card, e.g. EMAIL | PASSWORD | 2FA"
+        help_text="Pipe-separated format shown on the buy card"
     )
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to=log_image_path, blank=True, null=True)
@@ -93,8 +92,8 @@ class LogItem(models.Model):
     product = models.ForeignKey(
         LogProduct, on_delete=models.CASCADE, related_name="items"
     )
-    # Segment 1 — EMAIL / UID
-    username = models.CharField(max_length=255)
+    # Segment 1 — UID / EMAIL
+    uid = models.CharField(max_length=255)
     # Segment 2 — PASSWORD
     password = models.CharField(max_length=255)
     # Segment 3 — EMAIL PASSWORD (optional)
@@ -112,12 +111,12 @@ class LogItem(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.product.title} — {self.username}"
+        return f"{self.product.title} — {self.uid}"
 
     @property
     def creds(self):
         return build_creds(
-            self.username, self.password,
+            self.uid, self.password,
             self.email_password, self.two_fa, self.recovery_email
         )
 
@@ -148,7 +147,7 @@ class LogPurchase(models.Model):
         LogItem, on_delete=models.CASCADE, related_name="purchase"
     )
     product_title = models.CharField(max_length=200)
-    username = models.CharField(max_length=255)
+    uid = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
     email_password = models.CharField(max_length=255, blank=True, default="")
     two_fa = models.CharField(max_length=255, blank=True, default="")
@@ -170,6 +169,6 @@ class LogPurchase(models.Model):
     @property
     def creds(self):
         return build_creds(
-            self.username, self.password,
+            self.uid, self.password,
             self.email_password, self.two_fa, self.recovery_email
         )
