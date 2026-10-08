@@ -659,3 +659,13 @@ body.light{
 .mp-detail, .mp-otp{
     color: var(--text);
 }
+
+/* =========================
+   HIDDEN GUARD
+   Class display rules (flex/inline-block) override the browser's
+   default [hidden] style — force hidden elements to stay hidden.
+========================= */
+
+[hidden]{
+    display: none !important;
+}

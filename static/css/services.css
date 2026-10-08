@@ -724,3 +724,31 @@ body.light{
 .prod-stock{
     flex-shrink: 0;
 }
+
+/* =========================
+   CONFIRM BUTTONS — MOBILE FIX
+========================= */
+
+/* wrap instead of squeeze if anything goes wrong */
+.lm-actions{
+    flex-wrap: wrap;
+}
+
+@media (max-width: 640px){
+    .lm-actions{
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .lm-btn{
+        width: 100%;
+        flex: none;
+        height: 46px;
+        font-size: 14px;
+    }
+}
+
+/* hidden guard: class display rules must not override [hidden] */
+[hidden]{
+    display: none !important;
+}

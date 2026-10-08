@@ -124,7 +124,7 @@ def orders_view(request):
             "uid": "",
             "format_string": lp.creds,
             "format_labels": lp.format_labels or "UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL",
-            "description": "",
+            "description": lp.product_description or "",
             "price": lp.price,
             "status": "completed",
             "created_at": lp.created_at,

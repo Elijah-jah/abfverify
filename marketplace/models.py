@@ -154,6 +154,7 @@ class LogPurchase(models.Model):
         LogItem, on_delete=models.CASCADE, related_name="purchase"
     )
     product_title = models.CharField(max_length=200)
+    product_description = models.TextField(blank=True, default="")
     format_labels = models.CharField(
         max_length=255,
         default=LOG_FORMAT_LABELS,
