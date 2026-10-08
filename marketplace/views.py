@@ -8,8 +8,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
 from .models import (
-    LogProduct, LogCategory, LogItem, LogPurchase,
-    LogOrderCounter,
+    LogCategory, LogSubCategory, LogProduct, LogItem, LogPurchase,
 )
 from wallet.models import Wallet, Transaction
 
@@ -20,7 +19,7 @@ logger = logging.getLogger(__name__)
 def services_view(request):
     query = request.GET.get("q", "").strip()
 
-    # All products with live stock annotation
+    # All products (Log Groups) with live stock annotation
     products = (
         LogProduct.objects
         .annotate(stock=Count("items", filter=Q(items__status="available")))
@@ -38,9 +37,8 @@ def services_view(request):
             | models.Q(category__name__icontains=query)
         )
 
-    # ---- Group products into sections keyed by SUBCATEGORY ----
-    # Under "Facebook" you can have many LogProducts:
-    # "United States Facebook", "Mexico Facebook", "US Facebook 2022", etc.
+    # ---- Sections keyed by SUBCATEGORY; cards = Log Groups inside ----
+    # Social Media -> Facebook -> [US Facebook, Mexico Facebook, ...]
     sections = []
     seen = {}
     for p in products:
@@ -76,7 +74,7 @@ def services_view(request):
 @login_required
 @require_POST
 def purchase_log(request, product_id):
-    """Atomic purchase endpoint with confirmation."""
+    """Atomic purchase: buy one available LogItem from a Log Group."""
     try:
         with transaction.atomic():
             wallet = Wallet.objects.select_for_update().get(user=request.user)

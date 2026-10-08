@@ -8,7 +8,6 @@ def log_image_path(instance, filename):
     return f'log_images/{instance.id or "new"}_{instance.title[:20]}.{ext}'
 
 
-# Segments a log can carry, in display order.
 LOG_FORMAT_LABELS = "UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL"
 
 
@@ -20,6 +19,7 @@ def build_creds(uid="", password="", email_password="",
 
 
 class LogCategory(models.Model):
+    """Top level: Social Media, Texting Services, VPNs (the pill bar)."""
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(
         blank=True,
@@ -41,6 +41,7 @@ class LogCategory(models.Model):
 
 
 class LogSubCategory(models.Model):
+    """Middle level: Facebook, TextPlus, Proton VPN."""
     category = models.ForeignKey(
         LogCategory, on_delete=models.CASCADE, related_name="subcategories"
     )
@@ -55,6 +56,8 @@ class LogSubCategory(models.Model):
 
 
 class LogProduct(models.Model):
+    """The sellable unit — shown as "Log Group" in admin.
+    United States Facebook, Mexico Facebook, Proton VPN (USA), etc."""
     category = models.ForeignKey(
         LogCategory, on_delete=models.CASCADE, related_name="products", null=True, blank=True
     )
@@ -74,6 +77,8 @@ class LogProduct(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        verbose_name = "Log Group"       # <-- admin display name
+        verbose_name_plural = "Log Groups"
 
     def __str__(self):
         return self.title
@@ -84,6 +89,7 @@ class LogProduct(models.Model):
 
 
 class LogItem(models.Model):
+    """The actual credentials for one log."""
     STATUS_CHOICES = (
         ("available", "Available"),
         ("sold", "Sold"),
@@ -135,6 +141,7 @@ class LogOrderCounter(models.Model):
 
 
 class LogPurchase(models.Model):
+    """Snapshot of a sold log."""
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
