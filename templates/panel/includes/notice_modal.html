@@ -4,42 +4,70 @@
 <!-- NEW UPDATE MODAL -->
 <div class="notice-modal" id="noticeModal">
     <div class="notice-box">
+
         <div class="notice-header">
             <div class="notice-icon-wrap">
                 <i class="fa-solid fa-bullhorn"></i>
             </div>
             <h2>New Update</h2>
         </div>
+
         <div class="notice-body">
             <p class="notice-message">
                 Join our Telegram channel to receive the latest updates, announcements,
-                 and fast notifications about ABFverify. Stay ahead and never miss important news
-                 click the link below to join now!
+                and fast notifications about ABFverify. Stay ahead and never miss important news
+                &mdash; click the link below to join now!
             </p>
         </div>
+
         <div class="notice-actions">
-            <a href="https://t.me/abfverifysocials" target="_blank" class="btn btn-telegram">
+
+            <a href="https://t.me/abfverifysocials" target="_blank" class="ntc-btn ntc-telegram">
                 <i class="fa-brands fa-telegram"></i>
                 Join New Channel
                 <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i>
             </a>
-            <button type="button" class="btn btn-copy" onclick="copyTelegramLink()">
+
+            <button type="button" class="ntc-btn ntc-copy" onclick="copyTelegramLink()">
                 <i class="fa-regular fa-copy"></i>
                 Copy Link
             </button>
-            <form action="{% url 'dismiss_notice' %}" method="post" style="display:inline; width:100%;">
+
+            <form action="{% url 'dismiss_notice' %}" method="post" class="ntc-dismiss-form">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-gotit">Got it, thanks!</button>
+                <button type="submit" class="ntc-btn ntc-gotit">
+                    Got it, thanks!
+                </button>
             </form>
+
         </div>
+
     </div>
 </div>
 
 <style>
+/* ============ panel theme variables (dark default, body.light override) ============ */
+
+.notice-modal{
+    --n-card: #111827;
+    --n-text: #e5e7eb;
+    --n-muted: #9ca3af;
+    --n-border: #1f2937;
+    --n-grad: linear-gradient(135deg, #38bdf8, #818cf8);
+}
+
+body.light .notice-modal{
+    --n-card: #ffffff;
+    --n-text: #0f172a;
+    --n-muted: #64748b;
+    --n-border: #e2e8f0;
+    --n-grad: linear-gradient(135deg, #0ea5e9, #6366f1);
+}
+
 .notice-modal {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
+    background: rgba(2, 6, 23, 0.7);
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
@@ -48,143 +76,235 @@
     padding: 1rem;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
+
 .notice-modal.show {
     opacity: 1;
     visibility: visible;
 }
+
 .notice-box {
     width: 100%;
     max-width: 420px;
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+
+    background: var(--n-card);
+    border: 1px solid var(--n-border);
+    border-radius: 18px;
+
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
     overflow: hidden;
-    transform: scale(0.9);
+
+    transform: scale(0.92);
     transition: transform 0.3s ease;
-    border: 2px solid #0d6efd;
 }
+
 .notice-modal.show .notice-box {
     transform: scale(1);
 }
+
+/* ---- header ---- */
+
 .notice-header {
-    background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    background: var(--n-grad);
     color: #fff;
     text-align: center;
-    padding: 1.5rem 1.5rem 1rem;
+    padding: 1.6rem 1.5rem 1.1rem;
+
     display: flex;
     flex-direction: column;
     align-items: center;
 }
+
 .notice-icon-wrap {
-    width: 56px;
-    height: 56px;
-    background: #dc3545;
+    width: 58px;
+    height: 58px;
+
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+
     border-radius: 50%;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 0.75rem;
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+
+    margin-bottom: 0.8rem;
+
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
 }
-.notice-icon-wrap i { font-size: 1.6rem; color: #fff; }
-.notice-header h2 { margin: 0; font-size: 1.4rem; font-weight: 700; }
-.notice-body { padding: 1.25rem 1.5rem; }
+
+.notice-icon-wrap i {
+    font-size: 1.5rem;
+    color: #fff;
+}
+
+.notice-header h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+/* ---- body ---- */
+
+.notice-body {
+    padding: 1.3rem 1.5rem 0.5rem;
+}
+
 .notice-message {
     text-align: center;
     font-size: 0.95rem;
-    color: #444;
-    line-height: 1.6;
+    color: var(--n-muted);
+    line-height: 1.65;
     margin: 0;
 }
+
+/* ---- actions ---- */
+
 .notice-actions {
-    padding: 0 1.5rem 1.5rem;
+    padding: 1.1rem 1.5rem 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.65rem;
 }
-.btn-telegram {
+
+.ntc-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    width: 100%;
+    padding: 0.85rem;
+
+    border-radius: 11px;
+
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-align: center;
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition: filter 0.2s ease, transform 0.2s ease,
+                background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* telegram brand button — kept on-brand */
+.ntc-telegram {
     background: #0088cc;
     color: #fff !important;
     border: none;
-    padding: 0.85rem;
-    border-radius: 10px;
-    font-weight: 600;
-    text-align: center;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(0, 136, 204, 0.30);
 }
-.btn-telegram:hover { background: #0077b3; transform: translateY(-1px); }
-.btn-copy {
+
+.ntc-telegram:hover {
+    background: #0077b3;
+    transform: translateY(-1px);
+}
+
+/* copy link — ghost */
+.ntc-copy {
     background: transparent;
-    color: #666;
-    border: 1px solid #ddd;
-    padding: 0.75rem;
-    border-radius: 10px;
+    color: var(--n-muted);
+    border: 1px solid var(--n-border);
     font-weight: 500;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 100%;
     font-size: 0.9rem;
 }
-.btn-copy:hover { background: #f8f9fa; border-color: #ccc; }
-.btn-gotit {
-    background: #0d6efd;
+
+.ntc-copy:hover {
+    border-color: var(--n-muted);
+    color: var(--n-text);
+    transform: translateY(-1px);
+}
+
+.ntc-copy.copied {
+    color: #22c55e;
+    border-color: #22c55e;
+}
+
+/* dismiss — gradient, matches panel buttons */
+.ntc-gotit {
+    background: var(--n-grad);
     color: #fff;
     border: none;
-    padding: 0.85rem;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 100%;
-    font-size: 0.95rem;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
 }
-.btn-gotit:hover { background: #0b5ed7; transform: translateY(-1px); }
-@keyframes np { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
-body.dark .notice-box, html[data-theme="dark"] .notice-box { background: #1e1e2f; border-color: #3b82f6; }
-body.dark .notice-message, html[data-theme="dark"] .notice-message { color: #d0d0d0; }
-body.dark .btn-gotit, html[data-theme="dark"] .btn-gotit { background: #2563eb; }
-body.dark .btn-copy, html[data-theme="dark"] .btn-copy { color: #aaa; border-color: #444; }
-body.dark .btn-copy:hover, html[data-theme="dark"] .btn-copy:hover { background: #2a2a3f; border-color: #555; }
+
+.ntc-gotit:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.ntc-dismiss-form {
+    display: block;
+    width: 100%;
+    margin: 0;
+}
+
+/* ---- responsive ---- */
+
 @media (max-width: 576px) {
-    .notice-box { margin: 0.5rem; }
-    .notice-header h2 { font-size: 1.2rem; }
-    .notice-message { font-size: 0.88rem; }
+    .notice-box {
+        margin: 0.5rem;
+        border-radius: 16px;
+    }
+    .notice-header h2 {
+        font-size: 1.2rem;
+    }
+    .notice-message {
+        font-size: 0.88rem;
+    }
 }
 </style>
 
 <script>
-(function(){
+(function () {
     var m = document.getElementById('noticeModal');
-    if(m){ setTimeout(function(){ m.classList.add('show'); }, 300); }
-    if(m){ m.onclick = function(e){ if(e.target === m) m.classList.remove('show'); }; }
+    if (!m) return;
+
+    setTimeout(function () { m.classList.add('show'); }, 300);
+
+    m.addEventListener('click', function (e) {
+        if (e.target === m) m.classList.remove('show');
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') m.classList.remove('show');
+    });
 })();
+
 function copyTelegramLink() {
     var link = "https://t.me/abfverifysocials";
-    navigator.clipboard.writeText(link).then(function() {
-        var btn = document.querySelector('.btn-copy');
+
+    function done() {
+        var btn = document.querySelector('.ntc-copy');
+        if (!btn) return;
         var original = btn.innerHTML;
+        btn.classList.add('copied');
         btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
-        btn.style.color = '#28a745';
-        btn.style.borderColor = '#28a745';
-        setTimeout(function() {
+        setTimeout(function () {
             btn.innerHTML = original;
-            btn.style.color = '';
-            btn.style.borderColor = '';
+            btn.classList.remove('copied');
         }, 2000);
-    });
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(done, function () { fallback(); });
+    } else {
+        fallback();
+    }
+
+    function fallback() {
+        var ta = document.createElement("textarea");
+        ta.value = link;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); done(); } catch (e) {}
+        document.body.removeChild(ta);
+    }
 }
 </script>
 {% endif %}
