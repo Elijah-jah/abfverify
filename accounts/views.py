@@ -581,6 +581,11 @@ def dismiss_notice(request):
     """Called when user clicks 'Got it, Thanks' on the popup"""
     if request.method == 'POST':
         request.session['dashboard_notice_dismissed'] = True
+
+        # AJAX dismiss — no page reload
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({"success": True})
+
     return redirect('dashboard')
 
 

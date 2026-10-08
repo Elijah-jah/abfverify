@@ -33,9 +33,9 @@
                 Copy Link
             </button>
 
-            <form action="{% url 'dismiss_notice' %}" method="post" class="ntc-dismiss-form">
+            <form action="{% url 'dismiss_notice' %}" method="post" class="ntc-dismiss-form" id="noticeDismissForm">
                 {% csrf_token %}
-                <button type="submit" class="ntc-btn ntc-gotit">
+                <button type="submit" class="ntc-btn ntc-gotit" id="noticeGotItBtn">
                     Got it, thanks!
                 </button>
             </form>
@@ -236,6 +236,12 @@ body.light .notice-modal{
     transform: translateY(-1px);
 }
 
+.ntc-gotit:disabled {
+    opacity: 0.7;
+    cursor: default;
+    transform: none;
+}
+
 .ntc-dismiss-form {
     display: block;
     width: 100%;
@@ -272,6 +278,32 @@ body.light .notice-modal{
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') m.classList.remove('show');
     });
+
+    /* AJAX dismiss — no page reload, modal closes instantly */
+    var dismissForm = document.getElementById('noticeDismissForm');
+    var gotItBtn = document.getElementById('noticeGotItBtn');
+
+    if (dismissForm) {
+        dismissForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            if (gotItBtn) gotItBtn.disabled = true;
+
+            var formData = new FormData(dismissForm);
+
+            fetch(dismissForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .catch(function () { /* offline/error — still close for the user */ })
+            .finally(function () {
+                m.classList.remove('show');
+            });
+        });
+    }
 })();
 
 function copyTelegramLink() {
