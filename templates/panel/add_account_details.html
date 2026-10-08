@@ -9,62 +9,229 @@
 
 <link rel="stylesheet" href="{% static 'css/wallet.css' %}">
 
-<div class="wallet-container">
+<style>
+/* =========================================================
+   Add Account Details — matches wallet page style
+========================================================= */
 
-    <div class="wallet-card">
+.ad-wrap{
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.ad-card{
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    max-width: 520px;
+    border-radius: var(--radius);
+    background:
+        linear-gradient(110deg, var(--brand-soft), transparent 55%),
+        var(--card);
+    border: 1px solid var(--border);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ad-icon{
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: #ffffff;
+    font-size: 22px;
+    box-shadow: 0 10px 22px rgba(59, 130, 246, .35);
+}
+
+.ad-card h3{
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -.3px;
+    margin: 0;
+}
+
+.ad-card > p{
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Error alert */
+.ad-error{
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #ef4444;
+    background: rgba(239, 68, 68, .1);
+    border: 1px solid rgba(239, 68, 68, .35);
+    padding: 11px 14px;
+    border-radius: 12px;
+    margin: 0;
+}
+
+/* Form */
+.ad-card form{
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.ad-group label{
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+}
+
+.ad-input{
+    width: 100%;
+    padding: 13px 15px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--card-2);
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.ad-input::placeholder{ color: var(--muted); opacity: .7; }
+
+.ad-input:focus{
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+.ad-button{
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 13px 20px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, .32);
+    transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+
+.ad-button:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(124, 58, 237, .4);
+    filter: brightness(1.06);
+}
+
+.ad-button:active{ transform: scale(.97); }
+
+/* Reassurance note */
+.ad-note{
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.55;
+    margin: 0;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+}
+
+.ad-note i{ color: var(--brand); margin-top: 1px; }
+
+/* Responsive */
+@media (max-width: 480px){
+    .ad-card{ padding: 22px 18px; }
+}
+</style>
+
+<div class="ad-wrap">
+
+    <div class="ad-card">
+
+        <div class="ad-icon">
+            <i class="fa-solid fa-building-columns"></i>
+        </div>
 
         <h3>Add Your Details</h3>
 
         <p>
             We need your legal name and phone number to generate
-            your dedicated account number.
+            your dedicated account number for instant wallet funding.
         </p>
 
         {% if error %}
-        <p style="color: red;">{{ error }}</p>
+        <p class="ad-error">
+            <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
+        </p>
         {% endif %}
 
         <form method="post">
             {% csrf_token %}
 
-            <div class="wallet-group">
+            <div class="ad-group">
                 <label>First Name</label>
                 <input
                     type="text"
                     name="first_name"
-                    class="wallet-input"
+                    class="ad-input"
+                    placeholder="e.g. Chinedu"
                     required
                 >
             </div>
 
-            <div class="wallet-group">
+            <div class="ad-group">
                 <label>Last Name</label>
                 <input
                     type="text"
                     name="last_name"
-                    class="wallet-input"
+                    class="ad-input"
+                    placeholder="e.g. Okafor"
                     required
                 >
             </div>
 
-            <div class="wallet-group">
+            <div class="ad-group">
                 <label>Phone Number</label>
                 <input
                     type="text"
                     name="phone"
-                    class="wallet-input"
+                    class="ad-input"
                     placeholder="08012345678"
                     required
                 >
             </div>
 
-            <button
-                type="submit"
-                class="wallet-button">
+            <button type="submit" class="ad-button">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
                 Save &amp; Generate Account Number
             </button>
 
         </form>
+
+        <p class="ad-note">
+            <i class="fa-solid fa-lock"></i>
+            Your details are only used to create your dedicated bank
+            account and are kept private.
+        </p>
 
     </div>
 
