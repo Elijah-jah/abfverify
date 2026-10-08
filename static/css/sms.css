@@ -1,34 +1,11 @@
-/* =========================
-   THEME VARIABLES
-========================= */
-
-:root{
-    --bg: #0f172a;
-    --card: #111827;
-    --border: #1f2937;
-    --text: #e5e7eb;
-    --muted: #9ca3af;
-    --accent: #38bdf8;
-    --danger: #ef4444;
-    --success: #22c55e;
-}
-
-/* LIGHT MODE */
-body.light{
-    --bg: #f8fafc;
-    --card: #ffffff;
-    --border: #e5e7eb;
-    --text: #0f172a;
-    --muted: #64748b;
-    --accent: #0ea5e9;
-}
-
-/* =========================
-   BASE LAYOUT
-========================= */
+/* =========================================================
+   ABFverify — Buy Number Page  (matches redesigned dashboard)
+========================================================= */
 
 .sms-container{
-    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
     color: var(--text);
 }
 
@@ -36,372 +13,518 @@ body.light{
    HEADER
 ========================= */
 
-.sms-header{
+.sms-head{
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 18px;
-    gap: 10px;
+    align-items: flex-start;
+    gap: 14px;
 }
 
-.sms-title{
-    font-size: 22px;
+.sms-head-text .eyebrow{
+    display: inline-block;
+    font-size: 11px;
     font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--brand);
+    margin-bottom: 6px;
+}
+
+.sms-head-text h2{
+    font-size: 24px;
+    letter-spacing: -.4px;
+    margin-bottom: 6px;
 }
 
 .sms-subtitle{
-    font-size: 13px;
+    font-size: 14px;
     color: var(--muted);
-    margin-top: 4px;
+    margin: 0;
 }
 
-.sms-balance{
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-size: 13px;
-    color: var(--muted);
+.sms-balance-pill{
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--brand);
+    background: var(--brand-soft);
+    border: 1px solid var(--brand-border);
+    font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
 }
 
 /* =========================
-   MAIN CARD
+   FORM CARD
 ========================= */
 
 .sms-card{
-    background: var(--card);
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background:
+        linear-gradient(110deg, var(--brand-soft), transparent 55%),
+        var(--card);
     border: 1px solid var(--border);
-    padding: 18px;
-    border-radius: 14px;
+    padding: 22px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    margin-bottom: 18px;
+    gap: 18px;
 }
 
-/* FORM GROUP */
-.sms-group label{
-    font-size: 12px;
-    color: var(--muted);
-    display: block;
-    margin-bottom: 6px;
+.form-grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
 }
+
+.sms-group label{
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+
+.sms-group label i{ color: var(--brand); font-size: 12px; }
 
 .sms-select{
     width: 100%;
     padding: 12px;
     border-radius: 10px;
     border: 1px solid var(--border);
-    background: var(--bg);
+    background: var(--card-2);
     color: var(--text);
     outline: none;
     font-size: 13px;
 }
 
 /* =========================
-   PRICE BOX
+   PRICE ROW
 ========================= */
+
+.sms-price-row{
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+}
 
 .sms-price-box{
-    text-align: center;
-    padding: 15px;
-    border-radius: 12px;
-    background: var(--bg);
-    border: 1px solid var(--border);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: var(--card-2);
+    border: 1px dashed var(--border);
 }
 
-.sms-price-box p{
-    font-size: 12px;
+.price-label{
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
     color: var(--muted);
 }
+
+.price-label i{ color: var(--brand); }
 
 .sms-price-box h2{
-    font-size: 24px;
-    margin-top: 6px;
-    color: #2563eb;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+    color: var(--brand);
+    font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+    margin: 0;
 }
 
-/* =========================
-   BUTTON
-========================= */
-
+/* BUTTON */
 .sms-button{
-    padding: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 28px;
+    min-height: 62px;
     border: none;
-    border-radius: 10px;
-    background: #2563eb;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
     color: #ffffff;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
+    font-family: 'Inter', sans-serif;
     cursor: pointer;
-    transition: 0.2s ease;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, .32);
+    transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
 }
 
-.sms-button:hover{
-    background: #1d4ed8;
+.sms-button:hover:not(:disabled){
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(124, 58, 237, .4);
+    filter: brightness(1.06);
 }
 
-/* =========================
-   STATUS BOX
-========================= */
+.sms-button:active:not(:disabled){ transform: scale(.97); }
 
-.sms-status{
-    margin-bottom: 18px;
-}
-
-.sms-status-title{
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 6px;
-}
-
-.sms-status-box{
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 12px;
-    border-radius: 10px;
-    font-size: 13px;
-    color: var(--muted);
+.sms-button:disabled{
+    opacity: .7;
+    cursor: not-allowed;
 }
 
 /* =========================
-   SESSION BOX
+   ACTIVE SESSIONS
 ========================= */
+
+.sessions-title{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 14px;
+}
+
+.live-dot{
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, .5);
+    animation: pulse-dot 1.8s infinite;
+}
+
+@keyframes pulse-dot{
+    0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, .5); }
+    70%  { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.sessions-wrap{
+    display: flex;
+    flex-direction: column;
+}
 
 .sms-session{
     background: var(--card);
     border: 1px solid var(--border);
-    padding: 14px;
-    border-radius: 12px;
+    border-left: 4px solid transparent;
+    border-image: linear-gradient(180deg, #2563eb, #7c3aed) 1;
+    padding: 18px 20px;
+    border-radius: var(--radius);
     display: flex;
     flex-direction: column;
+    gap: 12px;
+    margin-bottom: 14px;
+    transition: border-color .25s ease, box-shadow .25s ease;
+}
+
+.sms-session:hover{
+    border-color: var(--brand-border);
+    box-shadow: var(--shadow);
+}
+
+.sms-session-header{
+    display: flex;
+    align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
+}
+
+.sms-country{
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #fff;
+    padding: 5px 13px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.sms-service{
+    background: var(--brand-soft);
+    color: var(--brand);
+    border: 1px solid var(--brand-border);
+    padding: 5px 13px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.sms-timer{
+    margin-left: auto;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+    background: var(--card-2);
+    border: 1px solid var(--border);
+    padding: 5px 13px;
+    border-radius: 10px;
 }
 
 .sms-session-item{
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    gap: 12px;
     font-size: 13px;
+    flex-wrap: wrap;
 }
 
-.sms-session-item span{
+.sms-session-item > span{
     color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.sms-session-item > span i{ color: var(--brand); font-size: 12px; }
+
+.sms-copy-box{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.active-number{
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+    color: var(--text);
+}
+
+.otp-box{
+    min-width: 110px;
+    text-align: center;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px dashed var(--border);
+    background: var(--card-2);
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+    color: var(--text);
+}
+
+.waiting-pulse{ color: var(--muted); }
+
+.sms-status{
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--success);
+}
+
+.sms-status .waiting-pulse{ color: var(--muted); font-weight: 500; }
+
+.copy-btn{
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card-2);
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    transition: all .2s ease;
+}
+
+.copy-btn:hover:not(:disabled){
+    color: #ffffff;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    border-color: transparent;
+    box-shadow: 0 6px 14px rgba(37, 99, 235, .3);
+}
+
+.copy-btn:disabled{
+    opacity: .4;
+    cursor: not-allowed;
 }
 
 .sms-cancel-btn{
+    margin-top: 4px;
     padding: 10px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--danger);
+    border-radius: 12px;
+    border: 1px solid rgba(239, 68, 68, .35);
+    background: rgba(239, 68, 68, .08);
+    color: #ef4444;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
     cursor: pointer;
+    transition: all .2s ease;
+}
+
+.sms-cancel-btn:hover{
+    background: rgba(239, 68, 68, .16);
+    border-color: rgba(239, 68, 68, .55);
 }
 
 /* =========================
-   RESPONSIVE DESIGN
+   SEARCHABLE SELECTS (Choices.js)
 ========================= */
 
-@media (max-width: 900px){
-
-    .sms-header{
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .sms-balance{
-        width: 100%;
-        text-align: center;
-    }
-
-    .rug{
-        display: none;
-    }
-}
-
-@media (max-width: 600px){
-
-    .sms-container{
-        padding: 15px;
-    }
-
-    .sms-card{
-        padding: 14px;
-    }
-
-    .sms-price-box h2{
-        font-size: 20px;
-    }
-
-    .sms-button{
-        font-size: 13px;
-    }
-
-    .rug{
-        display: none;
-    }
-}
-
-/* =========================
-   SEARCHABLE SELECTS
-========================= */
-
-.choices {
+.choices{
     width: 100%;
-    margin-top: 5px;
+    margin-bottom: 0;
     font-family: inherit;
 }
 
-.choices__inner {
-    min-height: 48px;
+.choices__inner{
+    min-height: 46px;
     padding: 8px 12px;
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid var(--border);
-    background: var(--bg);
+    background: var(--card-2);
     color: var(--text);
     font-size: 13px;
     box-shadow: none;
-    transition: all 0.2s ease;
+    transition: border-color .2s ease, box-shadow .2s ease;
 }
 
 .is-focused .choices__inner,
-.is-open .choices__inner {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+.is-open .choices__inner{
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-soft);
 }
 
-.choices__list--single {
-    color: var(--text);
-}
+.choices__list--single{ color: var(--text); }
 
-.choices__placeholder {
-    color: var(--muted);
-    opacity: 1;
-}
+.choices__placeholder{ color: var(--muted); opacity: 1; }
 
-.choices__input {
+.choices__input{
     background: transparent !important;
     color: var(--text) !important;
     font-size: 13px;
 }
 
-.choices__input::placeholder {
-    color: var(--muted);
-}
-
-/* Dropdown */
+.choices__input::placeholder{ color: var(--muted); }
 
 .choices__list--dropdown,
-.choices__list[aria-expanded] {
+.choices__list[aria-expanded]{
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 12px;
     color: var(--text);
     margin-top: 6px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,.15);
+    box-shadow: var(--shadow);
+    z-index: 50;
 }
 
-/* Search input inside dropdown */
-
 .choices__list--dropdown .choices__input,
-.choices__list[aria-expanded] .choices__input {
+.choices__list[aria-expanded] .choices__input{
     width: calc(100% - 20px);
     margin: 10px;
     padding: 10px 12px;
     border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg) !important;
+    border-radius: 10px;
+    background: var(--card-2) !important;
     color: var(--text) !important;
 }
 
-/* Dropdown items */
-
-.choices__item--choice {
+.choices__item--choice{
     padding: 11px 14px;
     color: var(--text);
     transition: background .15s ease;
 }
 
-/* Hover */
-
 .choices__list--dropdown .choices__item--choice.is-highlighted,
-.choices__list[aria-expanded] .choices__item--choice.is-highlighted {
-    background: rgba(56, 189, 248, 0.15) !important;
-    color: var(--text) !important;
+.choices__list[aria-expanded] .choices__item--choice.is-highlighted{
+    background: var(--brand-soft) !important;
+    color: var(--brand) !important;
 }
 
-/* Selected */
-
-.choices__item--selectable.is-selected {
-    background: rgba(56, 189, 248, 0.20) !important;
-    color: var(--text) !important;
+.choices__item--selectable.is-selected{
+    background: var(--brand-soft) !important;
+    color: var(--brand) !important;
+    font-weight: 600;
 }
 
-/* Disabled */
+.choices__item--disabled{ color: var(--muted) !important; }
 
-.choices__item--disabled {
-    color: var(--muted) !important;
-}
-
-/* Dropdown arrow */
-
-.choices[data-type*="select-one"]::after {
+.choices[data-type*="select-one"]::after{
     border-color: var(--muted) transparent transparent;
 }
 
-.choices[data-type*="select-one"].is-open::after {
+.choices[data-type*="select-one"].is-open::after{
     border-color: transparent transparent var(--muted);
 }
 
-/* Scrollbar */
-
 .choices__list--dropdown::-webkit-scrollbar,
-.choices__list[aria-expanded]::-webkit-scrollbar {
-    width: 8px;
-}
+.choices__list[aria-expanded]::-webkit-scrollbar{ width: 8px; }
 
 .choices__list--dropdown::-webkit-scrollbar-track,
-.choices__list[aria-expanded]::-webkit-scrollbar-track {
-    background: var(--bg);
+.choices__list[aria-expanded]::-webkit-scrollbar-track{
+    background: var(--card-2);
 }
 
 .choices__list--dropdown::-webkit-scrollbar-thumb,
-.choices__list[aria-expanded]::-webkit-scrollbar-thumb {
+.choices__list[aria-expanded]::-webkit-scrollbar-thumb{
     background: var(--border);
     border-radius: 20px;
 }
 
 .choices__list--dropdown::-webkit-scrollbar-thumb:hover,
-.choices__list[aria-expanded]::-webkit-scrollbar-thumb:hover {
-    background: var(--accent);
+.choices__list[aria-expanded]::-webkit-scrollbar-thumb:hover{
+    background: var(--brand);
 }
 
-/* ==========================================
-   ORDER HEADER
-========================================== */
+/* =========================
+   RESPONSIVE
+========================= */
 
-.sms-session-header{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:15px;
+@media (max-width: 900px){
+    .rug{ display: none; }
+
+    .sms-head{ flex-direction: column; }
 }
 
-.sms-country{
-    background:#2563eb;
-    color:#fff;
-    padding:5px 12px;
-    border-radius:20px;
-    font-size:12px;
-    font-weight:600;
-    text-transform:uppercase;
+@media (max-width: 768px){
+
+    .form-grid{
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .sms-price-row{
+        flex-direction: column;
+    }
+
+    .sms-button{
+        width: 100%;
+        min-height: 52px;
+        padding: 14px 20px;
+    }
+
+    .sms-card{ padding: 18px; }
+
+    .sms-timer{ margin-left: 0; width: 100%; text-align: center; }
 }
 
-.sms-service{
-    background:#10b981;
-    color:#fff;
-    padding:5px 12px;
-    border-radius:20px;
-    font-size:12px;
-    font-weight:600;
+@media (max-width: 480px){
+
+    .sms-head-text h2{ font-size: 21px; }
+
+    .sms-price-box h2{ font-size: 22px; }
+
+    .sms-session{ padding: 15px 16px; }
+
+    .sms-session-item{ align-items: flex-start; }
 }

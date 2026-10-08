@@ -1,9 +1,9 @@
 {% extends "panel/dashboard_base.html" %}
 {% load static %}
 
-{% block title %}Buy Number{% endblock %} 
-{% block page_title %}Buy Number{% endblock %} 
-{% block section_title %}Buy Number{% endblock %} 
+{% block title %}Buy Number{% endblock %}
+{% block page_title %}Buy Number{% endblock %}
+{% block section_title %}Buy Number{% endblock %}
 
 {% block content %}
 
@@ -12,21 +12,19 @@
 <div class="sms-container">
 
     <!-- HEADER -->
-    <div class="sms-header">
-
-        <div>
-            <h1 class="sms-title">Buy Virtual Number</h1>
-
+    <div class="sms-head">
+        <div class="sms-head-text">
+            <span class="eyebrow">SMS VERIFICATION</span>
+            <h2>Buy Virtual Number</h2>
             <p class="sms-subtitle">
-                Select a country and service to request a temporary virtual number.
+                Select a server, country and service to get a temporary
+                number for instant OTP verification.
             </p>
         </div>
-
-        <div class="sms-balance">
-            Balance:
-            ₦{{ user_wallet.balance|floatformat:2 }}
+        <div class="sms-balance-pill">
+            <i class="fa-solid fa-wallet"></i>
+            <span>₦{{ user_wallet.balance|floatformat:2 }}</span>
         </div>
-
     </div>
 
     <!-- REQUEST FORM -->
@@ -36,206 +34,183 @@
 
         <div class="sms-card">
 
-            <!-- SERVER -->
-            <div class="sms-group">
+            <div class="form-grid">
 
-                <label for="serverSelect">Server</label>
+                <!-- SERVER -->
+                <div class="sms-group">
+                    <label for="serverSelect"><i class="fa-solid fa-server"></i> Server</label>
+                    <select
+                        class="sms-select"
+                        id="serverSelect"
+                        name="server"
+                        required>
+                        <option value="">Select Server</option>
+                        <!-- Server 1 - Coming Soon -->
+                        <!-- <option value="server1">Server 1 (General)</option> -->
+                        <!-- Server 2 - DaisySMS (USA Only) -->
+                        <option value="server2">Server 1 - USA Only</option>
+                    </select>
+                </div>
 
-                <select
-                    class="sms-select"
-                    id="serverSelect"
-                    name="server"
-                    required>
+                <!-- COUNTRY -->
+                <div class="sms-group">
+                    <label for="countrySelect"><i class="fa-solid fa-earth-americas"></i> Country</label>
+                    <select
+                        class="sms-select"
+                        id="countrySelect"
+                        name="country"
+                        required>
+                        <option value="">Select Server First</option>
+                    </select>
+                </div>
 
-                    <option value="">Select Server</option>
-                    
-                    <!-- Server 1 - Coming Soon -->
-                   <!-- <option value="server1">Server 1 (General)</option>  -->
-                    
-                    <!-- Server 2 - DaisySMS (USA Only) -->
-                  <option value="server2">Server 1 - USA Only</option> 
-                    
-                    <!-- Server 3 - Pvapins (General) -->
-                    <!-- <option value="server3">Server 2 - All Countries</option> -->
-
-                </select>
-
-            </div>
-
-            <!-- COUNTRY -->
-            <div class="sms-group">
-
-                <label for="countrySelect">Country</label>
-
-                <select
-                    class="sms-select"
-                    id="countrySelect"
-                    name="country"
-                    required>
-
-                    <option value="">Select Server First</option>
-
-                </select>
-
-            </div>
-
-            <!-- SERVICE -->
-            <div class="sms-group">
-
-                <label for="serviceSelect">Service</label>
-
-                <select
-                    class="sms-select"
-                    id="serviceSelect"
-                    name="service"
-                    required>
-
-                    <option value="">Select Server First</option>
-
-                </select>
+                <!-- SERVICE -->
+                <div class="sms-group">
+                    <label for="serviceSelect"><i class="fa-solid fa-bolt"></i> Service</label>
+                    <select
+                        class="sms-select"
+                        id="serviceSelect"
+                        name="service"
+                        required>
+                        <option value="">Select Server First</option>
+                    </select>
+                </div>
 
             </div>
 
-            <!-- PRICE -->
-            <div class="sms-price-box">
+            <!-- PRICE + BUTTON ROW -->
+            <div class="sms-price-row">
 
-                <p>Estimated Price</p>
+                <div class="sms-price-box">
+                    <span class="price-label"><i class="fa-solid fa-tag"></i> Estimated Price</span>
+                    <h2 id="priceDisplay">₦0.00</h2>
+                </div>
 
-                <h2 id="priceDisplay">
-                    ₦0.00
-                </h2>
+                <button
+                    type="submit"
+                    class="sms-button"
+                    id="requestBtn">
+                    <i class="fa-solid fa-sim-card"></i>
+                    Request Number
+                </button>
 
             </div>
-
-            <button
-                type="submit"
-                class="sms-button"
-                id="requestBtn">
-
-                Request Number
-
-            </button> 
 
         </div>
 
     </form>
 
+    <!-- ACTIVE SESSIONS -->
     {% if active_orders %}
-    {% for order in active_orders %}
+    <div class="sessions-wrap">
 
-    <div class="sms-session" data-order-id="{{ order.id }}">
+        <h3 class="sessions-title">
+            <span class="live-dot"></span> Active Numbers
+        </h3>
 
-    <div class="sms-session-header">
+        {% for order in active_orders %}
 
-        <span class="sms-country">
-            {{ order.country.iso_code }}
-        </span>
+        <div class="sms-session" data-order-id="{{ order.id }}">
 
-        <span class="sms-service">
-            {{ order.service.name }}
-        </span>
+            <div class="sms-session-header">
 
-    </div>
+                <span class="sms-country">
+                    {{ order.country.iso_code }}
+                </span>
 
-    <!-- NUMBER -->
-    <div class="sms-session-item">
+                <span class="sms-service">
+                    {{ order.service.name }}
+                </span>
 
-        <span>Number:</span>
+                <strong class="sms-timer" data-created="{{ order.created_at|date:'c' }}">
+                    20:00
+                </strong>
 
-        <div class="sms-copy-box">
+            </div>
 
-            <strong class="active-number">
-                {{ order.phone_number }}
-            </strong>
+            <!-- NUMBER -->
+            <div class="sms-session-item">
 
-            <button
-                type="button"
-                class="copy-btn"
-                data-copy="{{ order.phone_number }}"
-                title="Copy Number">
+                <span><i class="fa-solid fa-phone"></i> Number</span>
 
-                <i class="fa-regular fa-copy"></i>
+                <div class="sms-copy-box">
 
-            </button>
+                    <strong class="active-number">
+                        {{ order.phone_number }}
+                    </strong>
 
-        </div>
+                    <button
+                        type="button"
+                        class="copy-btn"
+                        data-copy="{{ order.phone_number }}"
+                        title="Copy Number">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
 
-    </div>
+                </div>
 
-    <!-- TIMER -->
-    <div class="sms-session-item">
+            </div>
 
-        <span>Timer:</span>
+            <!-- OTP -->
+            <div class="sms-session-item">
 
-        <strong class="sms-timer" data-created="{{ order.created_at|date:'c' }}">
-    20:00
-</strong>
+                <span><i class="fa-solid fa-key"></i> OTP</span>
 
-    </div>
+                <div class="sms-copy-box">
 
-    <!-- OTP -->
-    <div class="sms-session-item">
+                    <div class="otp-box">
+                        {% if order.sms_code %}
+                            {{ order.sms_code }}
+                        {% else %}
+                            Waiting...
+                        {% endif %}
+                    </div>
 
-        <span>OTP:</span>
+                    <button
+                        type="button"
+                        class="copy-btn otp-copy-btn"
+                        {% if not order.sms_code %}disabled{% endif %}
+                        data-copy="{{ order.sms_code|default:'' }}">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
 
-        <div class="sms-copy-box">
+                </div>
 
-            <div class="otp-box">
+            </div>
+
+            <!-- SMS STATUS -->
+            <div
+                class="sms-session-item sms-status"
+                data-provider-order="{{ order.provider_order_id }}">
 
                 {% if order.sms_code %}
-                    {{ order.sms_code }}
+                    <i class="fa-solid fa-circle-check"></i> SMS Received
                 {% else %}
-                    Waiting...
+                    <span class="waiting-pulse"><i class="fa-solid fa-spinner fa-spin"></i> Waiting for SMS...</span>
                 {% endif %}
 
             </div>
 
-            <button
-                type="button"
-                class="copy-btn otp-copy-btn"
-                {% if not order.sms_code %}disabled{% endif %}
-                data-copy="{{ order.sms_code|default:'' }}">
-
-                <i class="fa-regular fa-copy"></i>
-
-            </button>
+            <!-- CANCEL -->
+            <form method="POST" action="{% url 'cancel_order' %}">
+                {% csrf_token %}
+                <input
+                    type="hidden"
+                    name="order_id"
+                    value="{{ order.id }}">
+                <button
+                    type="submit"
+                    class="sms-cancel-btn">
+                    <i class="fa-solid fa-xmark"></i> Cancel Order
+                </button>
+            </form>
 
         </div>
 
-    </div>
-
-    <!-- SMS STATUS -->
-    <div
-        class="sms-session-item sms-status"
-        data-provider-order="{{ order.provider_order_id }}">
-
-        {% if order.sms_code %}
-            SMS Received
-        {% else %}
-            Waiting for SMS...
-        {% endif %}
+        {% endfor %}
 
     </div>
-
-    <!-- CANCEL -->
-    <form method="POST" action="{% url 'cancel_order' %}">
-    {% csrf_token %}
-
-    <input
-        type="hidden"
-        name="order_id"
-        value="{{ order.id }}">
-
-    <button
-        type="submit"
-        class="sms-cancel-btn">
-        Cancel
-    </button>
-</form>
-
-</div>
-    {% endfor %}
-{% endif %}
+    {% endif %}
 
 </div>
 
