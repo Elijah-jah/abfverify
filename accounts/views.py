@@ -87,9 +87,6 @@ def orders_view(request):
     wallet, _ = Wallet.objects.get_or_create(user=request.user)
 
     # Build one unified list the template can loop over.
-    # Keys used by orders.html: type, name, detail, otp, uid,
-    # format_string, format_labels, description, price, status,
-    # created_at, order_id
     purchases = []
 
     # ---- SMS / number orders ----
@@ -110,21 +107,23 @@ def orders_view(request):
         })
 
     # ---- Log purchases ----
+    # LogPurchase fields: id, user, order_id, log_item, product_title,
+    # username, password, price, created_at (no status field — logs
+    # are delivered instantly, so they are always "completed").
     for lp in log_purchases:
         purchases.append({
             "type": "log",
-            # adjust "lp.name" / "lp.product.name" to your real field:
-            "name": getattr(lp, "name", "") or getattr(getattr(lp, "product", None), "name", "Log"),
+            "name": lp.product_title or "Log Purchase",
             "detail": "",
             "otp": "",
-            "uid": getattr(lp, "uid", "") or "",
-            "format_string": getattr(lp, "format_string", "") or "",
-            "format_labels": getattr(lp, "format_labels", "") or "",
-            "description": getattr(lp, "description", "") or "",
+            "uid": "",
+            "format_string": f"{lp.username}:{lp.password}",
+            "format_labels": "Username | Password",
+            "description": "",
             "price": lp.price,
-            "status": lp.status,
+            "status": "completed",
             "created_at": lp.created_at,
-            "order_id": getattr(lp, "order_id", "") or "",
+            "order_id": lp.order_id or "",
         })
 
     # newest first across both types
@@ -138,7 +137,6 @@ def orders_view(request):
             "user_wallet": wallet,
         },
     )
-
 
 
 @login_required
