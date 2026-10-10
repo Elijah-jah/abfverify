@@ -93,6 +93,17 @@ def orders_view(request):
     log_purchases = LogPurchase.objects.filter(user=request.user).order_by("-created_at")
     wallet, _ = Wallet.objects.get_or_create(user=request.user)
 
+    # Map internal SMS order statuses to display statuses the template
+    # understands. A number that got its SMS ("received") IS completed.
+    SMS_STATUS_MAP = {
+        "received": "completed",   # SMS arrived = success
+        "waiting": "pending",      # still waiting for SMS
+        "pending": "pending",
+        "cancelled": "cancelled",
+        "expired": "expired",
+        "refunded": "refunded",
+    }
+
     # Build one unified list the template can loop over.
     purchases = []
 
@@ -108,7 +119,7 @@ def orders_view(request):
             "format_labels": "",
             "description": "",
             "price": o.price,
-            "status": o.status,
+            "status": SMS_STATUS_MAP.get(o.status, o.status),
             "created_at": o.created_at,
             "order_id": getattr(o, "order_id", "") or "",
         })
