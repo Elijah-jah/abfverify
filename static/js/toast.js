@@ -41,4 +41,3 @@ window.showToast = function(type, message) {
     }, 4000);
 
 };
-

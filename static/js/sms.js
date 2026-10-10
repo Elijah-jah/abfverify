@@ -308,9 +308,12 @@ document.querySelectorAll(".sms-session").forEach(initSmsPolling);
 
 // ======================
 // TOAST (for errors / success without reload)
+// RENAMED to smsShowToast so it never collides with
+// the global toast.js showToast(type, message) — that
+// collision was the "undefined" bug.
 // ======================
 
-function showToast(message, type) {
+function smsShowToast(message, type) {
 
     let wrap = document.querySelector(".sms-toast-wrap");
 
@@ -520,7 +523,7 @@ if (requestForm) {
             // don't crash on response.json() — explain instead.
             const contentType = response.headers.get("content-type") || "";
             if (!contentType.includes("application/json")) {
-                showToast(
+                smsShowToast(
                     "Session expired or unexpected server response. Please refresh the page and try again."
                 );
                 return;
@@ -531,7 +534,7 @@ if (requestForm) {
             if (data.success && data.order && data.order.phone_number) {
 
                 addOrderCard(data.order);
-                showToast(
+                smsShowToast(
                     data.message || "Virtual number reserved. You will only be charged if SMS is received.",
                     "success"
                 );
@@ -544,7 +547,7 @@ if (requestForm) {
                     new URL(data.redirect, window.location.href).pathname;
 
                 if (targetPath === window.location.pathname) {
-                    showToast(data.message || "Please try again.");
+                    smsShowToast(data.message || "Please try again.");
                 } else {
                     window.location.assign(data.redirect);
                     return;
@@ -552,14 +555,14 @@ if (requestForm) {
 
             } else {
 
-                showToast(data.message || "Something went wrong. Please try again.");
+                smsShowToast(data.message || "Something went wrong. Please try again.");
 
             }
 
         } catch (error) {
 
             console.error(error);
-            showToast("Network error. Please try again.");
+            smsShowToast("Network error. Please try again.");
 
         } finally {
 
