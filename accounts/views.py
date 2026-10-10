@@ -246,7 +246,7 @@ def sms_view(request):
                     "Insufficient balance. You have pending orders. Cancel uncompleted orders and try again."
                 )
             else:
-                messages.error(request, "Your wallet balance is too low. Add funds to continue.")
+                messages.error(request, "Your balance is low. Please recharge to continue.")
             return ajax_error_response("wallet")
 
         # Prevent duplicate requests within 10 seconds

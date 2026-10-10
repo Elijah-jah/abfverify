@@ -541,7 +541,7 @@ if (requestForm) {
 
             } else if (data.redirect) {
 
-                // Insufficient balance → go to wallet page as before.
+                // Insufficient balance → show toast, then go to wallet page.
                 // Same-page redirect (warnings) → stay and just toast.
                 const targetPath =
                     new URL(data.redirect, window.location.href).pathname;
@@ -549,7 +549,14 @@ if (requestForm) {
                 if (targetPath === window.location.pathname) {
                     smsShowToast(data.message || "Please try again.");
                 } else {
-                    window.location.assign(data.redirect);
+                    // Let the user READ the toast before leaving the page
+                    smsShowToast(
+                        data.message || "Your balance is low. Please recharge.",
+                        "error"
+                    );
+                    setTimeout(function () {
+                        window.location.assign(data.redirect);
+                    }, 2000);
                     return;
                 }
 
