@@ -1,11 +1,12 @@
 import logging
-
 from django.contrib.auth.decorators import login_required
 from django.db import transaction, models
 from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
+from datetime import datetime, timedelta
+from django.utils import timezone
 
 from .models import (
     LogCategory, LogSubCategory, LogProduct, LogItem, LogPurchase,
@@ -18,6 +19,24 @@ logger = logging.getLogger(__name__)
 @login_required
 def services_view(request):
     query = request.GET.get("q", "").strip()
+
+    # ---- POPUP NOTICE LOGIC (buy logs page) ----
+    # Shows on first visit / after login. Once dismissed, stays hidden
+    # for 5 hours, then shows again on the next visit.
+    show_notice = True
+    dismissed_at = request.session.get("services_notice_dismissed_at")
+    if dismissed_at:
+        try:
+            dismissed_time = datetime.fromisoformat(dismissed_at)
+            if dismissed_time.tzinfo is None:
+                dismissed_time = timezone.make_aware(
+                    dismissed_time, timezone.get_current_timezone()
+                )
+            if timezone.now() - dismissed_time < timedelta(hours=5):
+                show_notice = False
+        except (ValueError, TypeError):
+            show_notice = True
+    # ---- END POPUP NOTICE LOGIC ----
 
     # All products (Log Groups) with live stock annotation
     products = (
@@ -67,6 +86,7 @@ def services_view(request):
             "log_purchases": log_purchases,
             "query": query,
             "user_wallet": wallet,
+            "show_notice": show_notice,
         },
     )
 

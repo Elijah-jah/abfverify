@@ -1,4 +1,5 @@
 import logging
+from django.http import JsonResponse
 import requests
 from datetime import timedelta
 
@@ -523,8 +524,6 @@ def _order_timer_running(o):
 
 @login_required
 def dashboard(request):
-    # --- POPUP NOTICE LOGIC ---
-    show_notice = not request.session.get('dashboard_notice_dismissed', False)
 
     wallet, created = Wallet.objects.get_or_create(
         user=request.user
@@ -595,8 +594,6 @@ def dashboard(request):
         "active_orders": active_orders,
         "recent_transactions": recent_transactions,
         "total_sms": 0,
-
-        "show_notice": show_notice,
     }
 
     return render(
@@ -608,15 +605,19 @@ def dashboard(request):
 
 @login_required
 def dismiss_notice(request):
-    """Called when user clicks 'Got it, Thanks' on the popup"""
+    """Called when user clicks 'Got it, Thanks' on the popup.
+    Stores the dismiss time so the notice reappears after 5 hours."""
     if request.method == 'POST':
-        request.session['dashboard_notice_dismissed'] = True
+        request.session['services_notice_dismissed_at'] = timezone.now().isoformat()
 
         # AJAX dismiss — no page reload
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        if (
+            request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            or request.POST.get("ajax") == "1"
+        ):
             return JsonResponse({"success": True})
 
-    return redirect('dashboard')
+    return redirect('services')
 
 
 # ==========================

@@ -154,6 +154,11 @@
 <!-- TOAST -->
 <div class="lm-toast" id="lmToast" hidden>Copied!</div>
 
+<!-- ================= NOTICE POPUP (5-hour dismiss cycle) ================= -->
+{% if show_notice %}
+{% include 'panel/includes/notice_modal.html' %}
+{% endif %}
+
 <script>
 (function () {
     "use strict";
