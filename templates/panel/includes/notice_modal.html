@@ -1,7 +1,7 @@
 {% load static %}
 
 {% if show_notice %}
-<!-- NEW UPDATE MODAL -->
+<!-- NOTICE MODAL -->
 <div class="notice-modal" id="noticeModal">
     <div class="notice-box">
 
@@ -9,14 +9,13 @@
             <div class="notice-icon-wrap">
                 <i class="fa-solid fa-bullhorn"></i>
             </div>
-            <h2>New Update</h2>
+            <h2>Notice !!!</h2>
         </div>
 
         <div class="notice-body">
             <p class="notice-message">
-                Join our Telegram channel to receive the latest updates, announcements,
-                and fast notifications about ABFverify. Stay ahead and never miss important news
-                &mdash; click the link below to join now!
+                If you have issues logging in any of our logs, check our telegram channel
+                for guidance or text our support using the telegram icon below your screen.
             </p>
         </div>
 
@@ -24,14 +23,9 @@
 
             <a href="https://t.me/abfverifysocials" target="_blank" class="ntc-btn ntc-telegram">
                 <i class="fa-brands fa-telegram"></i>
-                Join New Channel
+                Join Telegram Channel
                 <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i>
             </a>
-
-            <button type="button" class="ntc-btn ntc-copy" onclick="copyTelegramLink()">
-                <i class="fa-regular fa-copy"></i>
-                Copy Link
-            </button>
 
             <form action="{% url 'dismiss_notice' %}" method="post" class="ntc-dismiss-form" id="noticeDismissForm">
                 {% csrf_token %}
@@ -203,26 +197,6 @@ body.light .notice-modal{
     transform: translateY(-1px);
 }
 
-/* copy link — ghost */
-.ntc-copy {
-    background: transparent;
-    color: var(--n-muted);
-    border: 1px solid var(--n-border);
-    font-weight: 500;
-    font-size: 0.9rem;
-}
-
-.ntc-copy:hover {
-    border-color: var(--n-muted);
-    color: var(--n-text);
-    transform: translateY(-1px);
-}
-
-.ntc-copy.copied {
-    color: #22c55e;
-    border-color: #22c55e;
-}
-
 /* dismiss — gradient, matches panel buttons */
 .ntc-gotit {
     background: var(--n-grad);
@@ -290,6 +264,7 @@ body.light .notice-modal{
             if (gotItBtn) gotItBtn.disabled = true;
 
             var formData = new FormData(dismissForm);
+            formData.append("ajax", "1");
 
             fetch(dismissForm.action, {
                 method: 'POST',
@@ -305,38 +280,5 @@ body.light .notice-modal{
         });
     }
 })();
-
-function copyTelegramLink() {
-    var link = "https://t.me/abfverifysocials";
-
-    function done() {
-        var btn = document.querySelector('.ntc-copy');
-        if (!btn) return;
-        var original = btn.innerHTML;
-        btn.classList.add('copied');
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
-        setTimeout(function () {
-            btn.innerHTML = original;
-            btn.classList.remove('copied');
-        }, 2000);
-    }
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(link).then(done, function () { fallback(); });
-    } else {
-        fallback();
-    }
-
-    function fallback() {
-        var ta = document.createElement("textarea");
-        ta.value = link;
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-        try { document.execCommand("copy"); done(); } catch (e) {}
-        document.body.removeChild(ta);
-    }
-}
 </script>
 {% endif %}
