@@ -154,8 +154,11 @@ def sms_view(request):
         user=request.user
     )
 
-    # --- AJAX support: fetch() requests get JSON back so the page never reloads ---
-    ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    # --- AJAX support: works whether fetch() sends the header or a flag ---
+    ajax = (
+        request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        or request.POST.get("ajax") == "1"
+    )
 
     def ajax_error_response(redirect_to="sms"):
         # Every error branch adds a message then redirects. For AJAX we

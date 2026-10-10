@@ -228,6 +228,8 @@ function initCopyButtons(scope) {
                 const icon =
                     button.querySelector("i");
 
+                if (!icon) return;
+
                 icon.classList.remove("fa-copy");
                 icon.classList.add("fa-check");
 
@@ -261,6 +263,9 @@ function initSmsPolling(session) {
     const orderId = session.dataset.orderId;
     const otpBox = session.querySelector(".otp-box");
     const copyBtn = session.querySelector(".otp-copy-btn");
+
+    // Stop polling if this session is already gone from the DOM
+    if (!orderId || !otpBox || !copyBtn) return;
 
     async function checkSMS() {
         try {
@@ -317,7 +322,7 @@ function showToast(message, type) {
 
     const toast = document.createElement("div");
     toast.className = "sms-toast" + (type === "success" ? " sms-toast--success" : "");
-    toast.innerText = message;
+    toast.innerText = message || "Something went wrong. Please try again.";
 
     wrap.appendChild(toast);
 
@@ -346,8 +351,16 @@ function escapeHtml(value) {
 function addOrderCard(order) {
 
     const container = document.querySelector(".sms-container");
-    const cancelUrl = container ? container.dataset.cancelUrl : "";
-    const csrfToken = container ? container.dataset.csrf : "";
+
+    // If we have nowhere to render the card, reload so the server
+    // renders it instead of silently losing it.
+    if (!container) {
+        window.location.reload();
+        return;
+    }
+
+    const cancelUrl = container.dataset.cancelUrl || "";
+    const csrfToken = container.dataset.csrf || "";
 
     let wrap = document.querySelector(".sessions-wrap");
 
@@ -487,6 +500,11 @@ if (requestForm) {
 
         try {
 
+            // Send BOTH the header and the ajax=1 flag so the view
+            // always detects this as an AJAX request.
+            const formData = new FormData(requestForm);
+            formData.append("ajax", "1");
+
             const response = await fetch(
                 requestForm.action || window.location.href,
                 {
@@ -494,18 +512,29 @@ if (requestForm) {
                     headers: {
                         "X-Requested-With": "XMLHttpRequest",
                     },
-                    body: new FormData(requestForm),
+                    body: formData,
                 }
             );
 
-            if (!response.ok) throw new Error("Server error");
+            // If Django returned HTML (redirect/session expired/etc.)
+            // don't crash on response.json() — explain instead.
+            const contentType = response.headers.get("content-type") || "";
+            if (!contentType.includes("application/json")) {
+                showToast(
+                    "Session expired or unexpected server response. Please refresh the page and try again."
+                );
+                return;
+            }
 
             const data = await response.json();
 
-            if (data.success && data.order) {
+            if (data.success && data.order && data.order.phone_number) {
 
                 addOrderCard(data.order);
-                showToast(data.message, "success");
+                showToast(
+                    data.message || "Virtual number reserved. You will only be charged if SMS is received.",
+                    "success"
+                );
 
             } else if (data.redirect) {
 
@@ -532,10 +561,13 @@ if (requestForm) {
             console.error(error);
             showToast("Network error. Please try again.");
 
-        }
+        } finally {
 
-        requestBtn.disabled = false;
-        requestBtn.innerHTML = originalBtnContent;
+            // Always restore the button, even on errors/redirects
+            requestBtn.disabled = false;
+            requestBtn.innerHTML = originalBtnContent;
+
+        }
 
     });
 
