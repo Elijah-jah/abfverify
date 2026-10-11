@@ -55,7 +55,15 @@
                  data-id="{{ product.id }}" data-price="{{ product.price }}" data-stock="{{ product.stock }}"
                  data-desc="{{ product.description|default:''|lower }}"
                  data-fulldesc="{{ product.description|default:'' }}"
+                 data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
                  data-format="{{ product.format_labels|default:'UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL' }}">
+
+                {% if product.image %}
+                <div class="prod-img-wrap">
+                    <img class="prod-img" src="{{ product.image.url }}" alt="{{ product.title }}" loading="lazy">
+                </div>
+                {% endif %}
+
                 <div class="prod-top">
                     <span class="prod-cat">{{ section.name }}</span>
                     <span class="prod-stock {% if product.stock == 0 %}out{% endif %}">
@@ -88,7 +96,8 @@
 
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
-        <div class="lm-icon"><i class="bi bi-question-lg"></i></div>
+        <!-- Circle now fills with the product image (falls back to ? icon) -->
+        <div class="lm-icon" id="modalIcon"><i class="bi bi-question-lg"></i></div>
 
         <h5 class="lm-title">Confirm Purchase</h5>
         <p class="lm-sub">Are you sure you want to buy this item?</p>
@@ -175,6 +184,7 @@
 
     var buyModal = document.getElementById("buyModal");
     var logModal = document.getElementById("logModal");
+    var modalIcon = document.getElementById("modalIcon");
     var modalProductName = document.getElementById("modalProductName");
     var modalProductDesc = document.getElementById("modalProductDesc");
     var modalPrice = document.getElementById("modalPrice");
@@ -216,6 +226,10 @@
 
     function naira(v) {
         return "\u20A6" + parseFloat(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function escapeAttr(s) {
+        return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
     }
 
     /* ---------- FILTER + SEE MORE ---------- */
@@ -296,6 +310,15 @@
             modalPrice.textContent = naira(card.getAttribute("data-price"));
             modalFormatLabel.textContent = card.getAttribute("data-format") || "UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL";
             modalError.hidden = true;
+
+            /* Fill the circle with the product image, or fall back to ? icon */
+            var img = card.getAttribute("data-image");
+            if (img) {
+                modalIcon.classList.remove("lm-icon-check");
+                modalIcon.innerHTML = '<img src="' + escapeAttr(img) + '" alt="" class="lm-icon-img">';
+            } else {
+                modalIcon.innerHTML = '<i class="bi bi-question-lg"></i>';
+            }
 
             var stock = parseInt(card.getAttribute("data-stock") || "0", 10);
             modalYesBtn.disabled = stock <= 0;

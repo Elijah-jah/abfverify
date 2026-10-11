@@ -752,3 +752,58 @@ body.light{
 [hidden]{
     display: none !important;
 }
+
+/* =========================
+   PRODUCT IMAGES (log group logos)
+   Added: image on product card + confirm modal circle
+========================= */
+
+/* --- card image: rounded rectangle, any image shape fits via cover --- */
+.prod-img-wrap{
+    width: 100%;
+    height: 120px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+}
+
+.prod-img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.prod-card:hover .prod-img{
+    filter: brightness(1.05);
+}
+
+/* --- modal circle: fill the round icon space with the product image --- */
+.lm-icon{
+    overflow: hidden;
+    padding: 0;
+}
+
+.lm-icon-img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+
+/* slightly dim sold-out cards so the image still shows but reads unavailable */
+.prod-card .prod-img-wrap{
+    transition: opacity .15s ease;
+}
+
+/* ---------- responsive image sizing ---------- */
+@media (max-width: 575.98px){
+    .prod-img-wrap{
+        height: 92px;
+        margin-bottom: 9px;
+        border-radius: 8px;
+    }
+}

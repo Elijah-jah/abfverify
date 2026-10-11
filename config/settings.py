@@ -40,11 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third-party
     'django_ratelimit',
+    "cloudinary_storage",
+    "cloudinary",
     # Local Apps
     "accounts",
     "countries",
     "services",
-    "pricing", 
+    "pricing",
     'wallet.apps.WalletConfig',
     "api_v1",
     "website",
@@ -69,9 +71,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # 'django_ratelimit.middleware.RatelimitMiddleware',
 ]
-
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
 
 ROOT_URLCONF = 'config.urls'
 
@@ -152,13 +151,26 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
-AUTH_USER_MODEL = "accounts.User"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
-    
 ]
+
+# --- Storage backends (Django 6 way) ---
+# Static: whitenoise with compressed + hashed filenames (cache busting)
+# Media: local files by default; Cloudinary in production (env vars below)
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+}
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+AUTH_USER_MODEL = "accounts.User"
 
 
 INSTANTNUMS_API_KEY = config("INSTANTNUMS_API_KEY")
@@ -319,3 +331,26 @@ SILENCED_SYSTEM_CHECKS = ['django_ratelimit.E003', 'django_ratelimit.W001']
 
 RATELIMIT_VIEW = 'accounts.views.ratelimited_error'
 DAISYSMS_PROXY = os.environ.get("DAISYSMS_PROXY") or None
+
+
+# ==========================================
+# CLOUDINARY — admin-uploaded product images
+# Free tier. Images upload from your admin and are served
+# from Cloudinary's CDN (survives Render redeploys).
+# Locally (no env vars) images save to media/ as normal files.
+# ==========================================
+
+CLOUDINARY_CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME", "")
+CLOUDINARY_API_KEY = os.environ.get("CLOUDINARY_API_KEY", "")
+CLOUDINARY_API_SECRET = os.environ.get("CLOUDINARY_API_SECRET", "")
+
+CLOUDINARY_STORAGE = {
+    "CLOUD_NAME": CLOUDINARY_CLOUD_NAME,
+    "API_KEY": CLOUDINARY_API_KEY,
+    "API_SECRET": CLOUDINARY_API_SECRET,
+}
+
+if CLOUDINARY_CLOUD_NAME:
+    STORAGES["default"] = {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    }
