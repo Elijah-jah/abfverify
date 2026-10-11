@@ -58,18 +58,21 @@
                  data-image="{% if product.image %}{{ product.image.url }}{% endif %}"
                  data-format="{{ product.format_labels|default:'UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL' }}">
 
-                {% if product.image %}
-                <div class="prod-img-wrap">
-                    <img class="prod-img" src="{{ product.image.url }}" alt="{{ product.title }}" loading="lazy">
-                </div>
-                {% endif %}
-
+                <!-- TAG + STOCK stays at the top -->
                 <div class="prod-top">
                     <span class="prod-cat">{{ section.name }}</span>
                     <span class="prod-stock {% if product.stock == 0 %}out{% endif %}">
                         {% if product.stock == 0 %}Sold out{% else %}{{ product.stock }} in stock{% endif %}
                     </span>
                 </div>
+
+                <!-- App-icon style logo sits below the tag, centered -->
+                {% if product.image %}
+                <div class="prod-img-wrap">
+                    <img class="prod-img" src="{{ product.image.url }}" alt="{{ product.title }}" loading="lazy">
+                </div>
+                {% endif %}
+
                 <h6 class="prod-name">{{ product.title }}</h6>
                 <p class="prod-desc">{{ product.description|default:''|truncatechars:80 }}</p>
                 <div class="prod-foot">
@@ -96,7 +99,7 @@
 
         <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
-        <!-- Circle now fills with the product image (falls back to ? icon) -->
+        <!-- Circle fills with the product image (falls back to ? icon) -->
         <div class="lm-icon" id="modalIcon"><i class="bi bi-question-lg"></i></div>
 
         <h5 class="lm-title">Confirm Purchase</h5>

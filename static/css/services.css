@@ -173,7 +173,7 @@ body.light{
     justify-content: space-between;
     align-items: center;
     gap: 8px;
-    margin-bottom: 9px;
+    margin-bottom: 6px;
 }
 .prod-cat{
     font-size: 10.5px;
@@ -196,6 +196,28 @@ body.light{
     white-space: nowrap;
 }
 .prod-stock.out{ color: var(--danger); }
+
+/* ---------- product image: app-icon style, centered, moderate size ---------- */
+.prod-img-wrap{
+    width: 84px;
+    height: 84px;
+    margin: 6px auto 12px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    flex: 0 0 auto;
+    transition: opacity .15s ease;
+}
+.prod-img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.prod-card:hover .prod-img{
+    filter: brightness(1.05);
+}
 
 .prod-name{
     font-size: 15px;
@@ -295,7 +317,7 @@ body.light{
     to{ transform: scale(1); opacity: 1; }
 }
 
-/* ----- big round icon ----- */
+/* ----- big round icon (filled with product image when available) ----- */
 .lm-icon{
     width: 74px;
     height: 74px;
@@ -310,11 +332,20 @@ body.light{
     color: var(--accent);
     box-shadow: inset 0 0 0 8px rgba(56, 189, 248, .05);
     animation: lm-pop .45s cubic-bezier(.34,1.56,.64,1);
+    overflow: hidden;
+    padding: 0;
 }
 .lm-icon-check{
     background: var(--grad);
     color: #fff;
     box-shadow: inset 0 0 0 8px rgba(255,255,255,.12);
+}
+.lm-icon-img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
 }
 @keyframes lm-pop{
     0%   { transform: scale(.4); opacity: 0; }
@@ -565,6 +596,12 @@ body.light{
 @media (max-width: 575.98px){
     .prod-grid{ grid-template-columns: 1fr 1fr; gap: 10px; }
     .prod-card{ padding: 11px 12px; border-radius: 12px; }
+    .prod-img-wrap{
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        margin: 4px auto 10px;
+    }
     .prod-name{ font-size: 13.5px; }
     .prod-desc{ font-size: 11.5px; margin-bottom: 10px; }
     .prod-price{ font-size: 13.5px; }
@@ -699,6 +736,7 @@ body.light{
     }
     /* sections start collapsed to 4 cards (2x2) via JS sm-hidden */
 }
+
 /* =========================
    MOBILE SHRINK FIXES
    Long unbroken product names blew out the 2-column grid on
@@ -751,59 +789,4 @@ body.light{
 /* hidden guard: class display rules must not override [hidden] */
 [hidden]{
     display: none !important;
-}
-
-/* =========================
-   PRODUCT IMAGES (log group logos)
-   Added: image on product card + confirm modal circle
-========================= */
-
-/* --- card image: rounded rectangle, any image shape fits via cover --- */
-.prod-img-wrap{
-    width: 100%;
-    height: 120px;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 12px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-}
-
-.prod-img{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.prod-card:hover .prod-img{
-    filter: brightness(1.05);
-}
-
-/* --- modal circle: fill the round icon space with the product image --- */
-.lm-icon{
-    overflow: hidden;
-    padding: 0;
-}
-
-.lm-icon-img{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-    display: block;
-}
-
-/* slightly dim sold-out cards so the image still shows but reads unavailable */
-.prod-card .prod-img-wrap{
-    transition: opacity .15s ease;
-}
-
-/* ---------- responsive image sizing ---------- */
-@media (max-width: 575.98px){
-    .prod-img-wrap{
-        height: 92px;
-        margin-bottom: 9px;
-        border-radius: 8px;
-    }
 }
