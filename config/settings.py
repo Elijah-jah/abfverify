@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "providers",
     'django_apscheduler',
     "marketplace",
+    "boost",
 ]
 
 # APScheduler settings
@@ -187,6 +188,8 @@ POCKETFI_BUSINESS_ID = os.getenv("POCKETFI_BUSINESS_ID")
 POCKETFI_BASE_URL = os.getenv("POCKETFI_BASE_URL", "https://api.pocketfi.ng")
 POCKETFI_CALLBACK_URL = os.getenv("POCKETFI_CALLBACK_URL")
 POCKETFI_WEBHOOK_SECRET = config("POCKETFI_WEBHOOK_SECRET")
+
+RSS_API_KEY = config("RSS_API_KEY", default="")
 
 
 # Email Settings

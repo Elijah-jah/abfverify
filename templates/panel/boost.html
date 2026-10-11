@@ -1,0 +1,270 @@
+{% extends "panel/dashboard_base.html" %}
+{% load static %}
+
+{% block title %}Boost Accounts{% endblock %}
+{% block page_title %}Boost Accounts{% endblock %}
+{% block section_title %}Boost Accounts{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/boost.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="boost-container">
+
+    <!-- HEADER -->
+    <div class="boost-head">
+        <div class="boost-head-text">
+            <h2>Boost Social Accounts</h2>
+            <p class="boost-subtitle">Followers, likes, views &amp; more — starts in minutes.</p>
+        </div>
+        <div class="boost-balance-pill">
+            <i class="fa-solid fa-wallet"></i>
+            <span>₦{{ user_wallet.balance|floatformat:2 }}</span>
+        </div>
+    </div>
+
+    <!-- ORDER FORM -->
+    <form method="POST" id="boostOrderForm">
+        {% csrf_token %}
+
+        <div class="boost-card">
+
+            <div class="boost-group">
+                <label for="serviceSelect">Service</label>
+                <select id="serviceSelect" name="service" required>
+                    <option value="">Loading services…</option>
+                </select>
+                <small id="serviceHint" class="boost-hint"></small>
+            </div>
+
+            <div class="boost-group">
+                <label for="boostLink">Link</label>
+                <input type="url" id="boostLink" name="link" placeholder="https://…"
+                       required class="boost-input">
+            </div>
+
+            <div class="boost-group">
+                <label for="boostQty">Quantity</label>
+                <input type="number" id="boostQty" name="quantity" min="1" required class="boost-input">
+                <small id="qtyHint" class="boost-hint"></small>
+            </div>
+
+            <div class="boost-price-box">
+                <span class="price-label">Price</span>
+                <h2 id="boostPrice">₦0.00</h2>
+            </div>
+
+            <button type="submit" class="boost-button" id="boostBtn">
+                <i class="fa-solid fa-rocket"></i> Place Order
+            </button>
+
+        </div>
+    </form>
+
+    <!-- RECENT ORDERS -->
+    <div class="boost-orders-wrap" id="ordersWrap">
+        <h3 class="boost-orders-title"><span class="live-dot"></span> Recent Boost Orders</h3>
+
+        {% for o in orders %}
+        <div class="boost-order-row" data-order-id="{{ o.id }}"
+             data-open="{% if o.status in 'Pending,Processing,In progress' %}1{% else %}0{% endif %}">
+            <div class="bor-main">
+                <strong class="bor-service">{{ o.service.name }}</strong>
+                <span class="bor-meta">{{ o.quantity|intcomma }} units · {{ o.link|truncatechars:35 }}</span>
+            </div>
+            <div class="bor-side">
+                <span class="bor-status st-{{ o.status|slugify }}">{{ o.status }}</span>
+                <span class="bor-price mono">₦{{ o.price }}</span>
+            </div>
+        </div>
+        {% empty %}
+        <p class="boost-empty" id="noOrders">No boost orders yet.</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+<script>
+(function () {
+    "use strict";
+
+    var SERVICES = {{ services_json|safe }};
+    var EXCHANGE_RATE = parseFloat("{{ boost_settings.exchange_rate }}");
+    var PROFIT = parseFloat("{{ boost_settings.profit_percent }}");
+
+    var serviceSelect = document.getElementById("serviceSelect");
+    var serviceHint = document.getElementById("serviceHint");
+    var qtyInput = document.getElementById("boostQty");
+    var qtyHint = document.getElementById("qtyHint");
+    var priceEl = document.getElementById("boostPrice");
+    var form = document.getElementById("boostOrderForm");
+    var btn = document.getElementById("boostBtn");
+
+    /* ---- build the service dropdown grouped by category ---- */
+    var cats = {};
+    SERVICES.forEach(function (s) {
+        var c = s.category || "Other";
+        if (!cats[c]) cats[c] = [];
+        cats[c].push(s);
+    });
+
+    serviceSelect.innerHTML = '<option value="">Select a service…</option>';
+    Object.keys(cats).sort().forEach(function (c) {
+        var og = document.createElement("optgroup");
+        og.label = c;
+        cats[c].forEach(function (s) {
+            var opt = document.createElement("option");
+            opt.value = s.id;
+            opt.textContent = s.name;
+            opt.dataset.rate = s.rate;
+            opt.dataset.min = s.min_order;
+            opt.dataset.max = s.max_order;
+            og.appendChild(opt);
+        });
+        serviceSelect.appendChild(og);
+    });
+
+    function selected() {
+        return serviceSelect.options[serviceSelect.selectedIndex];
+    }
+
+    function calcPrice() {
+        var opt = selected();
+        var qty = parseInt(qtyInput.value || "0", 10);
+        if (!opt || !opt.dataset.rate) {
+            priceEl.innerText = "₦0.00";
+            serviceHint.innerText = "";
+            qtyHint.innerText = "";
+            return;
+        }
+        serviceHint.innerText = "Min " + opt.dataset.min + " — Max " + opt.dataset.max;
+        qtyInput.min = opt.dataset.min;
+        qtyInput.max = opt.dataset.max;
+        qtyHint.innerText = "Enter between " + opt.dataset.min + " and " + opt.dataset.max;
+
+        if (qty >= parseInt(opt.dataset.min, 10)) {
+            var cost = (parseFloat(opt.dataset.rate) / 1000) * qty;
+            var price = cost * EXCHANGE_RATE * (1 + PROFIT / 100);
+            priceEl.innerText = "₦" + price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        } else {
+            priceEl.innerText = "₦0.00";
+        }
+    }
+
+    serviceSelect.addEventListener("change", calcPrice);
+    qtyInput.addEventListener("input", calcPrice);
+
+    /* ---- toast ---- */
+    function toast(msg, ok) {
+        var t = document.createElement("div");
+        t.className = "boost-toast" + (ok ? " ok" : "");
+        t.innerText = msg;
+        document.body.appendChild(t);
+        requestAnimationFrame(function () { t.classList.add("show"); });
+        setTimeout(function () {
+            t.classList.remove("show");
+            setTimeout(function () { t.remove(); }, 300);
+        }, 4000);
+    }
+
+    /* ---- submit ---- */
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var original = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Placing order…';
+
+        var fd = new FormData(form);
+        fd.append("ajax", "1");
+
+        fetch(form.action || window.location.href, {
+            method: "POST",
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            body: fd
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.success && data.order) {
+                toast(data.message, true);
+                addOrderRow(data.order);
+                form.reset();
+                priceEl.innerText = "₦0.00";
+                serviceHint.innerText = "";
+                qtyHint.innerText = "";
+            } else if (data.redirect) {
+                toast(data.message || "Please try again.", false);
+                var targetPath = new URL(data.redirect, window.location.href).pathname;
+                if (targetPath !== window.location.pathname) {
+                    setTimeout(function () { window.location.assign(data.redirect); }, 2000);
+                }
+            } else {
+                toast(data.message || "Something went wrong.", false);
+            }
+        })
+        .catch(function () {
+            toast("Network error. Please try again.", false);
+        })
+        .finally(function () {
+            btn.disabled = false;
+            btn.innerHTML = original;
+        });
+    });
+
+    /* ---- inject new order row ---- */
+    function addOrderRow(o) {
+        var wrap = document.getElementById("ordersWrap");
+        var empty = document.getElementById("noOrders");
+        if (empty) empty.remove();
+
+        var row = document.createElement("div");
+        row.className = "boost-order-row";
+        row.dataset.orderId = o.id;
+        row.dataset.open = "1";
+        row.innerHTML =
+            '<div class="bor-main">' +
+                '<strong class="bor-service"></strong>' +
+                '<span class="bor-meta">' + parseInt(o.quantity, 10).toLocaleString() +
+                ' units · ' + (o.link || "").slice(0, 35) + '</span>' +
+            '</div>' +
+            '<div class="bor-side">' +
+                '<span class="bor-status st-' + o.status.toLowerCase().replace(/\s+/g, "-") + '">' + o.status + '</span>' +
+                '<span class="bor-price mono">₦' + parseFloat(o.price).toLocaleString("en-US", { minimumFractionDigits: 2 }) + '</span>' +
+            '</div>';
+        row.querySelector(".bor-service").textContent = o.service_name;
+        wrap.insertBefore(row, wrap.children[1] || null);
+        pollRow(row);
+    }
+
+    /* ---- status polling for open orders ---- */
+    function pollRow(row) {
+        if (row.dataset.open !== "1") return;
+        var id = row.dataset.orderId;
+        var badge = row.querySelector(".bor-status");
+
+        function check() {
+            fetch("/accounts/boost/status/?order_id=" + id, {
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d.success) return;
+                badge.textContent = d.status;
+                badge.className = "bor-status st-" + d.status.toLowerCase().replace(/\s+/g, "-");
+                if (["Completed", "Partial", "Canceled"].indexOf(d.status) !== -1) {
+                    row.dataset.open = "0";
+                    clearInterval(timer);
+                }
+            })
+            .catch(function () { /* retry next round */ });
+        }
+
+        var timer = setInterval(check, 10000);
+    }
+
+    document.querySelectorAll(".boost-order-row").forEach(pollRow);
+})();
+</script>
+
+{% endblock %}

@@ -1,0 +1,111 @@
+/* ===== Boost Accounts ===== */
+
+.boost-container{ max-width: 760px; margin: 0 auto; }
+
+.boost-head{
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px; margin-bottom: 16px;
+}
+.boost-head-text h2{ margin: 0 0 4px; font-size: 22px; font-weight: 700; color: var(--text, #e5e7eb); }
+.boost-subtitle{ margin: 0; font-size: 14px; color: var(--muted, #9ca3af); }
+
+.boost-balance-pill{
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(56,189,248,.10); border: 1px solid rgba(56,189,248,.22);
+    color: var(--accent, #38bdf8);
+    padding: 8px 16px; border-radius: 999px;
+    font-weight: 600; font-size: 14px; white-space: nowrap;
+}
+
+.boost-card{
+    background: var(--card, #111827);
+    border: 1px solid var(--border, #1f2937);
+    border-radius: 14px; padding: 18px;
+    display: flex; flex-direction: column; gap: 14px;
+    margin-bottom: 24px;
+}
+
+.boost-group{ display: flex; flex-direction: column; gap: 6px; }
+.boost-group label{ font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted, #9ca3af); }
+
+.boost-group select, .boost-input{
+    padding: 11px 12px; font-size: 14px; width: 100%;
+    border-radius: 10px; border: 1px solid var(--border, #1f2937);
+    background: var(--bg, #0f172a); color: var(--text, #e5e7eb);
+    outline: none;
+}
+.boost-group select:focus, .boost-input:focus{
+    border-color: var(--accent, #38bdf8);
+    box-shadow: 0 0 0 3px rgba(56,189,248,.15);
+}
+
+.boost-hint{ font-size: 11.5px; color: var(--muted, #9ca3af); }
+
+.boost-price-box{
+    background: rgba(56,189,248,.08); border: 1px dashed rgba(56,189,248,.25);
+    border-radius: 12px; padding: 12px 16px; text-align: center;
+}
+.boost-price-box .price-label{ font-size: 11px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--accent, #38bdf8); }
+.boost-price-box h2{ margin: 4px 0 0; font-size: 24px; color: var(--text, #e5e7eb); }
+
+.boost-button{
+    border: none; cursor: pointer;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    color: #fff; font-size: 15px; font-weight: 700;
+    padding: 13px; border-radius: 12px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    transition: filter .15s;
+}
+.boost-button:hover:not(:disabled){ filter: brightness(1.1); }
+.boost-button:disabled{ opacity: .6; cursor: not-allowed; }
+
+/* orders list */
+.boost-orders-title{
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em;
+    color: var(--text, #e5e7eb); margin: 0 0 10px;
+}
+.live-dot{
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #22c55e; display: inline-block;
+    animation: bdot 1.4s ease-in-out infinite;
+}
+@keyframes bdot{ 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.boost-order-row{
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    background: var(--card, #111827); border: 1px solid var(--border, #1f2937);
+    border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+}
+.bor-main{ display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bor-service{ font-size: 13.5px; color: var(--text, #e5e7eb); word-break: break-word; }
+.bor-meta{ font-size: 11.5px; color: var(--muted, #9ca3af); }
+.bor-side{ display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.bor-price{ font-size: 13px; font-weight: 700; color: var(--text, #e5e7eb); }
+
+.bor-status{
+    font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
+    background: rgba(56,189,248,.10); color: var(--accent, #38bdf8);
+}
+.bor-status.st-completed{ background: rgba(34,197,94,.12); color: #22c55e; }
+.bor-status.st-partial{ background: rgba(245,158,11,.12); color: #f59e0b; }
+.bor-status.st-canceled{ background: rgba(239,68,68,.12); color: #ef4444; }
+
+.boost-empty{ color: var(--muted, #9ca3af); font-size: 13px; padding: 12px 0; }
+
+/* toast */
+.boost-toast{
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    z-index: 4000; opacity: 0;
+    background: #ef4444; color: #fff;
+    font-size: 13px; font-weight: 600;
+    padding: 11px 20px; border-radius: 999px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.35);
+    transition: opacity .25s, transform .25s;
+}
+.boost-toast.ok{ background: linear-gradient(135deg, #38bdf8, #818cf8); }
+.boost-toast.show{ opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 575.98px){
+    .boost-head{ flex-direction: column; }
+}

@@ -18,6 +18,8 @@ urlpatterns = [
 
     path("wallet/", include("wallet.urls")),
 
+    path("accounts/", include("boost.urls")),
+
 
      # Google Search Console verification
     path('googlef0f70b255124184e.html', TemplateView.as_view(

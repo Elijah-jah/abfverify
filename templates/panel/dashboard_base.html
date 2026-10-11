@@ -33,7 +33,6 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
 {% block extra_css %}{% endblock %}
 <base target="_blank">
-<base target="_blank">
 </head>
 
 <body class="dashboard">
@@ -120,6 +119,16 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
             <i class="fa-solid fa-chart-line"></i>
             <span>Buy Logs</span>
+
+        </button>
+
+        <!-- NEW: Boost Accounts -->
+        <button
+            onclick="location.href='{% url 'boost' %}'"
+            class="{% if request.resolver_match.url_name == 'boost' %}active{% endif %}">
+
+            <i class="fa-solid fa-rocket"></i>
+            <span>Boost Accounts</span>
 
         </button>
 
