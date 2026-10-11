@@ -1,111 +1,466 @@
-/* ===== Boost Accounts ===== */
+/* =========================================================
+   ABFverify — Boost Accounts
+   Matches dashboard.css styling (blue palette, panel theme)
+========================================================= */
 
-.boost-container{ max-width: 760px; margin: 0 auto; }
-
-.boost-head{
-    display: flex; justify-content: space-between; align-items: flex-start;
-    gap: 12px; margin-bottom: 16px;
-}
-.boost-head-text h2{ margin: 0 0 4px; font-size: 22px; font-weight: 700; color: var(--text, #e5e7eb); }
-.boost-subtitle{ margin: 0; font-size: 14px; color: var(--muted, #9ca3af); }
-
-.boost-balance-pill{
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(56,189,248,.10); border: 1px solid rgba(56,189,248,.22);
-    color: var(--accent, #38bdf8);
-    padding: 8px 16px; border-radius: 999px;
-    font-weight: 600; font-size: 14px; white-space: nowrap;
+.mono {
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 }
 
-.boost-card{
-    background: var(--card, #111827);
-    border: 1px solid var(--border, #1f2937);
-    border-radius: 14px; padding: 18px;
-    display: flex; flex-direction: column; gap: 14px;
-    margin-bottom: 24px;
+.boost-container {
+    max-width: 760px;
+    margin: 0 auto;
 }
 
-.boost-group{ display: flex; flex-direction: column; gap: 6px; }
-.boost-group label{ font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted, #9ca3af); }
+/* =========================
+   HEADER
+========================= */
 
-.boost-group select, .boost-input{
-    padding: 11px 12px; font-size: 14px; width: 100%;
-    border-radius: 10px; border: 1px solid var(--border, #1f2937);
-    background: var(--bg, #0f172a); color: var(--text, #e5e7eb);
+.boost-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.boost-head-text h2 {
+    font-size: 24px;
+    letter-spacing: -.4px;
+    margin: 0 0 4px;
+    color: var(--text);
+}
+
+.boost-subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0;
+}
+
+.boost-balance-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--brand);
+    background: var(--brand-soft);
+    border: 1px solid var(--brand-border);
+    white-space: nowrap;
+}
+
+.boost-balance-pill i { font-size: 13px; }
+
+/* =========================
+   ORDER CARD
+========================= */
+
+.boost-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.boost-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+}
+
+.boost-group label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.boost-select,
+.boost-input {
+    width: 100%;
+    padding: 11px 13px;
+    font-size: 13.5px;
+    border-radius: 11px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
     outline: none;
-}
-.boost-group select:focus, .boost-input:focus{
-    border-color: var(--accent, #38bdf8);
-    box-shadow: 0 0 0 3px rgba(56,189,248,.15);
+    transition: border-color .2s ease, box-shadow .2s ease;
 }
 
-.boost-hint{ font-size: 11.5px; color: var(--muted, #9ca3af); }
-
-.boost-price-box{
-    background: rgba(56,189,248,.08); border: 1px dashed rgba(56,189,248,.25);
-    border-radius: 12px; padding: 12px 16px; text-align: center;
+.boost-select:focus,
+.boost-input:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-soft);
 }
-.boost-price-box .price-label{ font-size: 11px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--accent, #38bdf8); }
-.boost-price-box h2{ margin: 4px 0 0; font-size: 24px; color: var(--text, #e5e7eb); }
 
-.boost-button{
-    border: none; cursor: pointer;
-    background: linear-gradient(135deg, #38bdf8, #818cf8);
-    color: #fff; font-size: 15px; font-weight: 700;
-    padding: 13px; border-radius: 12px;
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    transition: filter .15s;
+.boost-hint {
+    font-size: 11.5px;
+    color: var(--muted);
 }
-.boost-button:hover:not(:disabled){ filter: brightness(1.1); }
-.boost-button:disabled{ opacity: .6; cursor: not-allowed; }
 
-/* orders list */
-.boost-orders-title{
-    display: flex; align-items: center; gap: 8px;
-    font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em;
-    color: var(--text, #e5e7eb); margin: 0 0 10px;
+/* =========================
+   PRICE BOX (wallet-hero style)
+========================= */
+
+.boost-price-box {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 16px;
+    border-radius: 14px;
+    color: #ffffff;
+    background: linear-gradient(120deg, #1d4ed8 0%, #2563eb 45%, #7c3aed 100%);
+    box-shadow: 0 10px 24px rgba(37, 99, 235, .30);
 }
-.live-dot{
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #22c55e; display: inline-block;
-    animation: bdot 1.4s ease-in-out infinite;
+
+.boost-price-box::after {
+    content: "";
+    position: absolute;
+    right: -40px;
+    top: -50px;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.20), transparent 70%);
+    pointer-events: none;
 }
-@keyframes bdot{ 0%,100%{opacity:1} 50%{opacity:.3} }
 
-.boost-order-row{
-    display: flex; justify-content: space-between; align-items: center; gap: 10px;
-    background: var(--card, #111827); border: 1px solid var(--border, #1f2937);
-    border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+.boost-price-box .price-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.85);
 }
-.bor-main{ display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.bor-service{ font-size: 13.5px; color: var(--text, #e5e7eb); word-break: break-word; }
-.bor-meta{ font-size: 11.5px; color: var(--muted, #9ca3af); }
-.bor-side{ display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.bor-price{ font-size: 13px; font-weight: 700; color: var(--text, #e5e7eb); }
 
-.bor-status{
-    font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
-    background: rgba(56,189,248,.10); color: var(--accent, #38bdf8);
+.boost-price-box h2 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+    margin: 0;
 }
-.bor-status.st-completed{ background: rgba(34,197,94,.12); color: #22c55e; }
-.bor-status.st-partial{ background: rgba(245,158,11,.12); color: #f59e0b; }
-.bor-status.st-canceled{ background: rgba(239,68,68,.12); color: #ef4444; }
 
-.boost-empty{ color: var(--muted, #9ca3af); font-size: 13px; padding: 12px 0; }
+/* =========================
+   SUBMIT BUTTON (dash-head-btn style)
+========================= */
 
-/* toast */
-.boost-toast{
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
-    z-index: 4000; opacity: 0;
-    background: #ef4444; color: #fff;
-    font-size: 13px; font-weight: 600;
-    padding: 11px 20px; border-radius: 999px;
+.boost-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    cursor: pointer;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    box-shadow: 0 8px 18px rgba(37, 99, 235, .32);
+    transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+
+.boost-button i { font-size: 13px; }
+
+.boost-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(37, 99, 235, .42);
+    filter: brightness(1.06);
+}
+
+.boost-button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+/* =========================
+   ORDERS LIST (dash-row style)
+========================= */
+
+.sessions-wrap { margin-bottom: 18px; }
+
+.sessions-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 10px;
+}
+
+.live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    display: inline-block;
+    animation: boostDot 1.4s ease-in-out infinite;
+}
+
+@keyframes boostDot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, .5); }
+    50%      { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
+}
+
+.boost-order-row {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 13px 16px;
+    margin-bottom: 10px;
+    transition: border-color .2s ease;
+}
+
+.boost-order-row:hover { border-color: var(--brand-border); }
+
+.boost-order-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.boost-order-service {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.boost-order-meta {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.boost-order-side {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.boost-order-price {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+/* ----- status pills (state-pill style) ----- */
+
+.boost-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.boost-status--pending,
+.boost-status--processing,
+.boost-status--in-progress {
+    color: #d97706;
+    background: rgba(245, 158, 11, .13);
+    border: 1px solid rgba(245, 158, 11, .3);
+}
+
+.boost-status--completed {
+    color: #16a34a;
+    background: rgba(34, 197, 94, .13);
+    border: 1px solid rgba(34, 197, 94, .3);
+}
+
+.boost-status--partial {
+    color: #d97706;
+    background: rgba(245, 158, 11, .13);
+    border: 1px solid rgba(245, 158, 11, .3);
+}
+
+.boost-status--canceled {
+    color: var(--muted);
+    background: var(--card-2);
+    border: 1px solid var(--border);
+}
+
+/* pulsing dot inside running statuses */
+.boost-status--pending::before,
+.boost-status--processing::before,
+.boost-status--in-progress::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #f59e0b;
+    animation: boostDot 1.4s ease-in-out infinite;
+}
+
+.boost-empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13.5px;
+    padding: 20px 0;
+}
+
+/* =========================
+   CHOICES DROPDOWN TWEAKS
+   (so the search dropdown matches the panel theme)
+========================= */
+
+.choices__inner {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    min-height: auto;
+    padding: 5.5px 11px;
+    font-size: 13.5px;
+    color: var(--text);
+}
+
+.choices.is-focused .choices__inner {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+.choices__list--dropdown {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    margin-top: 6px;
+}
+
+.choices__list--dropdown .choices__item {
+    font-size: 13px;
+    color: var(--text);
+}
+
+.choices__list--dropdown .choices__item--selectable.is-highlighted {
+    background: var(--brand-soft);
+    color: var(--brand);
+}
+
+.choices__group .choices__heading {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 10px 12px 4px;
+}
+
+.choices__input {
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+}
+
+.choices__placeholder { color: var(--muted); opacity: 1; }
+
+.choices[data-type*="select-one"] .choices__inner { padding-bottom: 5.5px; }
+
+/* =========================
+   TOAST
+========================= */
+
+.boost-toast-wrap {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.boost-toast {
+    background: #ef4444;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 11px 20px;
+    border-radius: 999px;
     box-shadow: 0 8px 24px rgba(0,0,0,.35);
-    transition: opacity .25s, transform .25s;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity .25s ease, transform .25s ease;
+    max-width: calc(100vw - 32px);
+    text-align: center;
 }
-.boost-toast.ok{ background: linear-gradient(135deg, #38bdf8, #818cf8); }
-.boost-toast.show{ opacity: 1; transform: translateX(-50%) translateY(0); }
 
-@media (max-width: 575.98px){
-    .boost-head{ flex-direction: column; }
+.boost-toast--success {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
+
+.boost-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 768px) {
+
+    .boost-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .boost-balance-pill { align-self: flex-start; }
+
+    .boost-card { padding: 16px; }
+
+    .boost-button { width: 100%; }
+}
+
+@media (max-width: 480px) {
+
+    .boost-head-text h2 { font-size: 20px; }
+
+    .boost-price-box h2 { font-size: 22px; }
+
+    .boost-order-row {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .boost-order-side {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+[hidden] { display: none !important; }

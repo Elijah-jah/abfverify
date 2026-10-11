@@ -11,13 +11,17 @@
 
 {% block content %}
 
+<link rel="stylesheet" href="{% static 'css/boost.css' %}">
+
 <div class="boost-container">
 
     <!-- HEADER -->
     <div class="boost-head">
         <div class="boost-head-text">
             <h2>Boost Social Accounts</h2>
-            <p class="boost-subtitle">Followers, likes, views &amp; more — starts in minutes.</p>
+            <p class="boost-subtitle">
+                Followers, likes, views &amp; more — starts in minutes.
+            </p>
         </div>
         <div class="boost-balance-pill">
             <i class="fa-solid fa-wallet"></i>
@@ -27,70 +31,118 @@
 
     <!-- ORDER FORM -->
     <form method="POST" id="boostOrderForm">
+
         {% csrf_token %}
 
         <div class="boost-card">
 
+            <!-- SERVICE -->
             <div class="boost-group">
                 <label for="serviceSelect">Service</label>
-                <select id="serviceSelect" name="service" required>
+                <select
+                    class="boost-select"
+                    id="serviceSelect"
+                    name="service"
+                    required>
                     <option value="">Loading services…</option>
                 </select>
                 <small id="serviceHint" class="boost-hint"></small>
             </div>
 
+            <!-- LINK -->
             <div class="boost-group">
                 <label for="boostLink">Link</label>
-                <input type="url" id="boostLink" name="link" placeholder="https://…"
-                       required class="boost-input">
+                <input
+                    type="url"
+                    class="boost-input"
+                    id="boostLink"
+                    name="link"
+                    placeholder="https://…"
+                    required>
             </div>
 
+            <!-- QUANTITY -->
             <div class="boost-group">
                 <label for="boostQty">Quantity</label>
-                <input type="number" id="boostQty" name="quantity" min="1" required class="boost-input">
+                <input
+                    type="number"
+                    class="boost-input"
+                    id="boostQty"
+                    name="quantity"
+                    min="1"
+                    required>
                 <small id="qtyHint" class="boost-hint"></small>
             </div>
 
+            <!-- PRICE -->
             <div class="boost-price-box">
-                <span class="price-label">Price</span>
+                <span class="price-label">
+                    <i class="fa-solid fa-tag"></i>
+                    Total Price
+                </span>
                 <h2 id="boostPrice">₦0.00</h2>
             </div>
 
-            <button type="submit" class="boost-button" id="boostBtn">
-                <i class="fa-solid fa-rocket"></i> Place Order
+            <button
+                type="submit"
+                class="boost-button"
+                id="boostBtn">
+                <i class="fa-solid fa-rocket"></i>
+                Place Order
             </button>
 
         </div>
+
     </form>
 
     <!-- RECENT ORDERS -->
-    <div class="boost-orders-wrap" id="ordersWrap">
-        <h3 class="boost-orders-title"><span class="live-dot"></span> Recent Boost Orders</h3>
+    {% if orders %}
+    <div class="sessions-wrap" id="ordersWrap">
+
+        <h3 class="sessions-title">
+            <span class="live-dot"></span> Recent Boost Orders
+        </h3>
 
         {% for o in orders %}
         <div class="boost-order-row" data-order-id="{{ o.id }}"
              data-open="{% if o.status in 'Pending,Processing,In progress' %}1{% else %}0{% endif %}">
-            <div class="bor-main">
-                <strong class="bor-service">{{ o.service.name }}</strong>
-                <span class="bor-meta">{{ o.quantity }} units · {{ o.link|truncatechars:35 }}</span>
+
+            <div class="boost-order-main">
+                <strong class="boost-order-service">{{ o.service.name }}</strong>
+                <span class="boost-order-meta mono">{{ o.quantity }} units · {{ o.link|truncatechars:35 }}</span>
             </div>
-            <div class="bor-side">
-                <span class="bor-status st-{{ o.status|slugify }}">{{ o.status }}</span>
-                <span class="bor-price mono">₦{{ o.price }}</span>
+
+            <div class="boost-order-side">
+                <span class="boost-status boost-status--{{ o.status|slugify }}">{{ o.status }}</span>
+                <span class="boost-order-price mono">₦{{ o.price }}</span>
             </div>
+
         </div>
-        {% empty %}
-        <p class="boost-empty" id="noOrders">No boost orders yet.</p>
         {% endfor %}
+
     </div>
+    {% else %}
+    <div class="sessions-wrap" id="ordersWrap">
+        <h3 class="sessions-title">
+            <span class="live-dot"></span> Recent Boost Orders
+        </h3>
+        <p class="boost-empty" id="noOrders">No boost orders yet.</p>
+    </div>
+    {% endif %}
 
 </div>
+
+<!-- safe JSON dump of services (no |safe hack needed) -->
+{{ services_json|json_script:"boost-services-data" }}
 
 <script>
 (function () {
     "use strict";
 
-    var SERVICES = {{ services_json|safe }};
+    /* ---------- services data ---------- */
+    var SERVICES = JSON.parse(
+        document.getElementById("boost-services-data").textContent
+    );
     var EXCHANGE_RATE = parseFloat("{{ boost_settings.exchange_rate }}");
     var PROFIT = parseFloat("{{ boost_settings.profit_percent }}");
 
@@ -98,11 +150,12 @@
     var serviceHint = document.getElementById("serviceHint");
     var qtyInput = document.getElementById("boostQty");
     var qtyHint = document.getElementById("qtyHint");
+    var linkInput = document.getElementById("boostLink");
     var priceEl = document.getElementById("boostPrice");
     var form = document.getElementById("boostOrderForm");
     var btn = document.getElementById("boostBtn");
 
-    /* ---- build the service dropdown grouped by category ---- */
+    /* ---------- build dropdown grouped by category ---------- */
     var cats = {};
     SERVICES.forEach(function (s) {
         var c = s.category || "Other";
@@ -126,28 +179,49 @@
         serviceSelect.appendChild(og);
     });
 
+    /* ---------- searchable dropdown (same UX as Buy Number page) ---------- */
+    var serviceChoices = null;
+    if (window.Choices) {
+        serviceChoices = new Choices("#serviceSelect", {
+            searchEnabled: true,
+            searchPlaceholderValue: "Search services…",
+            itemSelectText: "",
+            shouldSort: false,
+            allowHTML: false
+        });
+    }
+
     function selected() {
         return serviceSelect.options[serviceSelect.selectedIndex];
     }
 
+    /* ---------- live price estimate ---------- */
     function calcPrice() {
         var opt = selected();
         var qty = parseInt(qtyInput.value || "0", 10);
+
         if (!opt || !opt.dataset.rate) {
             priceEl.innerText = "₦0.00";
             serviceHint.innerText = "";
             qtyHint.innerText = "";
             return;
         }
-        serviceHint.innerText = "Min " + opt.dataset.min + " — Max " + opt.dataset.max;
-        qtyInput.min = opt.dataset.min;
-        qtyInput.max = opt.dataset.max;
-        qtyHint.innerText = "Enter between " + opt.dataset.min + " and " + opt.dataset.max;
 
-        if (qty >= parseInt(opt.dataset.min, 10)) {
+        var min = parseInt(opt.dataset.min, 10);
+        var max = parseInt(opt.dataset.max, 10);
+
+        serviceHint.innerText = "Min " + min.toLocaleString() + " — Max " + max.toLocaleString();
+        qtyInput.min = min;
+        qtyInput.max = max;
+        qtyHint.innerText = "Enter between " + min.toLocaleString() + " and " + max.toLocaleString();
+
+        if (qty >= min) {
             var cost = (parseFloat(opt.dataset.rate) / 1000) * qty;
             var price = cost * EXCHANGE_RATE * (1 + PROFIT / 100);
-            priceEl.innerText = "₦" + price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            priceEl.innerText = "₦" + price.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
         } else {
             priceEl.innerText = "₦0.00";
         }
@@ -156,12 +230,18 @@
     serviceSelect.addEventListener("change", calcPrice);
     qtyInput.addEventListener("input", calcPrice);
 
-    /* ---- toast ---- */
+    /* ---------- toast ---------- */
     function toast(msg, ok) {
+        var wrap = document.querySelector(".boost-toast-wrap");
+        if (!wrap) {
+            wrap = document.createElement("div");
+            wrap.className = "boost-toast-wrap";
+            document.body.appendChild(wrap);
+        }
         var t = document.createElement("div");
-        t.className = "boost-toast" + (ok ? " ok" : "");
-        t.innerText = msg;
-        document.body.appendChild(t);
+        t.className = "boost-toast" + (ok ? " boost-toast--success" : "");
+        t.innerText = msg || "Something went wrong. Please try again.";
+        wrap.appendChild(t);
         requestAnimationFrame(function () { t.classList.add("show"); });
         setTimeout(function () {
             t.classList.remove("show");
@@ -169,9 +249,10 @@
         }, 4000);
     }
 
-    /* ---- submit ---- */
+    /* ---------- submit (AJAX, no reload) ---------- */
     form.addEventListener("submit", function (e) {
         e.preventDefault();
+
         var original = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Placing order…';
@@ -184,15 +265,23 @@
             headers: { "X-Requested-With": "XMLHttpRequest" },
             body: fd
         })
-        .then(function (r) { return r.json(); })
+        .then(function (r) {
+            var ct = r.headers.get("content-type") || "";
+            if (!ct.includes("application/json")) {
+                throw new Error("unexpected response");
+            }
+            return r.json();
+        })
         .then(function (data) {
             if (data.success && data.order) {
-                toast(data.message, true);
+                toast(data.message || "Boost order placed!", true);
                 addOrderRow(data.order);
                 form.reset();
+                if (serviceChoices) serviceChoices.setChoiceByValue("");
                 priceEl.innerText = "₦0.00";
                 serviceHint.innerText = "";
                 qtyHint.innerText = "";
+                linkInput.focus();
             } else if (data.redirect) {
                 toast(data.message || "Please try again.", false);
                 var targetPath = new URL(data.redirect, window.location.href).pathname;
@@ -200,7 +289,7 @@
                     setTimeout(function () { window.location.assign(data.redirect); }, 2000);
                 }
             } else {
-                toast(data.message || "Something went wrong.", false);
+                toast(data.message || "Something went wrong. Please try again.", false);
             }
         })
         .catch(function () {
@@ -212,52 +301,90 @@
         });
     });
 
-    /* ---- inject new order row ---- */
+    /* ---------- inject new order row (no reload) ---------- */
     function addOrderRow(o) {
         var wrap = document.getElementById("ordersWrap");
         var empty = document.getElementById("noOrders");
         if (empty) empty.remove();
 
+        // if orders section was never rendered (no orders before), build it
+        if (!wrap) {
+            var container = document.querySelector(".boost-container");
+            wrap = document.createElement("div");
+            wrap.className = "sessions-wrap";
+            wrap.id = "ordersWrap";
+            wrap.innerHTML = '<h3 class="sessions-title"><span class="live-dot"></span> Recent Boost Orders</h3>';
+            container.appendChild(wrap);
+        }
+
         var row = document.createElement("div");
         row.className = "boost-order-row";
         row.dataset.orderId = o.id;
         row.dataset.open = "1";
-        row.innerHTML =
-            '<div class="bor-main">' +
-                '<strong class="bor-service"></strong>' +
-                '<span class="bor-meta">' + parseInt(o.quantity, 10).toLocaleString() +
-                ' units · ' + (o.link || "").slice(0, 35) + '</span>' +
-            '</div>' +
-            '<div class="bor-side">' +
-                '<span class="bor-status st-' + o.status.toLowerCase().replace(/\s+/g, "-") + '">' + o.status + '</span>' +
-                '<span class="bor-price mono">₦' + parseFloat(o.price).toLocaleString("en-US", { minimumFractionDigits: 2 }) + '</span>' +
-            '</div>';
-        row.querySelector(".bor-service").textContent = o.service_name;
-        wrap.insertBefore(row, wrap.children[1] || null);
+
+        var main = document.createElement("div");
+        main.className = "boost-order-main";
+
+        var svc = document.createElement("strong");
+        svc.className = "boost-order-service";
+        svc.textContent = o.service_name;
+
+        var meta = document.createElement("span");
+        meta.className = "boost-order-meta mono";
+        meta.textContent = parseInt(o.quantity, 10).toLocaleString() +
+            " units · " + (o.link || "").slice(0, 35);
+
+        main.appendChild(svc);
+        main.appendChild(meta);
+
+        var side = document.createElement("div");
+        side.className = "boost-order-side";
+
+        var badge = document.createElement("span");
+        badge.className = "boost-status boost-status--" +
+            o.status.toLowerCase().replace(/\s+/g, "-");
+        badge.textContent = o.status;
+
+        var price = document.createElement("span");
+        price.className = "boost-order-price mono";
+        price.textContent = "₦" + parseFloat(o.price).toLocaleString("en-US", {
+            minimumFractionDigits: 2
+        });
+
+        side.appendChild(badge);
+        side.appendChild(price);
+
+        row.appendChild(main);
+        row.appendChild(side);
+
+        var title = wrap.querySelector(".sessions-title");
+        title.after(row);
+
         pollRow(row);
     }
 
-    /* ---- status polling for open orders ---- */
+    /* ---------- live status polling (every 10s for open orders) ---------- */
     function pollRow(row) {
         if (row.dataset.open !== "1") return;
         var id = row.dataset.orderId;
-        var badge = row.querySelector(".bor-status");
+        var badge = row.querySelector(".boost-status");
 
         function check() {
-            fetch("/accounts/boost/status/?order_id=" + id, {
+            fetch("{% url 'boost_status' %}?order_id=" + id, {
                 headers: { "X-Requested-With": "XMLHttpRequest" }
             })
             .then(function (r) { return r.json(); })
             .then(function (d) {
                 if (!d.success) return;
                 badge.textContent = d.status;
-                badge.className = "bor-status st-" + d.status.toLowerCase().replace(/\s+/g, "-");
+                badge.className = "boost-status boost-status--" +
+                    d.status.toLowerCase().replace(/\s+/g, "-");
                 if (["Completed", "Partial", "Canceled"].indexOf(d.status) !== -1) {
                     row.dataset.open = "0";
                     clearInterval(timer);
                 }
             })
-            .catch(function () { /* retry next round */ });
+            .catch(function () { /* silently retry next round */ });
         }
 
         var timer = setInterval(check, 10000);
