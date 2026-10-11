@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import BoostService, BoostOrder, BoostSettings
 from .providers import ReallySimpleSocial, ReallySimpleSocialError
 
@@ -7,7 +8,7 @@ from .providers import ReallySimpleSocial, ReallySimpleSocialError
 class BoostServiceAdmin(admin.ModelAdmin):
     list_display = ("service_id", "name", "category", "rate", "min_order", "max_order", "is_active")
     list_filter = ("category", "is_active", "refill", "cancel")
-    search_fields = ("name", "category")
+    search_fields = ("name", "category", "service_id")
     list_per_page = 50
     actions = ["sync_from_api"]
 
@@ -22,18 +23,26 @@ class BoostServiceAdmin(admin.ModelAdmin):
 
         created = updated = 0
         for s in services:
+            defaults = {
+                "name": s["name"],
+                "category": s.get("category", ""),
+                "service_type": s.get("type", ""),
+                "rate": s["rate"],
+                "min_order": s["min"],
+                "max_order": s["max"],
+                "refill": bool(s.get("refill")),
+                "cancel": bool(s.get("cancel")),
+            }
+
+            # Import description only if the API returns one — otherwise
+            # keep whatever is already saved (e.g. written manually in admin)
+            desc = s.get("description") or s.get("desc")
+            if desc:
+                defaults["description"] = desc
+
             _, was_created = BoostService.objects.update_or_create(
                 service_id=s["service"],
-                defaults={
-                    "name": s["name"],
-                    "category": s.get("category", ""),
-                    "service_type": s.get("type", ""),
-                    "rate": s["rate"],
-                    "min_order": s["min"],
-                    "max_order": s["max"],
-                    "refill": bool(s.get("refill")),
-                    "cancel": bool(s.get("cancel")),
-                },
+                defaults=defaults,
             )
             if was_created:
                 created += 1
@@ -53,5 +62,7 @@ class BoostOrderAdmin(admin.ModelAdmin):
 
 @admin.register(BoostSettings)
 class BoostSettingsAdmin(admin.ModelAdmin):
+    list_display = ("exchange_rate", "profit_percent", "updated_at")
+
     def has_add_permission(self, request):
         return not BoostSettings.objects.exists()

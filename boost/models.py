@@ -39,6 +39,10 @@ class BoostService(models.Model):
     name = models.CharField(max_length=255)
     category = models.CharField(max_length=255, blank=True, db_index=True)
     service_type = models.CharField(max_length=100, blank=True)
+    description = models.TextField(
+        blank=True, default="",
+        help_text="Shown to users on the order form (e.g. what link to paste)",
+    )
     rate = models.DecimalField(max_digits=12, decimal_places=4, help_text="Provider cost per 1000 units")
     min_order = models.PositiveIntegerField(default=1)
     max_order = models.PositiveIntegerField(default=1000)
