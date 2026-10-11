@@ -72,7 +72,7 @@
              data-open="{% if o.status in 'Pending,Processing,In progress' %}1{% else %}0{% endif %}">
             <div class="bor-main">
                 <strong class="bor-service">{{ o.service.name }}</strong>
-                <span class="bor-meta">{{ o.quantity|intcomma }} units · {{ o.link|truncatechars:35 }}</span>
+                <span class="bor-meta">{{ o.quantity }} units · {{ o.link|truncatechars:35 }}</span>
             </div>
             <div class="bor-side">
                 <span class="bor-status st-{{ o.status|slugify }}">{{ o.status }}</span>
