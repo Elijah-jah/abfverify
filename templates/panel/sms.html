@@ -1,4 +1,5 @@
 {% extends "panel/dashboard_base.html" %}
+{% load humanize %}
 {% load static %}
 
 {% block title %}Buy Number{% endblock %}
@@ -20,9 +21,9 @@
             </p>
         </div>
         <div class="sms-balance-pill">
-            <i class="fa-solid fa-wallet"></i>
-            <span>₦{{ user_wallet.balance|floatformat:2 }}</span>
-        </div>
+    <i class="fa-solid fa-wallet"></i>
+    <span>₦{{ user_wallet.balance|floatformat:2|intcomma }}</span>
+</div>
     </div>
 
     <!-- REQUEST FORM -->

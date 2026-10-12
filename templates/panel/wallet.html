@@ -1,4 +1,5 @@
 {% extends "panel/dashboard_base.html" %}
+{% load humanize %}
 {% load static %}
 
 {% block title %}Fund Wallet{% endblock %}
@@ -28,7 +29,7 @@
         <div class="wallet-hero-inner">
             <div class="wallet-hero-left">
                 <span class="hero-label"><i class="fa-solid fa-wallet"></i> Current Balance</span>
-                <span class="hero-amount">₦{{ wallet.balance }}</span>
+                <span class="hero-amount">₦{{ wallet.balance|floatformat:2|intcomma }}</span>
                 <span class="hero-hint">Instantly available for purchases</span>
             </div>
             <div class="wallet-hero-icon">

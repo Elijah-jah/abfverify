@@ -1,4 +1,5 @@
 {% extends "panel/dashboard_base.html" %}
+{% load humanize %}
 {% load static %}
 
 {% block title %}Orders{% endblock %}
@@ -101,7 +102,7 @@
         </div>
 
         <div class="mp-side">
-            <p class="mp-price mono">&#8358;{{ o.price }}</p>
+            <p class="mp-price mono">&#8358;{{ o.price|floatformat:2|intcomma }}</p>
             {% if o.status == 'completed' %}
                 <span class="mp-badge mp-done">Completed</span>
             {% elif o.status == 'pending' or o.status == 'waiting' %}
