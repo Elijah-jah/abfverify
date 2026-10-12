@@ -64,6 +64,18 @@ Dashboard
         <i class="fa-solid fa-chevron-right dash-svc-arrow"></i>
     </a>
 
+    <!-- NEW: Boost Accounts -->
+    <a href="{% url 'boost' %}" class="dash-svc">
+        <span class="dash-svc-icon svc-rocket">
+            <i class="fa-solid fa-rocket"></i>
+        </span>
+        <span class="dash-svc-text">
+            <strong>Boost Accounts</strong>
+            <small>Followers, likes &amp; views</small>
+        </span>
+        <i class="fa-solid fa-chevron-right dash-svc-arrow"></i>
+    </a>
+
 </div>
 
 <!-- WALLET HERO -->
@@ -75,7 +87,7 @@ Dashboard
             Wallet Balance
         </p>
         <h3 class="wallet-hero-amount mono">&#8358;{{ user_wallet.balance|default:"0.00"|floatformat:2 }}</h3>
-        <p class="wallet-hero-note">Top up once — spend on numbers &amp; logs.</p>
+        <p class="wallet-hero-note">Top up once — spend on numbers, logs &amp; boosts.</p>
     </div>
 
     <a href="{% url 'wallet' %}" class="wallet-hero-btn">
