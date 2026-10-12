@@ -163,7 +163,7 @@
         document.getElementById("boost-services-data").textContent
     );
     var EXCHANGE_RATE = parseFloat("{{ boost_settings.exchange_rate }}");
-    var PROFIT_PER_1000 = parseFloat("{{ boost_settings.profit_per_1000 }}");
+    var PROFIT_FLAT = parseFloat("{{ boost_settings.profit_flat }}");
 
     var categorySelect = document.getElementById("categorySelect");
     var serviceSelect = document.getElementById("serviceSelect");
@@ -291,7 +291,7 @@
         return null;
     }
 
-    /* ---------- live price estimate (flat profit per 1000) ---------- */
+    /* ---------- live price estimate (flat profit per ORDER) ---------- */
     function calcPrice() {
         var s = currentServiceData();
         var qty = parseInt(qtyInput.value || "0", 10);
@@ -311,8 +311,7 @@
 
         if (qty >= min) {
             var providerCost = (parseFloat(s.rate) / 1000) * qty;
-            var profit = (PROFIT_PER_1000 / 1000) * qty;
-            var price = (providerCost + profit) * EXCHANGE_RATE;
+            var price = (providerCost + PROFIT_FLAT) * EXCHANGE_RATE;
             priceEl.innerText = "₦" + price.toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
