@@ -178,7 +178,7 @@ Dashboard
         <div class="dash-row-state tx-state">
 
             <p class="tx-amount mono {% if tx.txn_type == 'credit' %}tx-credit{% else %}tx-debit{% endif %}">
-                {% if tx.txn_type == 'credit' %}+{% else %}-{% endif %}&#8358;{{ tx.amount }}
+                {% if tx.txn_type == 'credit' %}+{% else %}-{% endif %}&#8358;{{ tx.amount|floatformat:2|intcomma }}
             </p>
 
             <span class="tx-badge tx-{{ tx.status|default:'completed' }}">{{ tx.status|default:"completed"|title }}</span>
