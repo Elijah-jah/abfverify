@@ -1097,3 +1097,162 @@ body.light .navbar-toggler-icon{
     }
 
 }
+/* =========================================================
+   BOOST SECTION (new)
+========================================================= */
+
+.boost-section{
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+}
+
+/* rocket-gradient icon variant for boost cards */
+.logs-feature-icon.boost-icon{
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.30);
+}
+
+/* =========================================================
+   iPHONE FRAME (real device look)
+   Pure CSS iPhone Pro-style frame with dynamic island.
+   Replace the <img> inside .iphone-screen with your screenshot
+   (ideally 1290 x 2796 or same 19.5:9 ratio).
+========================================================= */
+
+.iphone-wrap{
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.iphone-glow{
+    position: absolute;
+    width: 340px;
+    height: 340px;
+    border-radius: 50%;
+    background: rgba(56, 189, 248, 0.28);
+    filter: blur(80px);
+    z-index: 1;
+}
+
+.iphone{
+    position: relative;
+    z-index: 2;
+
+    width: 300px;
+    max-width: 78vw;
+    aspect-ratio: 9 / 19.5;
+
+    background: linear-gradient(145deg, #3a3a41, #1c1c21 60%);
+    border-radius: 54px;
+    padding: 11px;
+
+    box-shadow:
+        0 35px 70px rgba(0, 0, 0, 0.45),
+        inset 0 0 0 2px #4a4a52,
+        inset 0 0 0 5px #141419;
+
+    animation: phoneFloat 4s ease-in-out infinite;
+
+    transition: transform 0.2s ease-out;
+    will-change: transform;
+}
+
+.iphone-screen{
+    position: absolute;
+    inset: 11px;
+
+    border-radius: 44px;
+    overflow: hidden;
+    background: #000;
+}
+
+.iphone-screen img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* dynamic island */
+.iphone-island{
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: 32%;
+    height: 24px;
+
+    background: #000;
+    border-radius: 999px;
+
+    z-index: 3;
+
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+/* side hardware buttons */
+.iphone-btn{
+    position: absolute;
+    background: #2b2b31;
+    border-radius: 3px;
+}
+
+.iphone-btn-power{
+    right: -3px;
+    top: 27%;
+    width: 4px;
+    height: 13%;
+}
+
+.iphone-btn-vol-up{
+    left: -3px;
+    top: 22%;
+    width: 4px;
+    height: 7%;
+}
+
+.iphone-btn-vol-down{
+    left: -3px;
+    top: 31%;
+    width: 4px;
+    height: 7%;
+}
+
+.iphone-btn-action{
+    left: -3px;
+    top: 41%;
+    width: 4px;
+    height: 10%;
+}
+
+/* =========================================================
+   RESPONSIVE — phone sizing
+========================================================= */
+
+@media (max-width: 767px){
+
+    .iphone{
+        width: 250px;
+        border-radius: 46px;
+    }
+
+    .iphone-screen{
+        border-radius: 37px;
+    }
+
+    .iphone-island{
+        top: 20px;
+        height: 20px;
+    }
+}
+
+@media (max-width: 480px){
+
+    .iphone{
+        width: 220px;
+    }
+}
