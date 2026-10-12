@@ -10,6 +10,8 @@
 .boost-container {
     max-width: 760px;
     margin: 0 auto;
+    /* stop flex/grid children from blowing the page wider than the screen */
+    min-width: 0;
 }
 
 /* =========================
@@ -22,6 +24,11 @@
     align-items: center;
     gap: 16px;
     margin-bottom: 18px;
+    min-width: 0;
+}
+
+.boost-head-text {
+    min-width: 0;
 }
 
 .boost-head-text h2 {
@@ -49,9 +56,45 @@
     background: var(--brand-soft);
     border: 1px solid var(--brand-border);
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .boost-balance-pill i { font-size: 13px; }
+
+/* =========================
+   NOTICE BANNER
+========================= */
+
+.boost-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--brand-soft);
+    border: 1px solid var(--brand-border);
+    border-radius: 12px;
+    padding: 12px 15px;
+    margin-bottom: 18px;
+    min-width: 0;
+}
+
+.boost-notice i {
+    flex: 0 0 auto;
+    font-size: 16px;
+    color: var(--brand);
+    margin-top: 1px;
+}
+
+.boost-notice p {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--muted);
+    min-width: 0;
+}
+
+.boost-notice strong {
+    color: var(--text);
+}
 
 /* =========================
    ORDER CARD
@@ -67,6 +110,7 @@
     flex-direction: column;
     gap: 16px;
     margin-bottom: 22px;
+    min-width: 0;
 }
 
 .boost-group {
@@ -85,6 +129,7 @@
 .boost-select,
 .boost-input {
     width: 100%;
+    max-width: 100%;
     padding: 11px 13px;
     font-size: 13.5px;
     border-radius: 11px;
@@ -104,27 +149,6 @@
 .boost-hint {
     font-size: 11.5px;
     color: var(--muted);
-}
-
-/* =========================
-   SERVICE DESCRIPTION BOX
-   Short by default, expands to fit content
-========================= */
-
-.boost-desc-box {
-    width: 100%;
-    min-height: 48px;
-    max-height: 140px;
-    overflow-y: auto;
-    padding: 10px 13px;
-    font-size: 12.5px;
-    line-height: 1.55;
-    color: var(--muted);
-    background: var(--bg);
-    border: 1px dashed var(--border);
-    border-radius: 11px;
-    white-space: pre-line;   /* keeps line breaks from the description */
-    scrollbar-width: thin;
 }
 
 /* =========================
@@ -213,7 +237,10 @@
    ORDERS LIST (dash-row style)
 ========================= */
 
-.sessions-wrap { margin-bottom: 18px; }
+.sessions-wrap {
+    margin-bottom: 18px;
+    min-width: 0;
+}
 
 .sessions-title {
     display: flex;
@@ -250,6 +277,7 @@
     padding: 13px 16px;
     margin-bottom: 10px;
     transition: border-color .2s ease;
+    min-width: 0;
 }
 
 .boost-order-row:hover { border-color: var(--brand-border); }
@@ -284,6 +312,7 @@
     align-items: center;
     gap: 10px;
     flex-shrink: 0;
+    min-width: 0;
 }
 
 .boost-order-price {
@@ -353,8 +382,15 @@
 
 /* =========================
    SEARCHABLE DROPDOWNS
-   Match the Buy Number page look
+   Match the Buy Number page look + mobile-safe
 ========================= */
+
+/* the select itself can't force the page wider */
+.choices {
+    min-width: 0;
+    max-width: 100%;
+    position: relative;
+}
 
 .choices__inner {
     background: var(--bg);
@@ -364,6 +400,14 @@
     padding: 10px 12px;
     font-size: 13.5px;
     color: var(--text);
+    overflow: hidden;
+}
+
+/* long selected names get "..." instead of stretching the layout */
+.choices__list--single .choices__item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .choices.is-focused .choices__inner,
@@ -374,7 +418,7 @@
 
 .choices[data-type*="select-one"] .choices__inner { padding-bottom: 10px; }
 
-/* the dropdown panel */
+/* the dropdown panel — never wider than the select */
 .choices__list--dropdown,
 .choices__list[aria-expanded] {
     background: var(--card);
@@ -384,12 +428,16 @@
     box-shadow: var(--shadow);
     overflow: hidden;
     z-index: 50;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
 }
 
 /* the big search box at the top of the dropdown */
 .choices__list--dropdown .choices__input,
 .choices__list[aria-expanded] .choices__input {
     width: calc(100% - 16px);
+    max-width: calc(100% - 16px);
     margin: 8px;
     padding: 10px 12px;
     font-size: 13.5px;
@@ -406,12 +454,15 @@
     box-shadow: 0 0 0 3px var(--brand-soft);
 }
 
-/* options */
+/* options — wrap long names instead of overflowing */
 .choices__list--dropdown .choices__item,
 .choices__list[aria-expanded] .choices__item {
     font-size: 13.5px;
     padding: 9px 14px;
     color: var(--text);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    min-width: 0;
 }
 
 /* highlighted option */
@@ -510,36 +561,51 @@
     }
 }
 
-[hidden] { display: none !important; }
 /* =========================
-   NOTICE BANNER
+   MOBILE SHRINK / ZOOM FIXES
+   1) iOS auto-zooms any input under 16px on focus — the search box and
+      quantity field get 16px on small screens so the page doesn't jump.
+   2) min-width:0 guards stop long content from stretching the page wider
+      than the viewport (which is what makes iOS zoom the whole page out).
 ========================= */
 
-.boost-notice {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    background: var(--brand-soft);
-    border: 1px solid var(--brand-border);
-    border-radius: 12px;
-    padding: 12px 15px;
-    margin-bottom: 18px;
+@media (max-width: 575.98px) {
+
+    .choices__list--dropdown .choices__input,
+    .choices__list[aria-expanded] .choices__input,
+    .boost-input {
+        font-size: 16px;   /* prevents iOS focus zoom */
+    }
+
+    .boost-select {
+        font-size: 16px;
+    }
+
+    .boost-container,
+    .boost-head,
+    .boost-notice,
+    .boost-card,
+    .boost-group,
+    .boost-order-row,
+    .boost-order-main,
+    .boost-order-side,
+    .sessions-wrap {
+        min-width: 0;
+    }
+
+    .boost-order-service,
+    .boost-order-meta {
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
+
+    .boost-notice {
+        padding: 11px 12px;
+    }
+
+    .boost-notice p {
+        font-size: 12px;
+    }
 }
 
-.boost-notice i {
-    flex: 0 0 auto;
-    font-size: 16px;
-    color: var(--brand);
-    margin-top: 1px;
-}
-
-.boost-notice p {
-    margin: 0;
-    font-size: 12.5px;
-    line-height: 1.6;
-    color: var(--muted);
-}
-
-.boost-notice strong {
-    color: var(--text);
-}
+[hidden] { display: none !important; }
