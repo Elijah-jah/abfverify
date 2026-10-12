@@ -12,7 +12,7 @@
 <!-- PAGE HEAD -->
 <div class="mp-head">
     <h2 class="page-heading">My Orders</h2>
-    <p class="page-sub">Every number and log you've bought &mdash; full history, no surprises.</p>
+    <p class="page-sub">Every number, log and boost you've bought &mdash; full history, no surprises.</p>
 </div>
 
 <!-- TABS -->
@@ -20,6 +20,7 @@
     <button class="mp-tab active" data-type="all">All</button>
     <button class="mp-tab" data-type="number">Numbers</button>
     <button class="mp-tab" data-type="log">Logs</button>
+    <button class="mp-tab" data-type="boost">Boosts</button>
 </div>
 
 <!-- LIST -->
@@ -64,6 +65,22 @@
                         <strong class="mp-otp-none">-- --</strong>
                     {% endif %}
                 </p>
+            {% elif o.type == 'boost' %}
+                <!-- BOOST order: link + units -->
+                <p class="mp-detail mono">
+                    {% if o.detail %}
+                        {{ o.detail|truncatechars:45 }}
+                        <button class="mp-copy" data-copy="{{ o.detail }}" title="Copy link">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    {% else %}
+                        &mdash;
+                    {% endif %}
+                </p>
+                {% if o.description %}
+                <p class="mp-otp mono"><strong>{{ o.description }}</strong></p>
+                {% endif %}
+                <span class="mp-tap">Tap for details <i class="bi bi-chevron-right"></i></span>
             {% else %}
                 <!-- LOG purchase: email + password only -->
                 <div class="mp-logline">
@@ -89,6 +106,12 @@
                 <span class="mp-badge mp-done">Completed</span>
             {% elif o.status == 'pending' or o.status == 'waiting' %}
                 <span class="mp-badge mp-pending">{% if o.status == 'waiting' %}Waiting{% else %}Pending{% endif %}</span>
+            {% elif o.status == 'processing' or o.status == 'in progress' %}
+                <span class="mp-badge mp-processing">{{ o.status|title }}</span>
+            {% elif o.status == 'partial' %}
+                <span class="mp-badge mp-partial">Partial</span>
+            {% elif o.status == 'canceled' %}
+                <span class="mp-badge mp-canceled">Canceled</span>
             {% elif o.status == 'expired' %}
                 <span class="mp-badge mp-expired">Expired &middot; &#8358;0</span>
             {% elif o.status == 'cancelled' %}
@@ -126,7 +149,7 @@
             <span class="mpm-format-val" id="mpmFormatLabel"></span>
         </div>
 
-        <!-- combined line: login info or phone number -->
+        <!-- combined line: login info, phone number or boost link -->
         <p class="mpm-box-label" id="mpmBoxLabel">Details</p>
         <div class="mpm-box" id="mpmBox">
             <span class="mpm-box-text mono" id="mpmText"></span>
@@ -260,17 +283,21 @@
     var mpmStatus = document.getElementById("mpmStatus");
 
     var STATUS_MAP = {
-        completed: ["mp-done", "Completed"],
-        waiting:   ["mp-pending", "Waiting"],
-        pending:   ["mp-pending", "Pending"],
-        expired:   ["mp-expired", "Expired"],
-        cancelled: ["mp-failed", "Cancelled"],
-        failed:    ["mp-failed", "Failed"]
+        completed:   ["mp-done", "Completed"],
+        waiting:     ["mp-pending", "Waiting"],
+        pending:     ["mp-pending", "Pending"],
+        processing:  ["mp-processing", "Processing"],
+        "in progress": ["mp-processing", "In Progress"],
+        partial:     ["mp-partial", "Partial"],
+        canceled:    ["mp-canceled", "Canceled"],
+        expired:     ["mp-expired", "Expired"],
+        cancelled:   ["mp-failed", "Cancelled"],
+        failed:      ["mp-failed", "Failed"]
     };
 
     function openModal(row) {
         var d = function (k) { return row.getAttribute("data-" + k) || ""; };
-        var isNumber = d("type") === "number";
+        var type = d("type");
 
         mpmTitle.textContent = d("name");
 
@@ -280,19 +307,22 @@
         if (d("desc")) { mpmDesc.textContent = d("desc"); mpmDesc.hidden = false; }
         else { mpmDesc.hidden = true; }
 
-        /* logs: show the format label pill, numbers: hide it */
-        if (!isNumber) {
+        /* logs: show the format label pill; numbers and boosts: hide it */
+        if (type === "log") {
             mpmFormatLabel.textContent = d("format-label") || "UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL";
             mpmFormatWrap.hidden = false;
         } else {
             mpmFormatWrap.hidden = true;
         }
 
-        mpmBoxLabel.textContent = isNumber ? "Phone Number" : "Login Details";
+        mpmBoxLabel.textContent =
+            type === "number" ? "Phone Number" :
+            type === "boost"  ? "Boosted Link" :
+                                "Login Details";
         mpmText.textContent = d("detail") || d("format") || "\u2014";
 
         /* OTP row only exists for numbers */
-        if (isNumber && d("otp")) {
+        if (type === "number" && d("otp")) {
             mpmOtp.textContent = d("otp");
             mpmOtpRow.hidden = false;
         } else {

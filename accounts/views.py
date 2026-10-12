@@ -2,7 +2,7 @@ import logging
 from django.http import JsonResponse
 import requests
 from datetime import timedelta
-
+from boost.models import BoostOrder
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import SetPasswordForm
@@ -91,6 +91,7 @@ def cancel_order_view(request):
 def orders_view(request):
     user_orders = Order.objects.filter(user=request.user).order_by("-created_at")
     log_purchases = LogPurchase.objects.filter(user=request.user).order_by("-created_at")
+    boost_orders = BoostOrder.objects.filter(user=request.user).order_by("-created_at")
     wallet, _ = Wallet.objects.get_or_create(user=request.user)
 
     # Map internal SMS order statuses to display statuses the template
@@ -143,7 +144,27 @@ def orders_view(request):
             "order_id": lp.order_id or "",
         })
 
-    # newest first across both types
+    # ---- Boost orders ----
+    # Status comes from the provider (Pending / Processing / In progress /
+    # Completed / Partial / Canceled), kept fresh by sync_boost_orders_job
+    # every 5 minutes — lowercased here so the template pills match.
+    for b in boost_orders:
+        purchases.append({
+            "type": "boost",
+            "name": b.service.name,
+            "detail": b.link or "",
+            "otp": "",
+            "uid": "",
+            "format_string": "",
+            "format_labels": "",
+            "description": f"{b.quantity:,} units",
+            "price": b.price,
+            "status": b.status.lower(),
+            "created_at": b.created_at,
+            "order_id": b.provider_order_id or "",
+        })
+
+    # newest first across all three types
     purchases.sort(key=lambda x: x["created_at"], reverse=True)
 
     return render(

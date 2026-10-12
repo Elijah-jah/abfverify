@@ -669,3 +669,22 @@ body.light{
 [hidden]{
     display: none !important;
 }
+/* =========================
+   BOOST STATUS PILLS
+========================= */
+
+.mp-processing {
+    color: #2563eb;
+    background: rgba(37, 99, 235, .13);
+}
+
+.mp-partial {
+    color: #d97706;
+    background: rgba(245, 158, 11, .13);
+}
+
+.mp-canceled {
+    color: var(--muted);
+    background: var(--card-2);
+    border: 1px solid var(--border);
+}
