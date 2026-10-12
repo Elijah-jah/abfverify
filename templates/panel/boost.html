@@ -6,12 +6,12 @@
 {% block section_title %}Boost Accounts{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/boost.css' %}">
+<link rel="stylesheet" href="{% static 'css/boost.css' %}?v=2">
 {% endblock %}
 
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'css/boost.css' %}">
+<link rel="stylesheet" href="{% static 'css/boost.css' %}?v=2">
 
 <div class="boost-container">
 
@@ -227,7 +227,6 @@
         });
         categoryChoices.setChoices(catOpts, "value", "label", true);
     } else {
-        // no Choices available: plain select still works
         categorySelect.innerHTML = '<option value="">Select Category</option>';
         Object.keys(cats).sort().forEach(function (c) {
             var opt = document.createElement("option");

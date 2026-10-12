@@ -107,6 +107,27 @@
 }
 
 /* =========================
+   SERVICE DESCRIPTION BOX
+   Short by default, expands to fit content
+========================= */
+
+.boost-desc-box {
+    width: 100%;
+    min-height: 48px;
+    max-height: 140px;
+    overflow-y: auto;
+    padding: 10px 13px;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--muted);
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: 11px;
+    white-space: pre-line;   /* keeps line breaks from the description */
+    scrollbar-width: thin;
+}
+
+/* =========================
    PRICE BOX (wallet-hero style)
 ========================= */
 
@@ -331,8 +352,8 @@
 }
 
 /* =========================
-   CHOICES DROPDOWN TWEAKS
-   (so the search dropdown matches the panel theme)
+   SEARCHABLE DROPDOWNS
+   Match the Buy Number page look
 ========================= */
 
 .choices__inner {
@@ -340,54 +361,80 @@
     border: 1px solid var(--border);
     border-radius: 11px;
     min-height: auto;
-    padding: 5.5px 11px;
+    padding: 10px 12px;
     font-size: 13.5px;
     color: var(--text);
 }
 
-.choices.is-focused .choices__inner {
+.choices.is-focused .choices__inner,
+.choices.is-open .choices__inner {
     border-color: var(--brand);
     box-shadow: 0 0 0 3px var(--brand-soft);
 }
 
-.choices__list--dropdown {
+.choices[data-type*="select-one"] .choices__inner { padding-bottom: 10px; }
+
+/* the dropdown panel */
+.choices__list--dropdown,
+.choices__list[aria-expanded] {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 11px;
+    border-radius: 12px;
     margin-top: 6px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    z-index: 50;
 }
 
-.choices__list--dropdown .choices__item {
-    font-size: 13px;
+/* the big search box at the top of the dropdown */
+.choices__list--dropdown .choices__input,
+.choices__list[aria-expanded] .choices__input {
+    width: calc(100% - 16px);
+    margin: 8px;
+    padding: 10px 12px;
+    font-size: 13.5px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+}
+
+.choices__list--dropdown .choices__input:focus,
+.choices__list[aria-expanded] .choices__input:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+/* options */
+.choices__list--dropdown .choices__item,
+.choices__list[aria-expanded] .choices__item {
+    font-size: 13.5px;
+    padding: 9px 14px;
     color: var(--text);
 }
 
-.choices__list--dropdown .choices__item--selectable.is-highlighted {
+/* highlighted option */
+.choices__list--dropdown .choices__item--selectable.is-highlighted,
+.choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
     background: var(--brand-soft);
     color: var(--brand);
 }
 
+/* group headings */
 .choices__group .choices__heading {
     font-size: 11px;
     font-weight: 700;
     letter-spacing: .8px;
     text-transform: uppercase;
     color: var(--muted);
-    padding: 10px 12px 4px;
-}
-
-.choices__input {
-    background: var(--bg);
-    color: var(--text);
-    font-size: 13px;
+    padding: 10px 14px 4px;
 }
 
 .choices__placeholder { color: var(--muted); opacity: 1; }
 
-.choices[data-type*="select-one"] .choices__inner { padding-bottom: 5.5px; }
-
 /* =========================
-   TOAST
+   TOAST (fallback only — global toast.js is primary)
 ========================= */
 
 .boost-toast-wrap {
@@ -464,23 +511,3 @@
 }
 
 [hidden] { display: none !important; }
-
-/* =========================
-   SERVICE DESCRIPTION BOX
-========================= */
-
-.boost-desc-box {
-    width: 100%;
-    min-height: 74px;
-    max-height: 150px;
-    overflow-y: auto;
-    padding: 12px 14px;
-    font-size: 12.5px;
-    line-height: 1.6;
-    color: var(--muted);
-    background: var(--bg);
-    border: 1px dashed var(--border);
-    border-radius: 11px;
-    white-space: pre-line;   /* keeps line breaks from the description */
-    scrollbar-width: thin;
-}
