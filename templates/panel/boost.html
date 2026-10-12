@@ -163,7 +163,7 @@
         document.getElementById("boost-services-data").textContent
     );
     var EXCHANGE_RATE = parseFloat("{{ boost_settings.exchange_rate }}");
-    var PROFIT = parseFloat("{{ boost_settings.profit_percent }}");
+    var PROFIT_PER_1000 = parseFloat("{{ boost_settings.profit_per_1000 }}");
 
     var categorySelect = document.getElementById("categorySelect");
     var serviceSelect = document.getElementById("serviceSelect");
@@ -228,10 +228,9 @@
 
         var opts = [];
         cats[category].forEach(function (s) {
-            var label = s.name;
             opts.push({
                 value: String(s.id),
-                label: label,
+                label: s.name,
                 customProperties: {
                     rate: s.rate,
                     min: s.min_order,
@@ -292,7 +291,7 @@
         return null;
     }
 
-    /* ---------- live price estimate ---------- */
+    /* ---------- live price estimate (flat profit per 1000) ---------- */
     function calcPrice() {
         var s = currentServiceData();
         var qty = parseInt(qtyInput.value || "0", 10);
@@ -311,8 +310,9 @@
         qtyHint.innerText = "Enter between " + min.toLocaleString() + " and " + max.toLocaleString();
 
         if (qty >= min) {
-            var cost = (parseFloat(s.rate) / 1000) * qty;
-            var price = cost * EXCHANGE_RATE * (1 + PROFIT / 100);
+            var providerCost = (parseFloat(s.rate) / 1000) * qty;
+            var profit = (PROFIT_PER_1000 / 1000) * qty;
+            var price = (providerCost + profit) * EXCHANGE_RATE;
             priceEl.innerText = "₦" + price.toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
@@ -383,7 +383,16 @@
                 form.reset();
                 if (categoryChoices) categoryChoices.setChoiceByValue("");
                 serviceSelect.innerHTML = '<option value="">Select Category First</option>';
-                if (serviceChoices) serviceChoices.destroy(), serviceChoices = null;
+                if (serviceChoices) {
+                    serviceChoices.destroy();
+                    serviceChoices = new Choices("#serviceSelect", {
+                        searchEnabled: true,
+                        searchPlaceholderValue: "Search services…",
+                        itemSelectText: "",
+                        shouldSort: false,
+                        allowHTML: false
+                    });
+                }
                 resetServiceUI();
                 linkInput.focus();
             } else if (data.redirect) {
