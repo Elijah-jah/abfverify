@@ -30,7 +30,7 @@
     </div>
 
     <!-- ORDER FORM -->
-    <form method="POST" id="boostOrderForm">
+    <form method="POST" id="boostOrderForm" novalidate>
 
         {% csrf_token %}
 
@@ -79,7 +79,7 @@
                     required>
             </div>
 
-            <!-- QUANTITY -->
+            <!-- QUANTITY (enforced in JS: cannot exceed the service max) -->
             <div class="boost-group">
                 <label for="boostQty">Quantity</label>
                 <input
@@ -179,6 +179,30 @@
     var categoryChoices = null;
     var serviceChoices = null;
 
+    /* ---------- toast: uses the site's global toast.js (type, message) ---------- */
+    function notify(type, msg) {
+        if (typeof window.showToast === "function") {
+            window.showToast(type, msg);
+            return;
+        }
+        // fallback if toast.js ever fails to load
+        var wrap = document.querySelector(".boost-toast-wrap");
+        if (!wrap) {
+            wrap = document.createElement("div");
+            wrap.className = "boost-toast-wrap";
+            document.body.appendChild(wrap);
+        }
+        var t = document.createElement("div");
+        t.className = "boost-toast" + (type === "success" ? " boost-toast--success" : "");
+        t.innerText = msg;
+        wrap.appendChild(t);
+        requestAnimationFrame(function () { t.classList.add("show"); });
+        setTimeout(function () {
+            t.classList.remove("show");
+            setTimeout(function () { t.remove(); }, 300);
+        }, 4000);
+    }
+
     /* ---------- group services by category ---------- */
     var cats = {};
     SERVICES.forEach(function (s) {
@@ -187,77 +211,77 @@
         cats[c].push(s);
     });
 
-    /* ---------- category dropdown ---------- */
-    categorySelect.innerHTML = '<option value="">Select Category</option>';
-    Object.keys(cats).sort().forEach(function (c) {
-        var opt = document.createElement("option");
-        opt.value = c;
-        opt.textContent = c;
-        categorySelect.appendChild(opt);
-    });
-
+    /* ---------- CATEGORY dropdown: searchable like the SMS page ---------- */
     if (window.Choices) {
         categoryChoices = new Choices("#categorySelect", {
             searchEnabled: true,
-            searchPlaceholderValue: "Search categories…",
+            searchPlaceholderValue: "Search category…",
             itemSelectText: "",
             shouldSort: false,
             allowHTML: false
         });
+
+        var catOpts = [{ value: "", label: "Select Category" }];
+        Object.keys(cats).sort().forEach(function (c) {
+            catOpts.push({ value: c, label: c });
+        });
+        categoryChoices.setChoices(catOpts, "value", "label", true);
+    } else {
+        // no Choices available: plain select still works
+        categorySelect.innerHTML = '<option value="">Select Category</option>';
+        Object.keys(cats).sort().forEach(function (c) {
+            var opt = document.createElement("option");
+            opt.value = c;
+            opt.textContent = c;
+            categorySelect.appendChild(opt);
+        });
     }
 
-    /* ---------- service dropdown (loaded per category, like the SMS page) ---------- */
+    /* ---------- SERVICE dropdown: searchable, loaded per category ---------- */
     if (window.Choices) {
         serviceChoices = new Choices("#serviceSelect", {
             searchEnabled: true,
-            searchPlaceholderValue: "Search services…",
+            searchPlaceholderValue: "Search service…",
             itemSelectText: "",
             shouldSort: false,
             allowHTML: false
         });
+        serviceChoices.setChoices(
+            [{ value: "", label: "Select Category First" }],
+            "value", "label", true
+        );
     }
 
     function loadServicesFor(category) {
-        // wipe current options
-        serviceSelect.innerHTML = "";
+        if (serviceChoices) serviceChoices.clearStore();
 
         if (!category || !cats[category]) {
-            serviceSelect.innerHTML = '<option value="">Select Category First</option>';
-            if (serviceChoices) serviceChoices.setChoices([], "value", "label", true);
+            if (serviceChoices) {
+                serviceChoices.setChoices(
+                    [{ value: "", label: "Select Category First" }],
+                    "value", "label", true
+                );
+            } else {
+                serviceSelect.innerHTML = '<option value="">Select Category First</option>';
+            }
+            resetServiceUI();
             return;
         }
 
-        var opts = [];
+        var opts = [{ value: "", label: "Select a service…" }];
         cats[category].forEach(function (s) {
-            opts.push({
-                value: String(s.id),
-                label: s.name,
-                customProperties: {
-                    rate: s.rate,
-                    min: s.min_order,
-                    max: s.max_order,
-                    desc: s.description || ""
-                }
-            });
+            opts.push({ value: String(s.id), label: s.name });
         });
 
         if (serviceChoices) {
-            serviceChoices.clearStore();
             serviceChoices.setChoices(opts, "value", "label", true);
             serviceChoices.setChoiceByValue("");
         } else {
-            var placeholder = document.createElement("option");
-            placeholder.value = "";
-            placeholder.textContent = "Select a service…";
-            serviceSelect.appendChild(placeholder);
+            serviceSelect.innerHTML = "";
             opts.forEach(function (o) {
                 var opt = document.createElement("option");
                 opt.value = o.value;
                 opt.textContent = o.label;
-                opt.dataset.rate = o.customProperties.rate;
-                opt.dataset.min = o.customProperties.min;
-                opt.dataset.max = o.customProperties.max;
-                opt.dataset.desc = o.customProperties.desc;
                 serviceSelect.appendChild(opt);
             });
         }
@@ -278,7 +302,7 @@
         loadServicesFor(categorySelect.value);
     });
 
-    /* ---------- current service's data (works for Choices + plain select) ---------- */
+    /* ---------- current service's data ---------- */
     function currentServiceData() {
         if (!categorySelect.value) return null;
 
@@ -292,7 +316,7 @@
         return null;
     }
 
-    /* ---------- live price estimate (hybrid: flat minimum + % scaling) ---------- */
+    /* ---------- live price estimate (hybrid pricing) ---------- */
     function calcPrice() {
         var s = currentServiceData();
         var qty = parseInt(qtyInput.value || "0", 10);
@@ -332,30 +356,64 @@
             resetServiceUI();
         }
     });
-    qtyInput.addEventListener("input", calcPrice);
 
-    /* ---------- toast ---------- */
-    function toast(msg, ok) {
-        var wrap = document.querySelector(".boost-toast-wrap");
-        if (!wrap) {
-            wrap = document.createElement("div");
-            wrap.className = "boost-toast-wrap";
-            document.body.appendChild(wrap);
+    /* ---------- QUANTITY ENFORCEMENT ----------
+       Typing above the max clamps to the max (with error toast).
+       Leaving the field below the min snaps to the min (with warning). */
+    qtyInput.addEventListener("input", function () {
+        var s = currentServiceData();
+        if (!s) return;
+
+        var max = parseInt(s.max_order, 10);
+        var v = parseInt(qtyInput.value, 10);
+
+        if (!isNaN(v) && v > max) {
+            qtyInput.value = max;
+            notify("error", "Maximum quantity for this service is " + max.toLocaleString() + ".");
         }
-        var t = document.createElement("div");
-        t.className = "boost-toast" + (ok ? " boost-toast--success" : "");
-        t.innerText = msg || "Something went wrong. Please try again.";
-        wrap.appendChild(t);
-        requestAnimationFrame(function () { t.classList.add("show"); });
-        setTimeout(function () {
-            t.classList.remove("show");
-            setTimeout(function () { t.remove(); }, 300);
-        }, 4000);
-    }
+        calcPrice();
+    });
 
-    /* ---------- submit (AJAX, no reload) ---------- */
+    qtyInput.addEventListener("change", function () {
+        var s = currentServiceData();
+        if (!s) return;
+
+        var min = parseInt(s.min_order, 10);
+        var v = parseInt(qtyInput.value, 10);
+
+        if (qtyInput.value !== "" && !isNaN(v) && v < min) {
+            qtyInput.value = min;
+            notify("warning", "Minimum quantity for this service is " + min.toLocaleString() + ".");
+        }
+        calcPrice();
+    });
+
+    /* ---------- submit: validate in JS, then AJAX (no reload) ---------- */
     form.addEventListener("submit", function (e) {
         e.preventDefault();
+
+        // client-side validation with toast errors
+        var s = currentServiceData();
+        if (!s) {
+            notify("error", "Please select a category and a service first.");
+            return;
+        }
+
+        var min = parseInt(s.min_order, 10);
+        var max = parseInt(s.max_order, 10);
+        var qty = parseInt(qtyInput.value, 10);
+
+        if (isNaN(qty) || qty < min || qty > max) {
+            notify("error", "Quantity must be between " + min.toLocaleString() +
+                           " and " + max.toLocaleString() + " for this service.");
+            return;
+        }
+
+        if (!linkInput.value.trim()) {
+            notify("error", "Please paste the link you want to boost.");
+            linkInput.focus();
+            return;
+        }
 
         var original = btn.innerHTML;
         btn.disabled = true;
@@ -378,35 +436,27 @@
         })
         .then(function (data) {
             if (data.success && data.order) {
-                toast(data.message || "Boost order placed!", true);
+                notify("success", data.message || "Boost order placed!");
                 addOrderRow(data.order);
                 form.reset();
+
                 if (categoryChoices) categoryChoices.setChoiceByValue("");
-                serviceSelect.innerHTML = '<option value="">Select Category First</option>';
-                if (serviceChoices) {
-                    serviceChoices.destroy();
-                    serviceChoices = new Choices("#serviceSelect", {
-                        searchEnabled: true,
-                        searchPlaceholderValue: "Search services…",
-                        itemSelectText: "",
-                        shouldSort: false,
-                        allowHTML: false
-                    });
-                }
-                resetServiceUI();
+                loadServicesFor("");
+
                 linkInput.focus();
             } else if (data.redirect) {
-                toast(data.message || "Please try again.", false);
+                notify(data.level === "warning" ? "warning" : "error",
+                       data.message || "Please try again.");
                 var targetPath = new URL(data.redirect, window.location.href).pathname;
                 if (targetPath !== window.location.pathname) {
                     setTimeout(function () { window.location.assign(data.redirect); }, 2000);
                 }
             } else {
-                toast(data.message || "Something went wrong. Please try again.", false);
+                notify("error", data.message || "Something went wrong. Please try again.");
             }
         })
         .catch(function () {
-            toast("Network error. Please try again.", false);
+            notify("error", "Network error. Please try again.");
         })
         .finally(function () {
             btn.disabled = false;
