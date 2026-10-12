@@ -513,3 +513,70 @@
     opacity: 1;
     transform: translateY(0);
 }
+/* =========================
+   MOBILE SHRINK / ZOOM FIXES
+   1) iOS auto-zooms inputs under 16px on focus — bump search + selects
+      to 16px on small screens so the page stays at 100% zoom.
+   2) min-width:0 guards + wrapping stop long names from stretching the
+      page wider than the viewport (which makes iOS zoom the page out).
+========================= */
+
+@media (max-width: 575.98px) {
+
+    .choices__list--dropdown .choices__input,
+    .choices__list[aria-expanded] .choices__input,
+    .sms-select {
+        font-size: 16px;
+    }
+}
+
+.sms-container,
+.sms-head,
+.sms-card,
+.sms-group,
+.sms-session,
+.sms-session-header,
+.sms-session-item,
+.sms-copy-box {
+    min-width: 0;
+}
+
+/* the select + dropdown can never force the page wider */
+.choices {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.choices__inner {
+    overflow: hidden;
+}
+
+/* selected value shows "..." instead of stretching */
+.choices__list--single .choices__item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* dropdown panel never wider than the select */
+.choices__list--dropdown,
+.choices__list[aria-expanded] {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+/* long option names wrap instead of overflowing */
+.choices__list--dropdown .choices__item,
+.choices__list[aria-expanded] .choices__item {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    min-width: 0;
+}
+
+/* safety net: stop iOS text-size adjust quirks on the page inputs */
+@media (max-width: 575.98px) {
+    .sms-select {
+        -webkit-text-size-adjust: 100%;
+    }
+}
