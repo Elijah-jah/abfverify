@@ -1259,3 +1259,7 @@ body.light .navbar-toggler-icon{
         width: 220px;
     }
 }
+/* pause the float while the mouse-tilt is active */
+.iphone.tilting{
+    animation: none;
+}

@@ -10,7 +10,12 @@ document.addEventListener("DOMContentLoaded", function () {
     var themeToggle = document.getElementById("themeToggle");
 
     function applyTheme(isLight) {
+        // clear the pre-paint html class so it can never fight body.light
+        // (this was the cause of the half-dark / half-light page)
+        document.documentElement.classList.remove("pre-light");
+
         document.body.classList.toggle("light", isLight);
+
         if (themeToggle) {
             themeToggle.innerHTML = isLight
                 ? '<i class="bi bi-sun-fill"></i>'
@@ -19,14 +24,29 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /* initial state: read the STORED preference (not the body class —
-       the pre-paint script marks <html>, so body.light isn't set yet).
-       Without this the navbar keeps its dark background after reload. */
+       the pre-paint script marks <html>, so body.light isn't set yet) */
     var storedIsLight = false;
     try {
         storedIsLight = localStorage.getItem("theme") === "light";
     } catch (e) {}
 
     applyTheme(storedIsLight);
+
+    /* ---------- reveal helper: force-show anything already on screen ----------
+       covers anchor jumps (/#boost) and the theme toggle, where sections
+       could otherwise stay stuck invisible */
+    function revealInView() {
+        document.querySelectorAll(".rv").forEach(function (el) {
+            if (el.classList.contains("animate")) return;
+            var rect = el.getBoundingClientRect();
+            if (rect.top < window.innerHeight && rect.bottom > 0) {
+                el.classList.add("animate");
+            }
+        });
+    }
+
+    // run once on load in case we landed on an anchor mid-page
+    revealInView();
 
     if (themeToggle) {
         themeToggle.addEventListener("click", function () {
@@ -35,6 +55,8 @@ document.addEventListener("DOMContentLoaded", function () {
             try {
                 localStorage.setItem("theme", isLight ? "light" : "dark");
             } catch (e) {}
+            // make sure nothing is left invisible after the switch
+            revealInView();
         });
     }
 
@@ -101,21 +123,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /* ==========================
        PHONE TILT (desktop only)
+       Targets the new .iphone frame; pauses the float animation
+       while tilting so the two transforms don't fight each other.
     ========================== */
 
-    var phone = document.querySelector(".phone-frame");
+    var phone = document.querySelector(".iphone");
     var finePointer = window.matchMedia && window.matchMedia("(pointer: fine)").matches;
 
     if (phone && finePointer) {
         window.addEventListener("mousemove", function (e) {
-            var x = (window.innerWidth / 2 - e.clientX) / 80;
-            var y = (window.innerHeight / 2 - e.clientY) / 80;
+            var x = (window.innerWidth / 2 - e.clientX) / 60;
+            var y = (window.innerHeight / 2 - e.clientY) / 60;
+            phone.classList.add("tilting");
             phone.style.transform =
                 "rotateY(" + x + "deg) rotateX(" + (-y) + "deg)";
         });
 
         document.addEventListener("mouseleave", function () {
-            phone.style.transform = "rotateY(0deg) rotateX(0deg)";
+            phone.classList.remove("tilting");
+            phone.style.transform = "";
         });
     }
 
