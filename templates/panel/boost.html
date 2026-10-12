@@ -164,6 +164,7 @@
     );
     var EXCHANGE_RATE = parseFloat("{{ boost_settings.exchange_rate }}");
     var PROFIT_FLAT = parseFloat("{{ boost_settings.profit_flat }}");
+    var PROFIT_PERCENT = parseFloat("{{ boost_settings.profit_percent }}");
 
     var categorySelect = document.getElementById("categorySelect");
     var serviceSelect = document.getElementById("serviceSelect");
@@ -291,7 +292,7 @@
         return null;
     }
 
-    /* ---------- live price estimate (flat profit per ORDER) ---------- */
+    /* ---------- live price estimate (hybrid: flat minimum + % scaling) ---------- */
     function calcPrice() {
         var s = currentServiceData();
         var qty = parseInt(qtyInput.value || "0", 10);
@@ -311,7 +312,7 @@
 
         if (qty >= min) {
             var providerCost = (parseFloat(s.rate) / 1000) * qty;
-            var price = (providerCost + PROFIT_FLAT) * EXCHANGE_RATE;
+            var price = (providerCost + PROFIT_FLAT + (providerCost * PROFIT_PERCENT / 100)) * EXCHANGE_RATE;
             priceEl.innerText = "₦" + price.toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2

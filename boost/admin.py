@@ -62,7 +62,7 @@ class BoostOrderAdmin(admin.ModelAdmin):
 
 @admin.register(BoostSettings)
 class BoostSettingsAdmin(admin.ModelAdmin):
-    list_display = ("exchange_rate", "profit_flat", "updated_at")
+    list_display = ("exchange_rate", "profit_flat", "profit_percent", "updated_at")
 
     def has_add_permission(self, request):
         return not BoostSettings.objects.exists()

@@ -5,14 +5,18 @@ from django.db import models
 
 
 class BoostSettings(models.Model):
-    """Singleton — edit exchange rate & flat profit from admin, like SMS pricing."""
+    """Singleton — edit exchange rate & profit from admin, like SMS pricing."""
     exchange_rate = models.DecimalField(
         max_digits=10, decimal_places=2, default=1.0,
         help_text="Provider currency → NGN. Your provider bills in NGN, so keep this at 1.0.",
     )
     profit_flat = models.DecimalField(
         max_digits=10, decimal_places=2, default=1000.0,
-        help_text="Flat profit (NGN) added to EVERY order, regardless of quantity. 1000 = ₦1,000 profit per order.",
+        help_text="Minimum profit (NGN) on EVERY order. 1000 = you never earn less than ₦1,000.",
+    )
+    profit_percent = models.DecimalField(
+        max_digits=6, decimal_places=2, default=15.0,
+        help_text="Extra profit on top, as % of provider cost. This is what makes BIG orders pay more. 15 = 15%.",
     )
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -30,7 +34,7 @@ class BoostSettings(models.Model):
         return obj
 
     def __str__(self):
-        return f"Rate {self.exchange_rate} · +₦{self.profit_flat} per order"
+        return f"Rate {self.exchange_rate} · +₦{self.profit_flat} + {self.profit_percent}%"
 
 
 class BoostService(models.Model):
@@ -62,7 +66,8 @@ class BoostService(models.Model):
         settings_obj = settings_obj or BoostSettings.get_solo()
         qty = Decimal(quantity)
         provider_cost = (self.rate / Decimal("1000")) * qty
-        price = (provider_cost + settings_obj.profit_flat) * settings_obj.exchange_rate
+        profit = settings_obj.profit_flat + (provider_cost * settings_obj.profit_percent / Decimal("100"))
+        price = (provider_cost + profit) * settings_obj.exchange_rate
         return price.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
