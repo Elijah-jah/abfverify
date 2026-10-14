@@ -111,11 +111,22 @@ class Command(BaseCommand):
             elif isinstance(sid, str) and sid.isdigit():
                 defaults["provider_id"] = int(sid)
 
-            Service.objects.update_or_create(
-                server="server1",
-                code=code,
-                defaults=defaults,
-            )
+            if "provider_id" in defaults:
+                # Numeric ID: upsert by provider_id alone (globally unique).
+                # Also adopts old rows imported under a different server label.
+                pid = defaults.pop("provider_id")
+                defaults["server"] = "server1"
+                Service.objects.update_or_create(
+                    provider_id=pid,
+                    defaults=defaults,
+                )
+            else:
+                # String IDs ('whatsapp_usa' etc.): no provider_id to match on
+                Service.objects.update_or_create(
+                    server="server1",
+                    code=code,
+                    defaults=defaults,
+                )
         self.stdout.write(self.style.SUCCESS(f"Services synced: {len(services)}"))
 
         if options["skip_prices"]:
