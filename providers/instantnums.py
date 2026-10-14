@@ -3,11 +3,18 @@ import requests
 
 from django.conf import settings
 
+from .base import BaseProvider
 
 logger = logging.getLogger(__name__)
 
- 
-class InstantNumsProvider:
+
+class InstantNumsProvider(BaseProvider):
+    """InstantNums — Server 1 (General, 150+ countries)."""
+
+    name = "instantnums"
+
+    # Statuses that simply mean "no SMS yet" — normal state, not an error
+    WAITING_STATUSES = ("waiting", "pending", "in_progress", None)
 
     def __init__(self):
         self.base_url = settings.INSTANTNUMS_BASE_URL.rstrip("/")
@@ -41,76 +48,59 @@ class InstantNumsProvider:
             raise Exception("Unable to connect to provider. Please try again.")
 
         except requests.HTTPError as e:
-            logger.error("InstantNums HTTP error: %s %s - Status: %s", method, url, e.response.status_code)
-            raise Exception("Provider returned an error. Please try again.")
+            # Surface the provider's actual error message when available
+            try:
+                detail = e.response.json().get("message")
+            except (ValueError, AttributeError):
+                detail = None
+            msg = detail or "Provider returned an error. Please try again."
+            logger.error(
+                "InstantNums HTTP error: %s %s - Status: %s - %s",
+                method, url, e.response.status_code, msg,
+            )
+            raise Exception(msg)
 
         except requests.RequestException:
             logger.exception("InstantNums request failed: %s %s", method, url)
             raise Exception("Provider request failed. Please try again.")
 
+    # ------------------------------------------------------------------
+    # BaseProvider interface
+    # ------------------------------------------------------------------
+
     def get_balance(self):
-        response = self._make_request(
-            "GET",
-            "/balance",
-        )
-        return response
+        return self._make_request("GET", "/balance")
 
     def get_countries(self):
-        response = self._make_request(
-            "GET",
-            "/countries",
-        )
-        return response
+        return self._make_request("GET", "/countries")
 
-    def get_services(self):
-        response = self._make_request(
-            "GET",
-            "/services",
-        )
-        return response
+    def get_services(self, country=None):
+        params = {"country": country} if country else None
+        return self._make_request("GET", "/services", params=params)
 
     def get_price(self, service, country):
         data = self._make_request(
             "GET",
             "/price",
-            params={
-                "service": service,
-                "country": country,
-            },
+            params={"service": service, "country": country},
         )
-
         if not data.get("success"):
             logger.error("InstantNums price fetch failed: %s", data)
-            raise Exception("Unable to fetch price from InstantNums.")
-
+            raise Exception(data.get("message", "Unable to fetch price from InstantNums."))
         return data
 
     def check_stock(self, service, country):
-        """
-        Check whether numbers are available for
-        the selected service and country.
-        """
-
         data = self._make_request(
             "GET",
             "/stock",
-            params={
-                "service": service,
-                "country": country,
-            },
+            params={"service": service, "country": country},
         )
-
         if not data.get("success"):
             logger.error("InstantNums stock check failed: %s", data)
-            raise Exception("Unable to check stock from InstantNums.")
-
+            raise Exception(data.get("message", "Unable to check stock from InstantNums."))
         return data
 
     def purchase(self, service, country):
-        """
-        Purchase a virtual number from InstantNums.
-        """
-
         data = self._make_request(
             "POST",
             "/sms/purchase",
@@ -119,38 +109,23 @@ class InstantNumsProvider:
                 "country": str(country),
             },
         )
-
         if not data.get("success"):
             logger.error("InstantNums purchase failed: %s", data)
-            raise Exception("Unable to purchase a number from InstantNums.")
-
+            raise Exception(data.get("message", "Unable to purchase a number from InstantNums."))
         return data
 
     def check_sms(self, order_id):
-        data = self._make_request(
-            "GET",
-            f"/sms/{order_id}",
-        )
-
-        if not data.get("success"):
+        data = self._make_request("GET", f"/sms/{order_id}")
+        # "Waiting for SMS" is a normal state — only raise on real failures
+        status = data.get("status")
+        if not data.get("success") and status not in self.WAITING_STATUSES:
             logger.error("InstantNums SMS check failed for order %s: %s", order_id, data)
-            raise Exception("Unable to retrieve SMS from InstantNums.")
-
+            raise Exception(data.get("message", "Unable to retrieve SMS from InstantNums."))
         return data
 
-    def cancel_order(self, order_id):
-        data = self._make_request(
-            "POST",
-            f"/sms/{order_id}/cancel",
-        )
-
+    def cancel(self, order_id):
+        data = self._make_request("POST", f"/sms/{order_id}/cancel")
         if not data.get("success"):
             logger.error("InstantNums cancel failed for order %s: %s", order_id, data)
-            raise Exception(
-                data.get(
-                    "message",
-                    "Unable to cancel order from InstantNums."
-                )
-            )
-
+            raise Exception(data.get("message", "Unable to cancel order from InstantNums."))
         return data
