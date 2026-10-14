@@ -21,7 +21,7 @@ class Service(models.Model):
     )
 
     code = models.CharField(
-        max_length=50,
+        max_length=100,
         blank=True,
         null=True,
         help_text="Provider service code (e.g., am, fb, ig for DaisySMS)"

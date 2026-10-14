@@ -180,9 +180,6 @@ def orders_view(request):
 @login_required
 def sms_view(request):
 
-    countries = Country.objects.filter(status="active")
-    services = Service.objects.filter(status="active")
-
     wallet, created = Wallet.objects.get_or_create(
         user=request.user
     )
@@ -194,8 +191,6 @@ def sms_view(request):
     )
 
     def ajax_error_response(redirect_to="sms"):
-        # Every error branch adds a message then redirects. For AJAX we
-        # return that message as JSON instead. Normal posts redirect as before.
         if ajax:
             msg_text, msg_level = "", "error"
             for m in messages.get_messages(request):
@@ -219,21 +214,19 @@ def sms_view(request):
             messages.error(request, "Invalid server selected.")
             return ajax_error_response("sms")
 
-        # Server 1 - Coming Soon
-        if server == "server1":
-            messages.error(request, "Server 1 is coming soon.")
-            return ajax_error_response("sms")
-
+        # Lookups pinned to the chosen server so IDs can't be mixed across servers
         country = get_object_or_404(
             Country,
             id=request.POST.get("country"),
             status="active",
+            server=server,
         )
 
         service = get_object_or_404(
             Service,
             id=request.POST.get("service"),
             status="active",
+            server=server,
         )
 
         # Server 2 (DaisySMS) — USA only validation
@@ -241,6 +234,7 @@ def sms_view(request):
             messages.error(request, "Server 2 only supports USA numbers.")
             return ajax_error_response("sms")
 
+        # Price MUST come from a synced Pricing row (run sync_instantnums first)
         try:
             pricing = Pricing.objects.get(
                 country=country,
@@ -286,10 +280,12 @@ def sms_view(request):
         # Get provider based on server
         provider = get_provider(server=server)
 
+        # Provider identifiers
         service_identifier = service.code
-        country_identifier = country.id
         if server == "server2":
-            country_identifier = 187
+            country_identifier = 187            # DaisySMS USA
+        else:
+            country_identifier = country.name   # InstantNums accepts full names (tested)
 
         try:
             result = provider.purchase(
@@ -298,8 +294,10 @@ def sms_view(request):
             )
 
         except Exception as e:
-            logger.exception("Provider purchase failed for user %s, country %s, service %s, server %s: %s",
-                             request.user.id, country.name, service.name, server, str(e))
+            logger.exception(
+                "Provider purchase failed for user %s, country %s, service %s, server %s: %s",
+                request.user.id, country.name, service.name, server, str(e),
+            )
             messages.error(request, "Unable to complete your request. Please try again later.")
             return ajax_error_response("sms")
 
@@ -346,13 +344,10 @@ def sms_view(request):
         request,
         "panel/sms.html",
         {
-            "countries": countries,
-            "services": services,
             "user_wallet": wallet,
             "active_orders": active_orders,
         },
     )
-
 
 # ==========================
 # AUTH

@@ -116,12 +116,18 @@ class InstantNumsProvider(BaseProvider):
 
     def check_sms(self, order_id):
         data = self._make_request("GET", f"/sms/{order_id}")
-        # "Waiting for SMS" is a normal state — only raise on real failures
-        status = data.get("status")
-        if not data.get("success") and status not in self.WAITING_STATUSES:
-            logger.error("InstantNums SMS check failed for order %s: %s", order_id, data)
-            raise Exception(data.get("message", "Unable to retrieve SMS from InstantNums."))
-        return data
+
+        # Normalize the API response to the shape views expect:
+        # {"status": "finished", "sms": "12345", "full_sms": "..."}
+        # or {"status": "waiting"} while no SMS has arrived.
+        code = data.get("code") or data.get("sms_code") or data.get("otp")
+        if code:
+            return {
+                "status": "finished",
+                "sms": str(code),
+                "full_sms": data.get("full_sms") or data.get("text") or data.get("sms") or "",
+            }
+        return {"status": "waiting", "sms": "", "full_sms": ""}
 
     def cancel(self, order_id):
         data = self._make_request("POST", f"/sms/{order_id}/cancel")

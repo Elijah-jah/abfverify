@@ -1,20 +1,23 @@
 from providers.daisysms import DaisySMSProvider
+from providers.instantnums import InstantNumsProvider
 
 
 def get_provider(server="server2"):
     """
     Servers:
+    - server1: InstantNums (General, 150+ countries)
     - server2: DaisySMS (USA only)
     """
-    providers = {
-        "server2": DaisySMSProvider,
-    }
+    server = server.lower()
 
-    provider_class = providers.get(server.lower())
+    if server == "server1":
+        # InstantNums reads INSTANTNUMS_API_KEY / INSTANTNUMS_BASE_URL
+        # from settings itself — no constructor args needed.
+        return InstantNumsProvider()
 
-    if not provider_class:
-        raise ValueError(f"Unsupported server: {server}")
+    if server == "server2":
+        from django.conf import settings
+        api_key = getattr(settings, "DAISYSMS_API_KEY", "")
+        return DaisySMSProvider(api_key=api_key)
 
-    from django.conf import settings
-    api_key = getattr(settings, "DAISYSMS_API_KEY", "")
-    return provider_class(api_key=api_key)
+    raise ValueError(f"Unsupported server: {server}")
