@@ -224,7 +224,7 @@ class Command(BaseCommand):
                 f"Rerun with --resume to continue where you left off."
             ))
             return
-
+        
         self.stdout.write(self.style.SUCCESS(
             f"Prices synced: {ok} ok, {fail} failed, {skipped} skipped "
             f"(total time: {(time.time() - started) / 60:.0f} min)"
