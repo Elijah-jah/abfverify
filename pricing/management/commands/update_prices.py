@@ -1,3 +1,5 @@
+import time
+
 from django.core.management.base import BaseCommand
 
 from countries.models import Country
@@ -7,7 +9,7 @@ from providers.factory import get_provider
 
 
 class Command(BaseCommand):
-    help = "Update all prices from DaisySMS bulk getPrices and save to database"
+    help = "Update all prices from providers and save to database"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -19,9 +21,32 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.dry_run = options["dry_run"]
 
+        self._update_server1()
         self._update_server2()
 
         self.stdout.write(self.style.SUCCESS("Price update complete!"))
+
+    # ==================== server1 (InstantNums — no bulk endpoint) ====================
+
+    def _update_server1(self):
+        server = "server1"
+
+        try:
+            provider = get_provider(server=server)
+        except ValueError:
+            self.stdout.write(self.style.WARNING("No provider configured for server1"))
+            return
+
+        try:
+            # Probe: InstantNums currently has no bulk price endpoint (400 without service param)
+            provider.get_all_prices("United States")
+        except Exception:
+            self.stdout.write(self.style.WARNING(
+                "InstantNums: no bulk endpoint. Refresh prices with "
+                "sync_instantnums --services \"WhatsApp,Telegram,...\" --sleep 5 --resume "
+                "(and recalc_prices after a profit change)"
+            ))
+            return
 
     # ==================== server2 (DaisySMS bulk) ====================
 
@@ -34,22 +59,15 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING("No provider configured for server2"))
             return
 
-        # ONE API call for the whole country — the only DaisySMS request
-        # this command ever makes.
         try:
             rates = provider.get_all_prices(187)  # USA
         except PermissionError as e:
-            self.stdout.write(self.style.ERROR(
-                f"DaisySMS auth failed: {e}"
-            ))
+            self.stdout.write(self.style.ERROR(f"DaisySMS auth failed: {e}"))
             return
         except Exception as e:
-            self.stdout.write(self.style.ERROR(
-                f"DaisySMS price fetch failed: {e}"
-            ))
+            self.stdout.write(self.style.ERROR(f"DaisySMS price fetch failed: {e}"))
             return
 
-        # rates = {"7eleven": {"cost": 0.45, "count": 38}, ...}
         rates_by_code = {
             code.strip().lower(): info.get("cost", 0)
             for code, info in rates.items()

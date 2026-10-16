@@ -135,3 +135,39 @@ class InstantNumsProvider(BaseProvider):
             logger.error("InstantNums cancel failed for order %s: %s", order_id, data)
             raise Exception(data.get("message", "Unable to cancel order from InstantNums."))
         return data
+
+
+    def get_all_prices(self, country):
+        """
+        Fetch all service prices for one country in one call.
+        Handles list or dict response shapes; raises if the API
+        requires a service param (i.e. bulk not supported).
+        """
+        data = self._make_request(
+            "GET",
+            "/price",
+            params={"country": str(country)},
+        )
+        if not data.get("success"):
+            raise Exception(data.get("message", "Price fetch failed"))
+
+        prices = data.get("prices")
+
+        # Shape A: {"prices": [{"service": "wa", "price_usd": 1.6, "available": 100}, ...]}
+        if isinstance(prices, list):
+            return {
+                str(p["service"]).strip().lower(): {
+                    "cost": p.get("price_usd", 0),
+                    "count": p.get("available", 0),
+                }
+                for p in prices if p.get("service")
+            }
+
+        # Shape B: {"prices": {"wa": 1.6, ...}}
+        if isinstance(prices, dict):
+            return {
+                str(k).strip().lower(): {"cost": v, "count": 0}
+                for k, v in prices.items()
+            }
+
+        raise Exception("Bulk prices not supported (single-pair response)")
