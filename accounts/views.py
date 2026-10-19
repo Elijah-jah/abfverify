@@ -73,18 +73,32 @@ def cancel_order_view(request):
     # Get correct provider based on server stored in order
     provider = get_provider(server=order.provider)
 
-    # Try to cancel with provider (free up the number)
+    # If the SMS actually arrived, don't cancel — deliver and charge.
+    try:
+        result = provider.check_sms(order.provider_order_id)
+        if result.get("status") == "finished":
+            order.sms_code = result.get("sms")
+            order.full_sms = result.get("full_sms", "")
+            order.sms_received_at = timezone.now()
+            order.status = "received"
+            order.save(update_fields=["sms_code", "full_sms", "sms_received_at", "status", "updated_at"])
+            messages.info(request, "An SMS was already received for this number — it cannot be cancelled.")
+            return redirect("sms")
+    except Exception as e:
+        logger.warning("Pre-cancel check failed for %s: %s", order.order_id, str(e))
+
+    # Attempt the actual cancel
     try:
         provider.cancel(order.provider_order_id)
     except Exception as e:
-        logger.warning(
-            "Provider cancel failed for order %s on server %s: %s",
-            order.order_id, order.provider, str(e),
-        )
-        messages.error(
-            request,
-            "Could not reach the provider to cancel. Please try again in a moment."
-        )
+        logger.warning("Cancel failed for order %s on %s: %s",
+                       order.order_id, order.provider, str(e))
+        if "409" in str(e):
+            # Order's time window on the number has likely expired or the
+            # number is no longer active — it can't be cancelled anymore.
+            messages.error(request, "This order is no longer active and cannot be cancelled. No charge was made.")
+        else:
+            messages.error(request, "We couldn't cancel this order right now. Please try again shortly.")
         return redirect("sms")
 
     order.status = "cancelled"
