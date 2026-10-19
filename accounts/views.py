@@ -39,7 +39,6 @@ logger = logging.getLogger(__name__)
 # ==========================
 # ORDERS
 # ==========================
-
 @ratelimit(key='user', rate='10/m', method='POST', block=True)
 @login_required
 def cancel_order_view(request):
@@ -62,8 +61,8 @@ def cancel_order_view(request):
         messages.info(request, "This order has already been cancelled.")
         return redirect("sms")
 
-    # Cannot cancel if already paid (SMS received)
-    if order.status == "completed":
+    # Cannot cancel if already paid (SMS received / completed)
+    if order.status in ("completed", "received"):
         messages.error(request, "This order cannot be cancelled. SMS code has already been received.")
         return redirect("sms")
 
@@ -76,9 +75,17 @@ def cancel_order_view(request):
 
     # Try to cancel with provider (free up the number)
     try:
-        provider.cancel_order(order.provider_order_id)
+        provider.cancel(order.provider_order_id)
     except Exception as e:
-        logger.warning("Provider cancel failed for order %s on server %s: %s", order.order_id, order.provider, str(e))
+        logger.warning(
+            "Provider cancel failed for order %s on server %s: %s",
+            order.order_id, order.provider, str(e),
+        )
+        messages.error(
+            request,
+            "Could not reach the provider to cancel. Please try again in a moment."
+        )
+        return redirect("sms")
 
     order.status = "cancelled"
     order.save(update_fields=["status", "updated_at"])

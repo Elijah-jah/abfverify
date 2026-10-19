@@ -294,6 +294,15 @@ function initSmsPolling(session) {
                 statusBox.innerText = "Waiting for SMS...";
             }
 
+            if (data.status === "provider_error") {
+                statusBox.innerText = "Provider unavailable — retrying...";
+            }
+
+            if (data.status === "insufficient_funds" || data.status === "payment_error") {
+                statusBox.innerText = data.message || "Payment issue — check your wallet.";
+                smsShowToast(data.message || "Payment issue — please check your wallet balance.");
+            }
+
         } catch (error) {
             console.error(error);
         }
