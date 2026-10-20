@@ -19,19 +19,18 @@ from django.views.decorators.http import require_POST
 @csrf_exempt
 @require_POST
 def instantnums_webhook(request):
-    """InstantNums pushes received SMS codes here.
+    """InstantNums pushes received SMS codes here (payload-capture phase)."""
+    raw = request.body.decode('utf-8', errors='replace')
+    logger.info('WEBHOOK RAW BODY: %r | content-type=%s',
+                raw, request.headers.get('Content-Type'))
 
-    Phase 1: log the raw payload so we can see InstantNums' exact field
-    names, and attempt a best-guess match. After we confirm the payload
-    shape, the parsing below gets tightened."""
     try:
-        payload = json.loads(request.body.decode('utf-8'))
+        payload = json.loads(raw)
     except (json.JSONDecodeError, UnicodeDecodeError):
-        return JsonResponse({'ok': False, 'error': 'bad json'}, status=400)
+        # Test pings and non-JSON bodies land here — ack them so the
+        # provider sees a 200 and we keep the log for inspection.
+        return JsonResponse({'ok': True, 'note': 'received (non-JSON body)'})
 
-    logger.info('WEBHOOK PAYLOAD: %s', payload)   # <-- so we can see the shape
-
-    # --- best-guess field extraction (to be confirmed against real payload) ---
     number = (payload.get('number') or payload.get('phone')
               or payload.get('phone_number') or payload.get('msisdn'))
     code = (payload.get('code') or payload.get('sms_code')
@@ -39,17 +38,17 @@ def instantnums_webhook(request):
     full = payload.get('full_sms') or payload.get('message') or payload.get('text') or ''
 
     if not number or not code:
-        return JsonResponse({'ok': False, 'error': 'unrecognized payload'}, status=400)
+        logger.info('WEBHOOK PAYLOAD (unmatched fields): %s', payload)
+        return JsonResponse({'ok': True, 'note': 'received (no code fields)'})
 
     order = (Order.objects
-             .filter(phone_number__icontains=str(number)[-10:],  # match last 10 digits
+             .filter(phone_number__icontains=str(number)[-10:],
                      status='waiting')
              .order_by('-id')
              .first())
     if not order:
-        return JsonResponse({'ok': False, 'error': 'no matching order'}, status=404)
+        return JsonResponse({'ok': True, 'note': 'no matching order'})
 
-    # Same atomic pay-on-delivery logic as check_sms
     with transaction.atomic():
         locked = Order.objects.select_for_update().get(pk=order.pk)
         if locked.status != 'waiting':
