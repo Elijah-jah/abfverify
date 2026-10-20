@@ -9,8 +9,66 @@ from wallet.models import Wallet, Transaction
 from orders.models import Order
 from providers.factory import get_provider
 from pricing.models import Pricing
-
 logger = logging.getLogger(__name__)
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
+
+@csrf_exempt
+@require_POST
+def instantnums_webhook(request):
+    """InstantNums pushes received SMS codes here.
+
+    Phase 1: log the raw payload so we can see InstantNums' exact field
+    names, and attempt a best-guess match. After we confirm the payload
+    shape, the parsing below gets tightened."""
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return JsonResponse({'ok': False, 'error': 'bad json'}, status=400)
+
+    logger.info('WEBHOOK PAYLOAD: %s', payload)   # <-- so we can see the shape
+
+    # --- best-guess field extraction (to be confirmed against real payload) ---
+    number = (payload.get('number') or payload.get('phone')
+              or payload.get('phone_number') or payload.get('msisdn'))
+    code = (payload.get('code') or payload.get('sms_code')
+            or payload.get('otp') or payload.get('text') or payload.get('sms'))
+    full = payload.get('full_sms') or payload.get('message') or payload.get('text') or ''
+
+    if not number or not code:
+        return JsonResponse({'ok': False, 'error': 'unrecognized payload'}, status=400)
+
+    order = (Order.objects
+             .filter(phone_number__icontains=str(number)[-10:],  # match last 10 digits
+                     status='waiting')
+             .order_by('-id')
+             .first())
+    if not order:
+        return JsonResponse({'ok': False, 'error': 'no matching order'}, status=404)
+
+    # Same atomic pay-on-delivery logic as check_sms
+    with transaction.atomic():
+        locked = Order.objects.select_for_update().get(pk=order.pk)
+        if locked.status != 'waiting':
+            return JsonResponse({'ok': True, 'note': 'already handled'})
+        wallet = Wallet.objects.select_for_update().get(user=locked.user)
+        if wallet.balance < locked.price:
+            return JsonResponse({'ok': False, 'error': 'insufficient funds'}, status=400)
+        wallet.balance -= locked.price
+        wallet.save(update_fields=['balance'])
+        Transaction.objects.create(
+            user=locked.user, amount=locked.price,
+            transaction_type='payment', status='successful',
+            description=f'Payment for {locked.service.name} number ({locked.phone_number})')
+        locked.sms_code = str(code)
+        locked.full_sms = str(full)
+        locked.sms_received_at = timezone.now()
+        locked.status = 'received'
+        locked.save(update_fields=['sms_code', 'full_sms', 'sms_received_at', 'status', 'updated_at'])
+
+    return JsonResponse({'ok': True})
 
 
 @login_required
