@@ -19,7 +19,11 @@ from django.views.decorators.http import require_POST
 @csrf_exempt
 @require_POST
 def instantnums_webhook(request):
-    """InstantNums pushes received SMS codes here (payload-capture phase)."""
+    """InstantNums pushes received SMS codes here.
+
+    Envelope shape (confirmed via Test Connection):
+    {"event": "sms.test", "data": {...}} — real deliveries are expected
+    as {"event": "sms.received", "data": {number..., code...}}."""
     raw = request.body.decode('utf-8', errors='replace')
     logger.info('WEBHOOK RAW BODY: %r | content-type=%s',
                 raw, request.headers.get('Content-Type'))
@@ -27,19 +31,28 @@ def instantnums_webhook(request):
     try:
         payload = json.loads(raw)
     except (json.JSONDecodeError, UnicodeDecodeError):
-        # Test pings and non-JSON bodies land here — ack them so the
-        # provider sees a 200 and we keep the log for inspection.
         return JsonResponse({'ok': True, 'note': 'received (non-JSON body)'})
 
-    number = (payload.get('number') or payload.get('phone')
-              or payload.get('phone_number') or payload.get('msisdn'))
-    code = (payload.get('code') or payload.get('sms_code')
-            or payload.get('otp') or payload.get('text') or payload.get('sms'))
-    full = payload.get('full_sms') or payload.get('message') or payload.get('text') or ''
+    # Unwrap the InstantNums envelope: {"event": ..., "data": {...}}
+    event = payload.get('event', '')
+    data = payload.get('data') if isinstance(payload.get('data'), dict) else payload
+
+    logger.info('WEBHOOK EVENT: %s | DATA: %s', event, data)
+
+    # Test ping — ack it, done.
+    if event == 'sms.test':
+        return JsonResponse({'ok': True})
+
+    number = (data.get('number') or data.get('phone')
+              or data.get('phone_number') or data.get('msisdn'))
+    code = (data.get('code') or data.get('sms_code')
+            or data.get('otp') or data.get('sms'))
+    full = (data.get('full_sms') or data.get('message')
+            or data.get('text') or data.get('sms') or '')
 
     if not number or not code:
         logger.info('WEBHOOK PAYLOAD (unmatched fields): %s', payload)
-        return JsonResponse({'ok': True, 'note': 'received (no code fields)'})
+        return JsonResponse({'ok': True, 'note': 'received (no code fields yet)'})
 
     order = (Order.objects
              .filter(phone_number__icontains=str(number)[-10:],
@@ -68,6 +81,7 @@ def instantnums_webhook(request):
         locked.status = 'received'
         locked.save(update_fields=['sms_code', 'full_sms', 'sms_received_at', 'status', 'updated_at'])
 
+    logger.info('WEBHOOK DELIVERED: order %s (%s)', locked.order_id, locked.phone_number)
     return JsonResponse({'ok': True})
 
 
