@@ -1,5 +1,29 @@
-from django.contrib import admin
+import logging
+
+from django.contrib import admin, messages
+
+from providers.factory import get_provider
+
 from .models import Order
+
+logger = logging.getLogger(__name__)
+
+
+def expire_stuck_orders(modeladmin, request, queryset):
+    """Cancel provider-side (if still alive) and expire - no charge to user."""
+    done = 0
+    for order in queryset.filter(status='waiting'):
+        try:
+            get_provider(server=order.provider).cancel(order.provider_order_id)
+        except Exception as e:
+            logger.warning('Provider cancel failed for %s: %s', order.order_id, e)
+        order.status = 'expired'
+        order.save(update_fields=['status', 'updated_at'])
+        done += 1
+    messages.success(request, f'{done} stuck order(s) expired. Customers were not charged.')
+
+
+expire_stuck_orders.short_description = 'Expire stuck waiting orders (no charge)'
 
 
 @admin.register(Order)
@@ -43,6 +67,10 @@ class OrderAdmin(admin.ModelAdmin):
     )
 
     list_per_page = 25
+
+    actions = [
+        "expire_stuck_orders",
+    ]
 
     fieldsets = (
 
