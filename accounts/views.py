@@ -22,7 +22,6 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views.decorators.cache import never_cache
 from django_ratelimit.decorators import ratelimit
-
 from countries.models import Country
 from services.models import Service
 from wallet.models import Wallet, Transaction
@@ -70,6 +69,17 @@ def cancel_order_view(request):
         messages.error(request, "This order cannot be cancelled.")
         return redirect("sms")
 
+    # ---- 16-minute rule: cancel allowed from minute 16 to 20 ----
+    elapsed = timezone.now() - order.created_at
+    if elapsed < timedelta(minutes=16):
+        mins_left = int((timedelta(minutes=16) - elapsed).total_seconds() // 60) + 1
+        messages.error(
+            request,
+            f"You can cancel this order in about {mins_left} minute(s). "
+            f"Cancellations open at the 16-minute mark."
+        )
+        return redirect("sms")
+
     # Get correct provider based on server stored in order
     provider = get_provider(server=order.provider)
 
@@ -94,8 +104,6 @@ def cancel_order_view(request):
         logger.warning("Cancel failed for order %s on %s: %s",
                        order.order_id, order.provider, str(e))
         if "409" in str(e):
-            # Order's time window on the number has likely expired or the
-            # number is no longer active — it can't be cancelled anymore.
             messages.error(request, "This order is no longer active and cannot be cancelled. No charge was made.")
         else:
             messages.error(request, "We couldn't cancel this order right now. Please try again shortly.")
