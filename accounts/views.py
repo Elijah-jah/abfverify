@@ -69,14 +69,15 @@ def cancel_order_view(request):
         messages.error(request, "This order cannot be cancelled.")
         return redirect("sms")
 
-    # ---- 16-minute rule: cancel allowed from minute 16 to 20 ----
+    # ---- 4-minute rule: cancel allowed once 4 minutes have passed
+    #      (i.e. when the order timer enters 16 minutes remaining) ----
     elapsed = timezone.now() - order.created_at
-    if elapsed < timedelta(minutes=16):
-        mins_left = int((timedelta(minutes=16) - elapsed).total_seconds() // 60) + 1
+    if elapsed < timedelta(minutes=4):
+        mins_left = int((timedelta(minutes=4) - elapsed).total_seconds() // 60) + 1
         messages.error(
             request,
             f"You can cancel this order in about {mins_left} minute(s). "
-            f"Cancellations open at the 16-minute mark."
+            f"Cancellations open at the 4-minute mark."
         )
         return redirect("sms")
 
