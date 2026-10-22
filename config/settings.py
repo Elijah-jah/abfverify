@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "marketplace",
     "boost",
     'django.contrib.humanize',
+    "finance",
 ]
 
 # APScheduler settings
@@ -261,6 +262,7 @@ JAZZMIN_SETTINGS = {
     "order_with_respect_to": [
         "accounts",
         "wallet",
+        "finance",
         "countries",
         "services",
         "pricing",
@@ -276,6 +278,10 @@ JAZZMIN_SETTINGS = {
         "wallet.Wallet": "fas fa-wallet",
         "wallet.Transaction": "fas fa-money-check-dollar",
 
+        "finance.SMSRecharge": "fas fa-mobile-screen-button",
+        "finance.BoostFunding": "fas fa-rocket",
+        "finance.LogBatch": "fas fa-boxes-stacked",
+
         "countries.Country": "fas fa-globe-africa",
 
         "services.Service": "fas fa-mobile-screen",
@@ -285,6 +291,17 @@ JAZZMIN_SETTINGS = {
         "orders.Order": "fas fa-cart-shopping",
 
         "auth.Group": "fas fa-user-group",
+    },
+
+    "custom_links": {
+        "finance": [
+            {
+                "name": "💰 Finance Dashboard",
+                "url": "/finance/",
+                "icon": "fas fa-chart-line",
+                "permissions": ["finance.view_smsrecharge"],
+            }
+        ]
     },
 }
 

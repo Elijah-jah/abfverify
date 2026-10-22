@@ -1,0 +1,94 @@
+﻿{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Finance Dashboard - ABFverify</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0f1113; color: #e4e6eb; font-family: "Segoe UI", Arial, sans-serif; padding: 24px; }
+    .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    h1 { font-size: 1.4rem; }
+    .btn { background: #1c7ed6; color: #fff; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: .85rem; }
+    .section-title { margin: 28px 0 12px; font-size: .95rem; color: #9ba0a8; text-transform: uppercase; letter-spacing: 1px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+    .card { background: #17191d; border: 1px solid #26292f; border-radius: 12px; padding: 18px; }
+    .card .label { color: #9ba0a8; font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; }
+    .card .value { font-size: 1.45rem; font-weight: 700; margin-top: 6px; }
+    .green { color: #2fbf71; } .red { color: #e5484d; } .blue { color: #4dabf7; } .yellow { color: #fab005; } .pink { color: #f783ac; }
+    .grand { border: 2px solid #2fbf71; }
+    table { width: 100%; border-collapse: collapse; background: #17191d; border-radius: 12px; overflow: hidden; margin-top: 12px; }
+    th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #26292f; font-size: .88rem; }
+    th { color: #9ba0a8; font-weight: 600; }
+    a { color: #4dabf7; }
+</style>
+</head>
+<body>
+
+<div class="top">
+    <h1>💰 ABFverify Finance Dashboard</h1>
+    <a class="btn" href="/semilore/">← Back to Admin</a>
+</div>
+
+<div class="section-title">📱 SMS Verification</div>
+<div class="grid">
+    <div class="card"><div class="label">Orders Revenue</div><div class="value green">₦{{ stats.sms.revenue|floatformat:2|intcomma }}</div></div>
+    <div class="card"><div class="label">InstantNums Funding (S1)</div><div class="value blue">₦{{ stats.sms.instantnums_funding|floatformat:2|intcomma }}</div></div>
+    <div class="card"><div class="label">DaisySMS Funding (S2)</div><div class="value pink">₦{{ stats.sms.daisysms_funding|floatformat:2|intcomma }}</div></div>
+    <div class="card grand"><div class="label">✅ SMS Profit</div><div class="value {% if stats.sms.profit < 0 %}red{% else %}green{% endif %}">₦{{ stats.sms.profit|floatformat:2|intcomma }}</div></div>
+</div>
+
+<div class="section-title">📦 Logs Marketplace</div>
+<div class="grid">
+    <div class="card"><div class="label">Stock Investment (confirmed)</div><div class="value yellow">₦{{ stats.logs.investment|floatformat:2|intcomma }}</div></div>
+    <div class="card"><div class="label">Logs Sold Revenue</div><div class="value green">₦{{ stats.logs.revenue|floatformat:2|intcomma }}</div></div>
+    <div class="card"><div class="label">Current Stock Value ({{ stats.logs.stock_units }} units)</div><div class="value blue">₦{{ stats.logs.stock_value|floatformat:2|intcomma }}</div></div>
+    <div class="card grand"><div class="label">✅ Logs Profit</div><div class="value {% if stats.logs.profit < 0 %}red{% else %}green{% endif %}">₦{{ stats.logs.profit|floatformat:2|intcomma }}</div></div>
+</div>
+
+<div class="section-title">🚀 Boost</div>
+<div class="grid">
+    <div class="card"><div class="label">Provider Funding Total</div><div class="value yellow">₦{{ stats.boost.funding|floatformat:2|intcomma }}</div></div>
+    <div class="card"><div class="label">Boost Revenue</div><div class="value green">₦{{ stats.boost.revenue|floatformat:2|intcomma }}</div></div>
+    <div class="card grand"><div class="label">✅ Boost Profit</div><div class="value {% if stats.boost.profit < 0 %}red{% else %}green{% endif %}">₦{{ stats.boost.profit|floatformat:2|intcomma }}</div></div>
+</div>
+
+<div class="section-title">💰 Grand Totals</div>
+<div class="grid">
+    <div class="card"><div class="label">Total Revenue (all products)</div><div class="value blue">₦{{ stats.totals.revenue|floatformat:2|intcomma }}</div></div>
+    <div class="card"><div class="label">Total Costs (funding + logs)</div><div class="value red">₦{{ stats.totals.costs|floatformat:2|intcomma }}</div></div>
+    <div class="card grand"><div class="label">🏆 GRAND TOTAL PROFIT</div><div class="value {% if stats.totals.profit < 0 %}red{% else %}green{% endif %}">₦{{ stats.totals.profit|floatformat:2|intcomma }}</div></div>
+</div>
+
+{% if stats.pending_batches %}
+<div class="section-title">⏳ Pending Log Batches — enter cost to confirm</div>
+<table>
+    <tr><th>Product</th><th>Qty</th><th>Uploaded</th><th></th></tr>
+    {% for b in stats.pending_batches %}
+    <tr>
+        <td>{{ b.product.title }}</td>
+        <td>{{ b.quantity }}</td>
+        <td>{{ b.created_at|date:"M d, Y H:i" }}</td>
+        <td><a href="/semilore/finance/logbatch/{{ b.id }}/change/">Enter cost →</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+<div class="section-title">📦 Stock Value by Product</div>
+<table>
+    <tr><th>Product</th><th>Units Available</th><th>Unit Price</th><th>Stock Value</th></tr>
+    {% for p in stats.stock_by_product %}
+    <tr>
+        <td>{{ p.title }}</td>
+        <td>{{ p.units }}</td>
+        <td>₦{{ p.price|floatformat:2|intcomma }}</td>
+        <td>₦{{ p.value|floatformat:2|intcomma }}</td>
+    </tr>
+    {% endfor %}
+    <tr style="font-weight:bold"><td>TOTAL</td><td>{{ stats.logs.stock_units }}</td><td></td><td>₦{{ stats.logs.stock_value|floatformat:2|intcomma }}</td></tr>
+</table>
+
+</body>
+</html>

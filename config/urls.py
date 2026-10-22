@@ -10,6 +10,8 @@ urlpatterns = [
 
     path("", include("website.urls")),
 
+    path("finance/", include("finance.urls")),
+
     path("", include("marketplace.urls")),
 
     path("accounts/", include("accounts.urls")),
