@@ -20,6 +20,66 @@
 
 <main>
 
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ================= QUICK ADD FORMS ================= -->
+    <section class="stat-section">
+        <h2 class="section-title"><span class="section-icon">⚡</span> Quick Add</h2>
+        <div class="forms-grid">
+
+            <form class="form-card" method="post" action="{% url 'add_sms_recharge' %}">
+                {% csrf_token %}
+                <h3>📱 SMS Recharge</h3>
+                <label for="sms-server">Provider</label>
+                <select id="sms-server" name="server" required>
+                    <option value="server1">Server 1 — InstantNums</option>
+                    <option value="server2">Server 2 — DaisySMS</option>
+                </select>
+                <label for="sms-amount">Amount (₦)</label>
+                <input id="sms-amount" type="number" name="amount" min="1" step="0.01" placeholder="e.g. 20000" required>
+                <label for="sms-note">Note <span class="opt">(optional)</span></label>
+                <input id="sms-note" type="text" name="note" maxlength="255" placeholder="e.g. weekend top-up">
+                <button type="submit" class="btn-primary">Save Recharge</button>
+            </form>
+
+            <form class="form-card" method="post" action="{% url 'add_boost_funding' %}">
+                {% csrf_token %}
+                <h3>🚀 Boost Funding</h3>
+                <label for="boost-amount">Amount (₦)</label>
+                <input id="boost-amount" type="number" name="amount" min="1" step="0.01" placeholder="e.g. 15000" required>
+                <label for="boost-note">Note <span class="opt">(optional)</span></label>
+                <input id="boost-note" type="text" name="note" maxlength="255" placeholder="e.g. RSS wallet top-up">
+                <button type="submit" class="btn-primary">Save Funding</button>
+            </form>
+
+            <form class="form-card" method="post" action="{% url 'add_log_batch' %}">
+                {% csrf_token %}
+                <h3>📦 Log Restock</h3>
+                <label for="batch-product">Product</label>
+                <select id="batch-product" name="product" required>
+                    <option value="" disabled selected>Choose product…</option>
+                    {% for p in products %}
+                    <option value="{{ p.id }}">{{ p.title }}</option>
+                    {% endfor %}
+                </select>
+                <label for="batch-qty">Quantity</label>
+                <input id="batch-qty" type="number" name="quantity" min="1" step="1" placeholder="e.g. 50" required>
+                <label for="batch-cost">Cost (₦) <span class="opt">— empty = PENDING</span></label>
+                <input id="batch-cost" type="number" name="cost" min="0" step="0.01" placeholder="e.g. 30000">
+                <label for="batch-note">Note <span class="opt">(optional)</span></label>
+                <input id="batch-note" type="text" name="note" maxlength="255">
+                <button type="submit" class="btn-primary">Add Batch</button>
+            </form>
+
+        </div>
+    </section>
+
     <!-- ================= SMS ================= -->
     <section class="stat-section">
         <h2 class="section-title"><span class="section-icon">📱</span> SMS Verification</h2>
