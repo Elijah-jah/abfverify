@@ -20,6 +20,27 @@
 
 <main>
 
+    <!-- ============ NEW UPLOADS POPUP ============ -->
+    {% if untracked %}
+    <div class="modal-overlay" id="restockModal">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="restock-title">
+            <h3 id="restock-title">🆕 New logs detected!</h3>
+            <p class="modal-text">
+                You uploaded <strong>{{ untracked.quantity }} × {{ untracked.product.title }}</strong>.
+                How much did you spend on this upload in total?
+            </p>
+            <form method="post" action="{% url 'record_untracked_restock' %}">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ untracked.product.id }}">
+                <label for="restock-cost">Total cost (₦)</label>
+                <input id="restock-cost" type="number" name="cost" min="1" step="0.01" placeholder="e.g. 30000" required autofocus>
+                <button type="submit" class="btn-primary">Record It</button>
+            </form>
+            <button type="button" class="modal-later" onclick="document.getElementById('restockModal').style.display='none'">I'll do it later</button>
+        </div>
+    </div>
+    {% endif %}
+
     {% if messages %}
     <div class="messages">
         {% for message in messages %}
