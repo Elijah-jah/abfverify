@@ -1,4 +1,4 @@
-"""DaisySMS provider - sms-activate compatible API.
+﻿"""DaisySMS provider - sms-activate compatible API.
 
 Allowed API actions ONLY:
   - getNumber      (purchase number)
@@ -253,6 +253,10 @@ class DaisySMSProvider:
         if result == "ACCESS_CANCEL":
             return {"success": True}
         return {"success": False, "error": _friendly_error(result)}
+
+    def cancel(self, order_id: str) -> dict:                      # ADDED
+        """Alias for cancel_order — views and jobs call .cancel()""" # ADDED
+        return self.cancel_order(order_id)                        # ADDED
 
     def mark_done(self, order_id: str) -> bool:
         """Mark rental done (frees up your 20-active-rental slot)."""
