@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 import time
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -26,7 +26,7 @@ def expire_orders_job():
     now = timezone.now()
     expired_count = 0
 
-    # 1. EXPIRE WAITING ORDERS (no SMS after 20 min) — NO REFUND NEEDED
+    # 1. EXPIRE WAITING ORDERS (no SMS after 20 min) - NO REFUND NEEDED
     waiting_orders = Order.objects.filter(status="waiting")
     for order in waiting_orders:
         expires_at = order.created_at + timedelta(minutes=20)  # Changed from 7 to 20
@@ -36,7 +36,6 @@ def expire_orders_job():
             provider = get_provider(server=order.provider)
 
             # Cancel with provider (free up number)
-            # FIXED: the provider method is .cancel(), not .cancel_order()
             try:
                 provider.cancel(order.provider_order_id)
             except Exception as e:
@@ -59,8 +58,8 @@ def deliver_waiting_orders_job():
 
     This is the GUARANTEED delivery path - it does not depend on the
     customer keeping a browser tab open. The webhook remains the fast
-    path (~1s). Both check 'waiting' status under a row lock, so they
-    can never double-charge.
+    path (~1s). Both check 'waiting'/'pending' status under a row lock,
+    so they can never double-charge.
 
     Load discipline: zero provider calls when nothing is waiting; at most
     6 orders per run with 5s between calls -> worst case ~360 calls/hour
@@ -68,14 +67,14 @@ def deliver_waiting_orders_job():
     InstantNums, server2 = DaisySMS) via order.provider."""
     orders = list(
         Order.objects
-        .filter(status="waiting")
+        .filter(status__in=("waiting", "pending"))  # CHANGED: cover pending too
         .select_related("service")
         .order_by("created_at")[:6]
     )
     if not orders:
         return 0
 
-    print(">>> DELIVERY SWEEP RAN AT", timezone.now(), "—",
+    print(">>> DELIVERY SWEEP RAN AT", timezone.now(), "-",
           len(orders), "waiting orders <<<")
 
     delivered = 0
@@ -98,7 +97,7 @@ def deliver_waiting_orders_job():
         try:
             with transaction.atomic():
                 locked = Order.objects.select_for_update().get(pk=order.pk)
-                if locked.status != "waiting":
+                if locked.status not in ("waiting", "pending"):  # CHANGED
                     continue  # webhook beat us to it
                 wallet = Wallet.objects.select_for_update().get(user=locked.user)
                 if wallet.balance < locked.price:
@@ -140,7 +139,7 @@ def sync_boost_orders_job():
     if not open_orders:
         return
 
-    print(">>> BOOST SYNC RAN AT", timezone.now(), "—", len(open_orders), "open orders <<<")
+    print(">>> BOOST SYNC RAN AT", timezone.now(), "-", len(open_orders), "open orders <<<")
 
     try:
         provider = ReallySimpleSocial()
