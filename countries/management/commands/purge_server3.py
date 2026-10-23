@@ -1,57 +1,66 @@
-﻿from django.core.management.base import BaseCommand
+﻿from collections import Counter
+
+from django.core.management.base import BaseCommand
+from django.db.models import Count, ForeignKey
 
 from countries.models import Country
 from services.models import Service
 from pricing.models import Pricing
-from orders.models import Order
+
+
+def fk_pointing_to(model):
+    """All (related_model, fk_field_name) pairs that reference `model`."""
+    out = []
+    for rel in model._meta.related_objects:
+        f = rel.field
+        if isinstance(f, ForeignKey) and f.remote_field.model is model and not f.unique:
+            out.append((rel.related_model, f.name))
+    return out
 
 
 class Command(BaseCommand):
-    help = "Retire server3: merge order history into server1 (inactive), delete the rest."
+    help = "Remove duplicate server1 countries/services (keeps the original row, merges references)."
+
+    def _dedupe(self, model, key_fields, restrict, label):
+        related = fk_pointing_to(model)
+        groups = (
+            model.objects.filter(**restrict)
+            .values(*key_fields)
+            .annotate(n=Count("id"))
+            .filter(n__gt=1)
+        )
+
+        deleted = 0
+        moved = 0
+        for g in groups:
+            lookup = {k: g[k] for k in key_fields}
+            members = list(model.objects.filter(**restrict, **lookup).order_by("id"))
+            keeper = members[0]          # original (first created) survives
+            for dup in members[1:]:        # merged copies get removed
+                for rel_model, fk_name in related:
+                    cnt = rel_model.objects.filter(**{fk_name: dup.pk}).update(**{fk_name: keeper.pk})
+                    moved += cnt
+                dup.delete()
+                deleted += 1
+
+        status = self.style.SUCCESS if deleted else self.style.WARNING
+        self.stdout.write(status(f"{label}: {deleted} duplicate(s) removed, {moved} reference(s) moved to the original"))
+        return deleted
 
     def handle(self, *args, **options):
-        # ---- 1. PRICING: no orders reference it - delete outright ----
-        p_count = Pricing.objects.filter(country__server="server3").count()
-        Pricing.objects.filter(country__server="server3").delete()
-        self.stdout.write(self.style.SUCCESS(
-            f"Deleted {p_count} server3 pricing rows"
-        ))
+        self.stdout.write("Scanning for duplicates (keeping the ORIGINAL lowest-ID row)...")
+        self.stdout.write("----------------------------------------------------------")
 
-        # ---- 2. SERVICES WITH ORDER HISTORY: keep, relabel as inactive server1 ----
-        kept_services = Service.objects.filter(
-            server="server3", orders__isnull=False
-        ).distinct()
-        kept_ids = list(kept_services.values_list("id", flat=True))
-        updated = kept_services.update(server="server1", status="inactive")
-        self.stdout.write(self.style.WARNING(
-            f"Merged {updated} server3 services (have orders) -> server1, set inactive"
-        ))
+        # 1. Countries: same name on server1 = duplicate
+        self._dedupe(Country, ["name"], {"server": "server1"}, "Countries")
 
-        # ---- 3. SERVICES WITHOUT ORDERS: delete ----
-        remaining = Service.objects.filter(server="server3").exclude(id__in=kept_ids)
-        s_count = remaining.count()
-        remaining.delete()
-        self.stdout.write(self.style.SUCCESS(
-            f"Deleted {s_count} server3 services (no orders)"
-        ))
+        # 2. Services: same name + provider_id on server1 = duplicate
+        self._dedupe(Service, ["name", "provider_id"], {"server": "server1"}, "Services")
 
-        # ---- 4. COUNTRIES: orders link to services, not countries - safe to delete ----
-        try:
-            c_count = Country.objects.filter(server="server3").count()
-            Country.objects.filter(server="server3").delete()
-            self.stdout.write(self.style.SUCCESS(
-                f"Deleted {c_count} server3 countries"
-            ))
-        except Exception as e:
-            self.stdout.write(self.style.ERROR(
-                f"Country delete failed (FK protection?) - services/pricing are clean. Error: {e}"
-            ))
+        # 3. Pricing: after the merges, same country+service pairs may now collide
+        self._dedupe(Pricing, ["country", "service"], {}, "Pricing rows")
 
-        # ---- FINAL SUMMARY ----
-        from collections import Counter
-        self.stdout.write("----------------------------------------")
+        self.stdout.write("----------------------------------------------------------")
         self.stdout.write(f"Countries now : {dict(Counter(Country.objects.values_list('server', flat=True)))}")
         self.stdout.write(f"Services now  : {dict(Counter(Service.objects.values_list('server', flat=True)))}")
-        self.stdout.write(f"Pricing now   : {dict(Counter(Pricing.objects.values_list('country__server', flat=True)))}")
-        self.stdout.write(f"Orders intact : {Order.objects.count()}")
         self.stdout.write(self.style.SUCCESS("Done."))
