@@ -84,38 +84,42 @@ def cancel_order_view(request):
     # Get correct provider based on server stored in order
     provider = get_provider(server=order.provider)
 
-    # If the SMS actually arrived, don't cancel — deliver and charge.
+    # ---- CANCEL ON THE PROVIDER FIRST ----
+    # Nothing changes on our side until the provider confirms it worked.
     try:
-        result = provider.check_sms(order.provider_order_id)
-        if result.get("status") == "finished":
-            order.sms_code = result.get("sms")
-            order.full_sms = result.get("full_sms", "")
-            order.sms_received_at = timezone.now()
-            order.status = "received"
-            order.save(update_fields=["sms_code", "full_sms", "sms_received_at", "status", "updated_at"])
-            messages.info(request, "An SMS was already received for this number — it cannot be cancelled.")
-            return redirect("sms")
+        result = provider.cancel(order.provider_order_id)
     except Exception as e:
-        logger.warning("Pre-cancel check failed for %s: %s", order.order_id, str(e))
-
-    # Attempt the actual cancel
-    try:
-        provider.cancel(order.provider_order_id)
-    except Exception as e:
-        logger.warning("Cancel failed for order %s on %s: %s",
-                       order.order_id, order.provider, str(e))
-        if "409" in str(e):
-            messages.error(request, "This order is no longer active and cannot be cancelled. No charge was made.")
-        else:
-            messages.error(request, "We couldn't cancel this order right now. Please try again shortly.")
+        logger.warning(
+            "Cancel failed for order %s on %s: %s",
+            order.order_id, order.provider, str(e),
+        )
+        reason = str(e)[:120]
+        messages.error(
+            request,
+            f"Provider could not cancel this order ({reason}). "
+            "It may have already expired. No charge was made."
+        )
         return redirect("sms")
 
+    # If the provider returns a dict with an explicit failure, honor it
+    if isinstance(result, dict) and result.get("success") is False:
+        logger.warning(
+            "Provider refused cancel for order %s: %s",
+            order.order_id, result,
+        )
+        messages.error(
+            request,
+            "The provider refused the cancellation. "
+            "It may have already expired. No charge was made."
+        )
+        return redirect("sms")
+
+    # Provider confirmed the cancel — now update our side
     order.status = "cancelled"
     order.save(update_fields=["status", "updated_at"])
 
     messages.success(request, "Your order has been cancelled. No charge was made.")
     return redirect("sms")
-
 
 @login_required
 def orders_view(request):
