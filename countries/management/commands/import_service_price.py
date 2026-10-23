@@ -20,6 +20,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **opts):
         server = opts["server"]
+        service_code = opts["service_code"]        # FIXED: argparse uses underscores
+        service_name = opts["service_name"]
+        selling_price = Decimal(str(opts["selling_price"]))
 
         country = Country.objects.filter(
             name__icontains=opts["country"], server=server
@@ -34,7 +37,7 @@ class Command(BaseCommand):
         candidates = [country.iso_code, str(country.iso_code).lower(), str(country.phone_code)]
         for code in dict.fromkeys(c for c in candidates if c):
             try:
-                data = provider.get_price(opts["service-code"], code)
+                data = provider.get_price(service_code, code)
                 self.stdout.write(f"RAW price response ({code}): {data}")
                 for key in ("price", "price_usd", "cost", "rate"):
                     if data.get(key) is not None:
@@ -53,7 +56,7 @@ class Command(BaseCommand):
 
         # ---- 2. Get or create the service ----
         service = Service.objects.filter(
-            provider_id=opts["service-code"], server=server
+            provider_id=service_code, server=server
         ).first()
         if not service:
             CategoryModel = Service._meta.get_field("category").remote_field.model
@@ -62,9 +65,9 @@ class Command(BaseCommand):
                 category = CategoryModel.objects.create(name="Social")
             max_order = Service.objects.filter(server=server).count()
             service = Service.objects.create(
-                name=opts["service-name"],
-                provider_id=opts["service-code"],
-                code=opts["service-code"],
+                name=service_name,
+                provider_id=service_code,
+                code=service_code,
                 category=category,
                 server=server,
                 status="active",
@@ -80,13 +83,13 @@ class Command(BaseCommand):
             service=service,
             defaults={
                 "provider_cost": cost,
-                "selling_price": Decimal(str(opts["selling_price"])),
+                "selling_price": selling_price,
                 "status": "active",
             },
         )
         if not created:
             pricing.provider_cost = cost
-            pricing.selling_price = Decimal(str(opts["selling_price"]))
+            pricing.selling_price = selling_price
             pricing.status = "active"
             pricing.save()
             self.stdout.write("Pricing row existed - updated with new prices")
@@ -97,5 +100,5 @@ class Command(BaseCommand):
         self.stdout.write(f"Country       : {country.name} ({server})")
         self.stdout.write(f"Service       : {service.name} [{service.provider_id}]")
         self.stdout.write(f"Provider cost : ${cost}")
-        self.stdout.write(f"Selling price : NGN {opts['selling_price']}")
+        self.stdout.write(f"Selling price : NGN {selling_price}")
         self.stdout.write(self.style.SUCCESS("Done - check the services page."))
