@@ -21,9 +21,10 @@ from django.views.decorators.http import require_POST
 def instantnums_webhook(request):
     """InstantNums pushes received SMS codes here.
 
-    Envelope shape (confirmed via Test Connection):
-    {"event": "sms.test", "data": {...}} — real deliveries are expected
-    as {"event": "sms.received", "data": {number..., code...}}."""
+    Matches orders by provider_order_id FIRST (exact), falls back to
+    phone number. Accepts both 'pending' and 'waiting' statuses so an
+    early-arriving SMS is never dropped.
+    """
     raw = request.body.decode('utf-8', errors='replace')
     logger.info('WEBHOOK RAW BODY: %r | content-type=%s',
                 raw, request.headers.get('Content-Type'))
@@ -43,6 +44,7 @@ def instantnums_webhook(request):
     if event == 'sms.test':
         return JsonResponse({'ok': True})
 
+    order_id = str(data.get('order_id') or '').strip()
     number = (data.get('number') or data.get('phone')
               or data.get('phone_number') or data.get('msisdn'))
     code = (data.get('code') or data.get('sms_code')
@@ -50,24 +52,45 @@ def instantnums_webhook(request):
     full = (data.get('full_sms') or data.get('message')
             or data.get('text') or data.get('sms') or '')
 
-    if not number or not code:
-        logger.info('WEBHOOK PAYLOAD (unmatched fields): %s', payload)
-        return JsonResponse({'ok': True, 'note': 'received (no code fields yet)'})
+    if not code:
+        logger.info('WEBHOOK PAYLOAD (no code): %s', payload)
+        return JsonResponse({'ok': True, 'note': 'received (no code fields)'})
 
-    order = (Order.objects
-             .filter(phone_number__icontains=str(number)[-10:],
-                     status='waiting')
-             .order_by('-id')
-             .first())
+    # ---- MATCH 1: exact provider order id (most reliable) ----
+    order = None
+    if order_id:
+        order = (
+            Order.objects
+            .filter(provider_order_id=order_id, status__in=('waiting', 'pending'))
+            .order_by('-id')
+            .first()
+        )
+
+    # ---- MATCH 2: fallback — phone number, last 10 digits ----
+    if order is None and number:
+        order = (
+            Order.objects
+            .filter(phone_number__icontains=str(number)[-10:],
+                    status__in=('waiting', 'pending'))
+            .order_by('-id')
+            .first()
+        )
+
     if not order:
+        logger.info('WEBHOOK: NO MATCH | order_id=%s | number=%s | waiting/pending orders will be listed below',
+                    order_id, number)
+        waiting = list(Order.objects.filter(status__in=('waiting', 'pending'))
+                     .values_list('order_id', 'provider_order_id', 'phone_number')[:10])
+        logger.info('WEBHOOK: current open orders: %s', waiting)
         return JsonResponse({'ok': True, 'note': 'no matching order'})
 
     with transaction.atomic():
         locked = Order.objects.select_for_update().get(pk=order.pk)
-        if locked.status != 'waiting':
+        if locked.status not in ('waiting', 'pending'):
             return JsonResponse({'ok': True, 'note': 'already handled'})
         wallet = Wallet.objects.select_for_update().get(user=locked.user)
         if wallet.balance < locked.price:
+            logger.warning('WEBHOOK: insufficient funds for order %s', locked.order_id)
             return JsonResponse({'ok': False, 'error': 'insufficient funds'}, status=400)
         wallet.balance -= locked.price
         wallet.save(update_fields=['balance'])
