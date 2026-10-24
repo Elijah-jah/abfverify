@@ -72,7 +72,7 @@ class Command(BaseCommand):
             in_provider = str(s.service_id) in provider_ids if provider_ids else None
 
             if not in_provider:
-                excess.append(s)
+                excess.append((s, label, in_provider))
 
             if days is None:
                 bucket = "unknown"
