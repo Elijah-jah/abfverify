@@ -1,215 +1,409 @@
-{% extends "panel/dashboard_base.html" %}
-{% load humanize %}
-{% load static %}
+/* =========================================================
+   ABFverify — Dashboard  ("command center" concept)
+   Head + services strip / wallet hero / active numbers /
+   transactions — built on the base's CSS variables
+========================================================= */
 
-{% block title %}
-Dashboard
-{% endblock %}
+/* =========================
+   GREETING HEAD
+========================= */
 
-{% block page_title %}
-Dashboard
-{% endblock %}
+.dash-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+}
 
-{% block section_title %}
-Dashboard
-{% endblock %}
+.dash-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--brand);
+    margin-bottom: 6px;
+}
 
-{% block extra_css %}
-<!-- DASHBOARD CSS -->
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock %}
+.dash-head h2 {
+    font-size: 24px;
+    letter-spacing: -.4px;
+}
 
-{% block content %}
+.dash-date {
+    font-family: inherit;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 2px;
+}
 
-<!-- GREETING -->
-<div class="dash-head">
+.dash-head-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 18px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #ffffff;
+    text-decoration: none;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    box-shadow: 0 8px 18px rgba(37, 99, 235, .32);
+    transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+    white-space: nowrap;
+}
 
-    <div class="dash-head-text">
-        <span class="dash-eyebrow">
-            <i class="fa-solid fa-bolt"></i>
-            ABFverify
-        </span>
-        <h2 class="dash-hello">Hello, {{ request.user.username|truncatechars:16 }}</h2>
-        <p class="dash-date">{% now "l, j F Y" %}</p>
-    </div>
+.dash-head-btn i { font-size: 12px; }
 
-    <a href="{% url 'sms' %}" class="dash-head-btn">
-        <i class="fa-solid fa-plus"></i>
-        Get Number
-    </a>
+.dash-head-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(37, 99, 235, .42);
+    filter: brightness(1.06);
+}
 
-</div>
+/* =========================
+   SERVICES STRIP
+========================= */
 
-<!-- SERVICES STRIP -->
-<div class="dash-services">
+.dash-services {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
 
-    <a href="{% url 'sms' %}" class="dash-svc">
-        <span class="dash-svc-icon svc-blue">
-            <i class="fa-solid fa-sim-card"></i>
-        </span>
-        <span class="dash-svc-text">
-            <strong>Virtual Numbers</strong>
-            <small>Instant SMS verification</small>
-        </span>
-        <i class="fa-solid fa-chevron-right dash-svc-arrow"></i>
-    </a>
+.dash-svc {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background: var(--card);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    box-shadow: var(--shadow-sm);
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
 
-    <a href="{% url 'services' %}" class="dash-svc">
-        <span class="dash-svc-icon svc-violet">
-            <i class="fa-solid fa-box-archive"></i>
-        </span>
-        <span class="dash-svc-text">
-            <strong>Logs Store</strong>
-            <small>Premium digital logs</small>
-        </span>
-        <i class="fa-solid fa-chevron-right dash-svc-arrow"></i>
-    </a>
+.dash-svc:hover {
+    transform: translateY(-3px);
+    border-color: var(--brand-border);
+    box-shadow: var(--shadow);
+}
 
-    <!-- NEW: Boost Accounts -->
-    <a href="{% url 'boost' %}" class="dash-svc">
-        <span class="dash-svc-icon svc-rocket">
-            <i class="fa-solid fa-rocket"></i>
-        </span>
-        <span class="dash-svc-text">
-            <strong>Boost Accounts</strong>
-            <small>Followers, likes &amp; views</small>
-        </span>
-        <i class="fa-solid fa-chevron-right dash-svc-arrow"></i>
-    </a>
+.dash-svc-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    color: #ffffff;
+    font-size: 17px;
+}
 
-</div>
+.svc-blue   { background: linear-gradient(135deg, #2563eb, #06b6d4); box-shadow: 0 8px 16px rgba(37, 99, 235, .35); }
+.svc-violet { background: linear-gradient(135deg, #7c3aed, #db2777); box-shadow: 0 8px 16px rgba(124, 58, 237, .35); }
+.svc-rocket { background: linear-gradient(135deg, #f59e0b, #ef4444); box-shadow: 0 8px 16px rgba(245, 158, 11, .35); }
 
-<!-- WALLET HERO -->
-<div class="wallet-hero">
+.dash-svc-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.dash-svc-text strong { font-size: 14px; color: var(--text); }
+.dash-svc-text small  { font-size: 12px; color: var(--muted); }
 
-    <div class="wallet-hero-left">
-        <p class="wallet-hero-label">
-            <i class="fa-solid fa-wallet"></i>
-            Wallet Balance
-        </p>
-        <h3 class="wallet-hero-amount mono">&#8358;{{ user_wallet.balance|default:"0.00"|floatformat:2|intcomma }}</h3>
-        <p class="wallet-hero-note">Top up once — spend on numbers, logs &amp; boosts.</p>
-    </div>
+.dash-svc-arrow {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--muted);
+    transition: transform .2s ease, color .2s ease;
+}
 
-    <a href="{% url 'wallet' %}" class="wallet-hero-btn">
-        <i class="fa-solid fa-plus"></i>
-        Fund Wallet
-    </a>
+.dash-svc:hover .dash-svc-arrow {
+    transform: translateX(3px);
+    color: var(--brand);
+}
 
-</div>
+/* =========================
+   WALLET HERO
+========================= */
 
-<!-- ACTIVE NUMBERS -->
-<div class="card dash-card">
+.wallet-hero {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    padding: 22px 24px;
+    border-radius: 18px;
+    margin-bottom: 18px;
+    color: #ffffff;
+    background: linear-gradient(120deg, #1d4ed8 0%, #2563eb 45%, #7c3aed 100%);
+    box-shadow: 0 14px 32px rgba(37, 99, 235, .35);
+}
 
-    <div class="dash-card-head">
-        <h5><i class="fa-solid fa-sim-card"></i> Active Numbers</h5>
-        <a href="{% url 'orders' %}" class="dash-viewall">View all</a>
-    </div>
+.wallet-hero::after {
+    content: "";
+    position: absolute;
+    right: -50px;
+    top: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, .22), transparent 70%);
+    pointer-events: none;
+}
 
-    {% for order in active_orders %}
-    <div class="dash-row">
+.wallet-hero-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .82);
+    margin-bottom: 6px;
+}
 
-        <span class="dash-row-icon row-blue">
-            <i class="fa-solid fa-phone"></i>
-        </span>
+.wallet-hero-amount {
+    font-family: inherit;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -.5px;
+    margin-bottom: 4px;
+}
 
-        <div class="dash-row-info">
-            <p class="dash-row-title">{{ order.service_name|default:"Number" }}</p>
-            <p class="dash-row-sub mono">{{ order.phone_number }}</p>
-        </div>
+.wallet-hero-note {
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, .75);
+    margin: 0;
+}
 
-        <div class="dash-row-state">
+.wallet-hero-btn {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 16px;
+    border-radius: 11px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1d4ed8;
+    text-decoration: none;
+    background: #ffffff;
+    box-shadow: 0 8px 18px rgba(2, 6, 17, .25);
+    transition: transform .2s ease, box-shadow .2s ease;
+    white-space: nowrap;
+}
 
-            {% if order.status == 'received' %}
-                <span class="otp-chip mono">{{ order.otp_code }}</span>
-                <button class="copy-btn" data-copy="{{ order.otp_code }}" title="Copy OTP">
-                    <i class="fa-regular fa-clipboard"></i>
-                </button>
+.wallet-hero-btn i { font-size: 11px; }
 
-            {% elif order.status == 'pending' %}
-                <span class="state-pill pill-waiting">
-                    <span class="pulse-dot"></span>
-                    Waiting for SMS
-                </span>
+.wallet-hero-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(2, 6, 17, .3);
+}
 
-            {% else %}
-                <span class="state-pill pill-expired">Expired</span>
-            {% endif %}
+/* =========================
+   CARDS
+========================= */
 
-        </div>
+.dash-card {
+    padding: 18px 20px;
+    margin-bottom: 18px;
+}
 
-    </div>
-    {% empty %}
-    <div class="dash-empty">
-        <i class="fa-regular fa-inbox"></i>
-        <p>No active numbers right now.</p>
-        <a href="{% url 'sms' %}" class="dash-empty-btn">Get a number</a>
-    </div>
-    {% endfor %}
+.dash-card:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
+    border-color: var(--border);
+}
 
-</div>
+.dash-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
 
-<!-- RECENT TRANSACTIONS -->
-<div class="card dash-card">
+.dash-card-head h5 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+}
 
-    <div class="dash-card-head">
-        <h5><i class="fa-solid fa-receipt"></i> Recent Transactions</h5>
-        <a href="{% url 'transactions' %}" class="dash-viewall">View all</a>
-    </div>
+.dash-card-head h5 i {
+    color: var(--brand);
+    font-size: 13px;
+}
 
-    {% for tx in recent_transactions %}
-    <div class="dash-row">
+.dash-viewall {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--brand);
+    text-decoration: none;
+}
 
-        {% if tx.txn_type == 'credit' %}
-        <span class="dash-row-icon row-green">
-            <i class="fa-solid fa-arrow-down"></i>
-        </span>
-        {% else %}
-        <span class="dash-row-icon row-red">
-            <i class="fa-solid fa-arrow-up"></i>
-        </span>
-        {% endif %}
+.dash-viewall:hover { text-decoration: underline; }
 
-        <div class="dash-row-info">
-            <p class="dash-row-title">{{ tx.description|default:"Transaction" }}</p>
-            <p class="dash-row-sub">{{ tx.created_at|date:"M j, Y" }}</p>
-        </div>
+/* =========================
+   ROWS (numbers + transactions)
+========================= */
 
-        <div class="dash-row-state tx-state">
+.dash-row {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 13px 6px;
+    border-bottom: 1px solid var(--border-soft);
+    transition: background .2s ease;
+}
 
-            <p class="tx-amount mono {% if tx.txn_type == 'credit' %}tx-credit{% else %}tx-debit{% endif %}">
-                {% if tx.txn_type == 'credit' %}+{% else %}-{% endif %}&#8358;{{ tx.amount|floatformat:2|intcomma }}
-            </p>
+.dash-row:last-child { border-bottom: none; }
+.dash-row:hover { background: var(--card-2); }
 
-            <span class="tx-badge tx-{{ tx.status|default:'completed' }}">{{ tx.status|default:"completed"|title }}</span>
+.dash-row-icon {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    font-size: 14px;
+}
 
-        </div>
+.row-green { background: rgba(34, 197, 94, .13); color: #22c55e; }
+.row-red   { background: rgba(239, 68, 68, .12); color: #ef4444; }
 
-    </div>
-    {% empty %}
-    <div class="dash-empty">
-        <i class="fa-solid fa-receipt"></i>
-        <p>No transactions yet.</p>
-        <a href="{% url 'wallet' %}" class="dash-empty-btn">Fund wallet</a>
-    </div>
-    {% endfor %}
+.dash-row-info { flex: 1; min-width: 0; }
 
-</div>
+.dash-row-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-{% endblock %}
+.dash-row-sub {
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--muted);
+    margin: 2px 0 0;
+}
 
-{% block extra_js %}
-<script>
-document.querySelectorAll('.copy-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-        navigator.clipboard.writeText(btn.dataset.copy).then(function () {
-            var icon = btn.querySelector('i');
-            icon.className = 'fa-solid fa-check';
-            setTimeout(function () {
-                icon.className = 'fa-regular fa-clipboard';
-            }, 1200);
-        });
-    });
-});
-</script>
-{% endblock %}
+.dash-row-state {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* Transaction amounts + badges */
+.tx-state { flex-direction: column; align-items: flex-end; gap: 3px; }
+
+.tx-amount {
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.tx-credit { color: #22c55e; }
+.tx-debit  { color: #ef4444; }
+
+.tx-badge {
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+}
+
+.tx-completed { color: #16a34a; background: rgba(34, 197, 94, .13); }
+.tx-pending   { color: #d97706; background: rgba(245, 158, 11, .13); }
+.tx-failed    { color: #ef4444; background: rgba(239, 68, 68, .12); }
+
+/* Empty states */
+.dash-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 28px 10px;
+    text-align: center;
+}
+
+.dash-empty i {
+    font-size: 26px;
+    color: var(--muted);
+    opacity: .6;
+}
+
+.dash-empty p {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin: 0;
+}
+
+.dash-empty-btn {
+    margin-top: 4px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    text-decoration: none;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transition: filter .2s ease, transform .2s ease;
+}
+
+.dash-empty-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+    .rug { display: none; }
+}
+
+@media (max-width: 768px) {
+
+    .dash-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .dash-head-btn { width: 100%; justify-content: center; }
+
+    .wallet-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .wallet-hero-btn { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 480px) {
+
+    .dash-head h2 { font-size: 20px; }
+    .wallet-hero-amount { font-size: 25px; }
+    .dash-card { padding: 14px; }
+
+    .dash-row { gap: 10px; padding: 12px 2px; }
+
+}

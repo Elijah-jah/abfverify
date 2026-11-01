@@ -4,10 +4,6 @@
    transactions — built on the base's CSS variables
 ========================================================= */
 
-.mono {
-    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
-}
-
 /* =========================
    GREETING HEAD
 ========================= */
@@ -38,6 +34,7 @@
 }
 
 .dash-date {
+    font-family: inherit;
     color: var(--muted);
     font-size: 13px;
     margin-top: 2px;
@@ -173,6 +170,7 @@
 }
 
 .wallet-hero-amount {
+    font-family: inherit;
     font-size: 30px;
     font-weight: 800;
     letter-spacing: -.5px;
@@ -282,7 +280,6 @@
     font-size: 14px;
 }
 
-.row-blue  { background: var(--brand-soft); color: var(--brand); }
 .row-green { background: rgba(34, 197, 94, .13); color: #22c55e; }
 .row-red   { background: rgba(239, 68, 68, .12); color: #ef4444; }
 
@@ -299,6 +296,7 @@
 }
 
 .dash-row-sub {
+    font-family: inherit;
     font-size: 12px;
     color: var(--muted);
     margin: 2px 0 0;
@@ -311,78 +309,11 @@
     flex-shrink: 0;
 }
 
-/* OTP chip + copy */
-.otp-chip {
-    padding: 6px 11px;
-    border-radius: 9px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: var(--brand);
-    background: var(--brand-soft);
-    border: 1px dashed var(--brand-border);
-}
-
-.copy-btn {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: var(--card-2);
-    color: var(--muted);
-    font-size: 13px;
-    cursor: pointer;
-    transition: color .2s ease, border-color .2s ease;
-}
-
-.copy-btn:hover {
-    color: var(--brand);
-    border-color: var(--brand-border);
-}
-
-/* Status pills */
-.state-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.pill-waiting {
-    color: #d97706;
-    background: rgba(245, 158, 11, .13);
-    border: 1px solid rgba(245, 158, 11, .3);
-}
-
-.pill-expired {
-    color: var(--muted);
-    background: var(--card-2);
-    border: 1px solid var(--border);
-}
-
-.pulse-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #f59e0b;
-    animation: pulseDot 1.4s ease-in-out infinite;
-}
-
-@keyframes pulseDot {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, .5); }
-    50%      { box-shadow: 0 0 0 5px rgba(245, 158, 11, 0); }
-}
-
 /* Transaction amounts + badges */
 .tx-state { flex-direction: column; align-items: flex-end; gap: 3px; }
 
 .tx-amount {
+    font-family: inherit;
     font-size: 13.5px;
     font-weight: 700;
     margin: 0;
@@ -475,7 +406,4 @@
 
     .dash-row { gap: 10px; padding: 12px 2px; }
 
-    .otp-chip { font-size: 12px; padding: 5px 9px; }
-
-    .state-pill { font-size: 11px; padding: 5px 10px; }
 }
