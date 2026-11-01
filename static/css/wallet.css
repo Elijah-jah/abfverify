@@ -84,10 +84,10 @@
 }
 
 .hero-amount{
+    font-family: inherit;
     font-size: 34px;
     font-weight: 800;
     letter-spacing: -1px;
-    font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
 }
 
 .hero-hint{
@@ -201,11 +201,11 @@
 }
 
 .va-number{
+    font-family: inherit;
     font-size: clamp(26px, 5vw, 36px);
     font-weight: 800;
     letter-spacing: 4px;
-    font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
-    color: var(--text);
+    color: #fff;
     word-break: break-all;
 }
 
@@ -501,4 +501,8 @@
 @keyframes spin{
     from{transform:rotate(0deg);}
     to{transform:rotate(360deg);}
+}
+/* Account number: website blue in light mode, white in dark mode. */
+body.light .va-number{
+    color: var(--brand);
 }
