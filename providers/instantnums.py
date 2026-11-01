@@ -133,8 +133,29 @@ class InstantNumsProvider(BaseProvider):
     def check_sms(self, order_id):
         data = self._make_request("GET", f"/sms/{order_id}")
 
-        # ALWAYS log the raw response — this is how we learn the real shape
-        logger.info("InstantNums check_sms RAW for %s: %s", order_id, data)
+        # Do not let an explicit provider error fall through to OTP parsing.
+        if isinstance(data, dict) and data.get("success") in (False, 0, "0"):
+            logger.error(
+                "InstantNums SMS check failed for order %s: %s",
+                order_id,
+                data,
+            )
+            raise Exception(
+                data.get("message")
+                or data.get("error")
+                or "Unable to check SMS from InstantNums."
+            )
+
+        # Log response metadata without exposing the customer's OTP in logs.
+        response_keys = (
+            list(data.keys()) if isinstance(data, dict)
+            else type(data).__name__
+        )
+        logger.info(
+            "InstantNums SMS response for order %s; keys/type: %s",
+            order_id,
+            response_keys,
+        )
 
         return self._normalize_sms(data, order_id)
 
@@ -154,6 +175,20 @@ class InstantNumsProvider(BaseProvider):
             inner = payload.get(wrapper)
             if isinstance(inner, dict):
                 payload = inner
+
+        # InstantNums JSON REST returns the extracted code in "sms" and
+        # the complete message in "full_sms". Handle that documented shape
+        # explicitly before trying the generic response fallbacks.
+        direct_sms = payload.get("sms")
+        if direct_sms not in (None, "", 0, "0"):
+            direct_sms = str(direct_sms).strip()
+            direct_match = re.fullmatch(r"(\d{4,8})", direct_sms)
+            if direct_match:
+                return {
+                    "status": "finished",
+                    "sms": direct_match.group(1),
+                    "full_sms": str(payload.get("full_sms") or "").strip(),
+                }
 
         # --- Case A: sms-activate style plain-text status ---
         for key in ("raw", "status", "result"):
@@ -203,7 +238,7 @@ class InstantNumsProvider(BaseProvider):
 
         if code:
             result = {"status": "finished", "sms": code, "full_sms": full_sms or ""}
-            logger.info("InstantNums code FOUND for %s: %s", order_id, result)
+            logger.info("InstantNums code found for order %s", order_id)
             return result
 
         # Explicit waiting states or nothing useful — treat as waiting
