@@ -48,7 +48,7 @@
 
 .sms-balance-pill span{
     font-family: inherit;
-    color: var(--text);
+    color: #fff;
 }
 
 /* =========================
@@ -108,7 +108,7 @@
     font-family: inherit;
     font-size: 20px;
     font-weight: 700;
-    color: var(--text);
+    color: #fff;
     margin: 0;
 }
 
@@ -202,7 +202,7 @@
     font-family: inherit;
     font-size: 14px;
     font-weight: 700;
-    color: var(--text);
+    color: #fff;
     background: var(--card-2);
     border: 1px solid var(--border);
     padding: 4px 11px;
@@ -232,7 +232,7 @@
     font-family: inherit;
     font-size: 14.5px;
     font-weight: 700;
-    color: var(--text);
+    color: #fff;
 }
 
 .otp-box{
@@ -245,7 +245,7 @@
     font-family: inherit;
     font-size: 13.5px;
     font-weight: 700;
-    color: var(--text);
+    color: #fff;
 }
 
 .waiting-pulse{ color: var(--muted); }
@@ -584,4 +584,12 @@
     .sms-select {
         -webkit-text-size-adjust: 100%;
     }
+}
+/* Numbers and codes: website blue in light mode, white in dark mode. */
+body.light .sms-balance-pill span,
+body.light .sms-price-box h2,
+body.light .sms-timer,
+body.light .active-number,
+body.light .otp-box{
+    color: var(--brand);
 }
