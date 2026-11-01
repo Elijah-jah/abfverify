@@ -45,7 +45,7 @@
 
             {% if o.type == 'number' %}
                 <!-- NUMBER purchase: number + OTP -->
-                <p class="mp-detail mono">
+                <p class="mp-detail">
                     {% if o.detail %}
                         {{ o.detail }}
                         <button class="mp-copy" data-copy="{{ o.detail|cut:' ' }}" title="Copy number">
@@ -55,7 +55,7 @@
                         &mdash;
                     {% endif %}
                 </p>
-                <p class="mp-otp mono">
+                <p class="mp-otp">
                     OTP:
                     {% if o.otp %}
                         <strong>{{ o.otp }}</strong>
@@ -68,7 +68,7 @@
                 </p>
             {% elif o.type == 'boost' %}
                 <!-- BOOST order: link + units -->
-                <p class="mp-detail mono">
+                <p class="mp-detail">
                     {% if o.detail %}
                         {{ o.detail|truncatechars:45 }}
                         <button class="mp-copy" data-copy="{{ o.detail }}" title="Copy link">
@@ -79,16 +79,16 @@
                     {% endif %}
                 </p>
                 {% if o.description %}
-                <p class="mp-otp mono"><strong>{{ o.description }}</strong></p>
+                <p class="mp-otp"><strong>{{ o.description }}</strong></p>
                 {% endif %}
                 <span class="mp-tap">Tap for details <i class="bi bi-chevron-right"></i></span>
             {% else %}
                 <!-- LOG purchase: email + password only -->
                 <div class="mp-logline">
                     {% if o.order_id %}
-                    <span class="mp-order mono">{{ o.order_id }}</span>
+                    <span class="mp-order">{{ o.order_id }}</span>
                     {% endif %}
-                    <span class="mp-format mono">{% if o.format_string %}{{ o.format_string|truncatechars:52 }}{% else %}&mdash;{% endif %}</span>
+                    <span class="mp-format">{% if o.format_string %}{{ o.format_string|truncatechars:52 }}{% else %}&mdash;{% endif %}</span>
                     {% if o.format_string %}
                     <button class="mp-copy" data-copy="{{ o.format_string }}" title="Copy login">
                         <i class="bi bi-clipboard"></i>
@@ -102,7 +102,7 @@
         </div>
 
         <div class="mp-side">
-            <p class="mp-price mono">&#8358;{{ o.price|floatformat:2|intcomma }}</p>
+            <p class="mp-price">&#8358;{{ o.price|floatformat:2|intcomma }}</p>
             {% if o.status == 'completed' %}
                 <span class="mp-badge mp-done">Completed</span>
             {% elif o.status == 'pending' or o.status == 'waiting' %}
@@ -141,7 +141,7 @@
     <div class="mp-modal" role="dialog" aria-modal="true">
 
         <h5 class="mpm-title" id="mpmTitle"></h5>
-        <span class="mpm-order mono" id="mpmOrder" hidden></span>
+        <span class="mpm-order" id="mpmOrder" hidden></span>
         <p class="mpm-desc" id="mpmDesc" hidden></p>
 
         <!-- format pill (logs only) -->
@@ -153,7 +153,7 @@
         <!-- combined line: login info, phone number or boost link -->
         <p class="mpm-box-label" id="mpmBoxLabel">Details</p>
         <div class="mpm-box" id="mpmBox">
-            <span class="mpm-box-text mono" id="mpmText"></span>
+            <span class="mpm-box-text" id="mpmText"></span>
             <button type="button" class="mpm-copy" id="mpmCopy">
                 <i class="bi bi-clipboard"></i><span>Copy</span>
             </button>
@@ -162,7 +162,7 @@
         <!-- OTP (numbers only) -->
         <div class="mpm-otp" id="mpmOtpRow" hidden>
             <span class="mpm-otp-label">OTP</span>
-            <strong class="mono" id="mpmOtp"></strong>
+            <strong id="mpmOtp"></strong>
             <button type="button" class="mpm-copy mpm-copy-sm" id="mpmOtpCopy">
                 <i class="bi bi-clipboard"></i>
             </button>
@@ -172,7 +172,7 @@
         <div class="mpm-meta">
             <div class="mpm-meta-item">
                 <em>Price</em>
-                <span class="mono" id="mpmPrice"></span>
+                <span id="mpmPrice"></span>
             </div>
             <div class="mpm-meta-item">
                 <em>Date</em>

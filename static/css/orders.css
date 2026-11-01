@@ -11,7 +11,6 @@
     --warning: #f59e0b;
     --accent2: #818cf8;
     --grad: linear-gradient(135deg, #38bdf8, #818cf8);
-    --mono: "SF Mono", "Consolas", "Menlo", monospace;
 }
 
 /* LIGHT MODE OVERRIDE */
@@ -25,8 +24,6 @@ body.light{
     --accent2: #6366f1;
     --grad: linear-gradient(135deg, #0ea5e9, #6366f1);
 }
-
-.mono{ font-family: var(--mono); }
 
 /* =========================
    PAGE HEAD
@@ -655,11 +652,6 @@ body.light{
     overflow-wrap: anywhere;
 }
 
-/* sensitive mono values stay neutral */
-.mp-detail, .mp-otp{
-    color: var(--text);
-}
-
 /* =========================
    HIDDEN GUARD
    Class display rules (flex/inline-block) override the browser's
@@ -687,4 +679,35 @@ body.light{
     color: var(--muted);
     background: var(--card-2);
     border: 1px solid var(--border);
+}
+/* =========================
+   NORMAL NUMBER + CODE STYLING
+   Dark theme: white. Light theme: website blue.
+========================= */
+
+.mp-detail,
+.mp-otp,
+.mp-otp strong:not(.mp-otp-none),
+.mp-order,
+.mp-format,
+.mp-price,
+.mpm-order,
+.mpm-box-text,
+.mpm-otp strong,
+#mpmPrice{
+    font-family: inherit;
+    color: #fff;
+}
+
+body.light .mp-detail,
+body.light .mp-otp,
+body.light .mp-otp strong:not(.mp-otp-none),
+body.light .mp-order,
+body.light .mp-format,
+body.light .mp-price,
+body.light .mpm-order,
+body.light .mpm-box-text,
+body.light .mpm-otp strong,
+body.light #mpmPrice{
+    color: var(--brand);
 }
