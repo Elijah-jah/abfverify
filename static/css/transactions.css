@@ -11,7 +11,6 @@
     --warning: #f59e0b;
     --accent2: #818cf8;
     --grad: linear-gradient(135deg, #38bdf8, #818cf8);
-    --mono: "SF Mono", "Consolas", "Menlo", monospace;
 }
 
 /* LIGHT MODE */
@@ -25,8 +24,6 @@ body.light{
     --accent2: #6366f1;
     --grad: linear-gradient(135deg, #0ea5e9, #6366f1);
 }
-
-.mono{ font-family: var(--mono); }
 
 /* =========================
    CONTAINER
@@ -404,4 +401,23 @@ body.light{
     .tx-card-body{
         grid-template-columns: 1fr;
     }
+}
+/* =========================
+   NORMAL NUMBER + AMOUNT STYLING
+   Dark theme: white. Light theme: website blue.
+========================= */
+
+.transactions-card p,
+.tx-num,
+.transactions-table td.tx-amount,
+.tx-card-body p span.tx-amount{
+    font-family: inherit;
+    color: #fff;
+}
+
+body.light .transactions-card p,
+body.light .tx-num,
+body.light .transactions-table td.tx-amount,
+body.light .tx-card-body p span.tx-amount{
+    color: var(--brand);
 }

@@ -27,11 +27,11 @@
     <div class="transactions-summary">
         <div class="transactions-card">
             <h3>Wallet Balance</h3>
-           <p class="mono">&#8358;{{ user_wallet.balance|floatformat:2|intcomma }}</p>
+           <p>&#8358;{{ user_wallet.balance|floatformat:2|intcomma }}</p>
         </div>
         <div class="transactions-card">
             <h3>Total Spent</h3>
-            <p class="mono">&#8358;{{ total_spent|floatformat:2|intcomma }}</p>
+            <p>&#8358;{{ total_spent|floatformat:2|intcomma }}</p>
         </div>
     </div>
 
@@ -50,7 +50,7 @@
             <tbody>
                 {% for transaction in transactions %}
                 <tr>
-                    <td class="tx-num mono">{{ forloop.counter }}</td>
+                    <td class="tx-num">{{ forloop.counter }}</td>
                     <td>
                         {% if transaction.transaction_type == "deposit" %}
                             <span class="tx-type tx-deposit">Deposit</span>
@@ -62,7 +62,7 @@
                             <span class="tx-type tx-other">{{ transaction.transaction_type|title }}</span>
                         {% endif %}
                     </td>
-                    <td class="mono">&#8358;{{ transaction.amount|floatformat:2|intcomma }}</td>
+                    <td class="tx-amount">&#8358;{{ transaction.amount|floatformat:2|intcomma }}</td>
                     <td>
                         {% if transaction.status == "successful" %}
                             <span class="tx-status tx-success">Successful</span>
@@ -105,7 +105,7 @@
             <div class="tx-card-body">
                 <p>
                     <strong>Amount</strong>
-                    <span class="mono">&#8358;{{ transaction.amount|floatformat:2|intcomma }}</span>
+                    <span class="tx-amount">&#8358;{{ transaction.amount|floatformat:2|intcomma }}</span>
                 </p>
                 <p>
                     <strong>Date</strong>
