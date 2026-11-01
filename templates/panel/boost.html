@@ -7,12 +7,12 @@
 {% block section_title %}Boost Accounts{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/boost.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/boost.css' %}?v=4">
 {% endblock %}
 
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'css/boost.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/boost.css' %}?v=4">
 
 <div class="boost-container">
 
@@ -122,11 +122,16 @@
     {% if orders %}
     <div class="sessions-wrap" id="ordersWrap">
 
-        <h3 class="sessions-title">
-            <span class="live-dot"></span> Recent Boost Orders
-        </h3>
+        <div class="sessions-head">
+            <h3 class="sessions-title">
+                <span class="live-dot"></span> Recent Boost Orders
+            </h3>
+            <a href="{% url 'orders' %}" class="boost-view-all">
+                View all <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
 
-        {% for o in orders %}
+        {% for o in orders|slice:":2" %}
         <div class="boost-order-row" data-order-id="{{ o.id }}"
              data-open="{% if o.status in 'Pending,Processing,In progress' %}1{% else %}0{% endif %}">
 
@@ -146,9 +151,14 @@
     </div>
     {% else %}
     <div class="sessions-wrap" id="ordersWrap">
-        <h3 class="sessions-title">
-            <span class="live-dot"></span> Recent Boost Orders
-        </h3>
+        <div class="sessions-head">
+            <h3 class="sessions-title">
+                <span class="live-dot"></span> Recent Boost Orders
+            </h3>
+            <a href="{% url 'orders' %}" class="boost-view-all">
+                View all <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
         <p class="boost-empty" id="noOrders">No boost orders yet.</p>
     </div>
     {% endif %}
@@ -467,7 +477,7 @@ function boostInit() {
             wrap = document.createElement("div");
             wrap.className = "sessions-wrap";
             wrap.id = "ordersWrap";
-            wrap.innerHTML = '<h3 class="sessions-title"><span class="live-dot"></span> Recent Boost Orders</h3>';
+            wrap.innerHTML = '<div class="sessions-head"><h3 class="sessions-title"><span class="live-dot"></span> Recent Boost Orders</h3><a href="{% url "orders" %}" class="boost-view-all">View all <i class="fa-solid fa-arrow-right"></i></a></div>';
             container.appendChild(wrap);
         }
 
@@ -511,8 +521,16 @@ function boostInit() {
         row.appendChild(main);
         row.appendChild(side);
 
-        var title = wrap.querySelector(".sessions-title");
-        title.after(row);
+        var firstRow = wrap.querySelector(".boost-order-row");
+        if (firstRow) {
+            wrap.insertBefore(row, firstRow);
+        } else {
+            wrap.appendChild(row);
+        }
+
+        Array.prototype.slice.call(wrap.querySelectorAll(".boost-order-row"))
+            .slice(2)
+            .forEach(function (oldRow) { oldRow.remove(); });
 
         pollRow(row);
     }
@@ -524,6 +542,11 @@ function boostInit() {
         var badge = row.querySelector(".boost-status");
 
         function check() {
+            if (!row.isConnected) {
+                clearInterval(timer);
+                return;
+            }
+
             fetch("{% url 'boost_status' %}?order_id=" + id, {
                 headers: { "X-Requested-With": "XMLHttpRequest" }
             })

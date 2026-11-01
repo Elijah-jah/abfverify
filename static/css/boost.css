@@ -242,6 +242,39 @@
     min-width: 0;
 }
 
+.sessions-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.sessions-head .sessions-title {
+    margin: 0;
+}
+
+.boost-view-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    color: var(--brand);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color .2s ease, transform .2s ease;
+}
+
+.boost-view-all:hover {
+    color: var(--text);
+    transform: translateX(2px);
+}
+
+.boost-view-all i {
+    font-size: 10px;
+}
+
 .sessions-title {
     display: flex;
     align-items: center;
