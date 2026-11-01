@@ -245,8 +245,9 @@ body.light{
     gap: 10px;
 }
 .prod-price{
+    font-family: inherit;
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--text);
 }
 
@@ -372,12 +373,10 @@ body.light{
     color: var(--text);
 }
 .lm-price{
-    font-size: 26px;
-    font-weight: 700;
-    background: var(--grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-family: inherit;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
     margin: 0 0 16px;
 }
 
@@ -617,7 +616,7 @@ body.light{
         border-radius: 18px;
     }
     .lm-title{ font-size: 19px; }
-    .lm-price{ font-size: 23px; }
+    .lm-price{ font-size: 20px; }
     .lm-actions{ flex-direction: column; }
     .lm-cred-box{ flex-wrap: wrap; }
 }
@@ -665,33 +664,8 @@ body.light{
     white-space: nowrap;
 }
 
-/* See More button */
-.see-more-btn{
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 999px;
-    border: 1px dashed var(--accent-line);
-    background: transparent;
-    color: var(--accent);
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.2s ease;
-}
-.see-more-btn:hover{
-    background: var(--accent-soft);
-    border-style: solid;
-}
-.see-more-btn .sm-icon{
-    font-size: 11px;
-}
-
-/* hide states driven by JS */
-.prod-card.filtered-out,
-.prod-card.sm-hidden{
+/* Hide only cards excluded by search or category filtering. */
+.prod-card.filtered-out{
     display: none !important;
 }
 
@@ -730,11 +704,6 @@ body.light{
     .sec-title{
         font-size: 12.5px;
     }
-    .see-more-btn{
-        padding: 5px 12px;
-        font-size: 11px;
-    }
-    /* sections start collapsed to 4 cards (2x2) via JS sm-hidden */
 }
 
 /* =========================
@@ -789,42 +758,4 @@ body.light{
 /* hidden guard: class display rules must not override [hidden] */
 [hidden]{
     display: none !important;
-}
-/* =========================
-   SEE MORE — GLOWING PULSE
-   Soft animated glow that reads on BOTH light & dark mode.
-   Uses theme accent colors; animation loops forever, speeds
-   up on hover so it feels alive.
-========================= */
-
-@keyframes see-more-glow {
-    0%, 100% {
-        box-shadow:
-            0 0 0 0 rgba(56, 189, 248, 0.45),
-            0 0 10px 2px rgba(129, 140, 248, 0.30);
-    }
-    50% {
-        box-shadow:
-            0 0 0 7px rgba(56, 189, 248, 0),
-            0 0 24px 8px rgba(129, 140, 248, 0.55);
-    }
-}
-
-.see-more-btn {
-    border-style: solid;
-    background: var(--accent-soft);
-    animation: see-more-glow 2.2s ease-in-out infinite;
-}
-
-.see-more-btn:hover {
-    animation-duration: 1s;
-    filter: brightness(1.12);
-}
-
-/* respect users who prefer reduced motion */
-@media (prefers-reduced-motion: reduce) {
-    .see-more-btn {
-        animation: none;
-        box-shadow: 0 0 12px 2px rgba(129, 140, 248, 0.35);
-    }
 }

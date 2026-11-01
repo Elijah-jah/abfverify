@@ -41,12 +41,6 @@
 
         <div class="sec-head">
             <span class="sec-title">{{ section.name }}</span>
-            {% if section.products|length > 4 %}
-            <button class="see-more-btn" data-see-more>
-                <span class="sm-label">See More</span>
-                <i class="bi bi-chevron-right sm-icon"></i>
-            </button>
-            {% endif %}
         </div>
 
         <div class="prod-grid">
@@ -77,7 +71,7 @@
                 <h6 class="prod-name">{{ product.title }}</h6>
                 <p class="prod-desc">{{ product.description|default:''|truncatechars:80 }}</p>
                 <div class="prod-foot">
-                    <span class="prod-price mono">&#8358;{{ product.price|floatformat:2|intcomma }}</span>
+                    <span class="prod-price">&#8358;{{ product.price|floatformat:2|intcomma }}</span>
                     <button class="prod-buy" {% if product.stock == 0 %}disabled{% endif %}>
                         {% if product.stock == 0 %}Sold out{% else %}<i class="bi bi-bag-plus"></i>Buy{% endif %}
                     </button>
@@ -113,7 +107,7 @@
             <p class="lm-desc" id="modalProductDesc"></p>
         </div>
 
-        <div class="lm-price mono" id="modalPrice">&#8358;0.00</div>
+        <div class="lm-price" id="modalPrice">&#8358;0.00</div>
 
         <!-- format hint -->
         <div class="lm-format">
@@ -236,25 +230,7 @@
         return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
     }
 
-    /* ---------- FILTER + SEE MORE ---------- */
-    var SEE_MORE_COUNT = 4;
-
-    function applySeeMore(sec) {
-        var expanded = sec.classList.contains("expanded");
-        var visibleIndex = 0;
-        sec.querySelectorAll(".prod-card").forEach(function (card) {
-            if (card.classList.contains("filtered-out")) return;
-            visibleIndex++;
-            card.classList.toggle("sm-hidden", !expanded && visibleIndex > SEE_MORE_COUNT);
-        });
-        var btn = sec.querySelector("[data-see-more]");
-        if (btn) {
-            var label = btn.querySelector(".sm-label");
-            var icon = btn.querySelector(".sm-icon");
-            if (label) label.textContent = expanded ? "See Less" : "See More";
-            if (icon) icon.className = "bi " + (expanded ? "bi-chevron-up" : "bi-chevron-right") + " sm-icon";
-        }
-    }
+    /* ---------- FILTER ---------- */
 
     function applyFilter() {
         var term = searchInput.value.toLowerCase().trim();
@@ -276,8 +252,6 @@
                 if (!card.classList.contains("filtered-out")) vis++;
             });
             sec.classList.toggle("section-hidden", vis === 0);
-            if (term && vis > 0) sec.classList.add("expanded"); /* searching reveals everything */
-            applySeeMore(sec);
             totalVisible += vis;
         });
 
@@ -293,16 +267,6 @@
     });
 
     searchInput.addEventListener("input", applyFilter);
-
-    sections.forEach(function (sec) {
-        var btn = sec.querySelector("[data-see-more]");
-        if (btn) {
-            btn.addEventListener("click", function () {
-                sec.classList.toggle("expanded");
-                applySeeMore(sec);
-            });
-        }
-    });
 
     /* ---------- CARD CLICK -> CONFIRM (available OR sold out) ---------- */
     allCards.forEach(function (card) {
