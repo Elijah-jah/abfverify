@@ -9,7 +9,7 @@ from django.views.decorators.http import require_POST
 from marketplace.models import LogProduct
 
 from .models import BoostFunding, LogBatch, SMSRecharge
-from .services import get_dashboard_stats
+from .services import get_analytics_context, get_dashboard_stats
 
 
 def _clean_amount(raw):
@@ -53,6 +53,13 @@ def dashboard(request):
             "untracked": untracked_list[0] if untracked_list else None,
         },
     )
+
+
+@staff_member_required
+def analytics(request):
+    """Date-ranged sales analytics and daily revenue chart."""
+    context = get_analytics_context(request.GET.get("range", "today"))
+    return render(request, "finance/analytics.html", context)
 
 
 @staff_member_required
