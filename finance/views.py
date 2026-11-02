@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Count, Sum
 from django.shortcuts import redirect, render
+from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 
 from marketplace.models import LogProduct
@@ -40,6 +41,7 @@ def _get_untracked_restock():
 
 
 @staff_member_required
+@never_cache
 def dashboard(request):
     stats = get_dashboard_stats()
     products = LogProduct.objects.all().order_by("title")
@@ -56,9 +58,10 @@ def dashboard(request):
 
 
 @staff_member_required
+@never_cache
 def analytics(request):
-    """Date-ranged sales analytics and daily revenue chart."""
-    context = get_analytics_context(request.GET.get("range", "today"))
+    """All-time or date-ranged sales analytics with no stale browser cache."""
+    context = get_analytics_context(request.GET.get("range", "all"))
     return render(request, "finance/analytics.html", context)
 
 

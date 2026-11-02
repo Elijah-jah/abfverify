@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Finance Overview — ABFverify</title>
 <link rel="icon" type="image/jpeg" href="{% static 'img/favicon.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/finance.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/finance.css' %}?v=3">
 </head>
 <body class="finance-page">
 
@@ -57,6 +57,15 @@
     </div>
     {% endif %}
 
+    {% if stats.coverage.legacy_sold_without_purchase %}
+    <div class="alert alert-warning">
+        <strong>Historical log audit:</strong>
+        {{ stats.coverage.legacy_sold_without_purchase|intcomma }} sold log item(s)
+        have no linked LogPurchase record. Their original buyer, price, and sale date
+        cannot be reconstructed reliably, so they have not been invented into revenue.
+    </div>
+    {% endif %}
+
     <!-- Business-wide totals -->
     <section class="stat-section" aria-labelledby="business-totals">
         <div class="section-heading-row">
@@ -69,7 +78,7 @@
             <article class="stat-card stat-card-primary">
                 <span class="card-label">Total Website Sales</span>
                 <span class="card-value">₦{{ stats.totals.revenue|floatformat:2|intcomma }}</span>
-                <span class="card-caption">SMS + log purchases + fulfilled boosts</span>
+                <span class="card-caption">{{ stats.totals.records|intcomma }} tracked sales records — SMS + logs + fulfilled boosts</span>
             </article>
             <article class="stat-card">
                 <span class="card-label">Total Registered Users</span>
@@ -127,21 +136,33 @@
                 <span class="channel-dot channel-dot-blue"></span>
                 <span class="card-label">InstantNums Sales</span>
                 <span class="card-value txt-blue">₦{{ stats.sms.instantnums_revenue|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ stats.sms.instantnums_orders|intcomma }} fulfilled orders, including legacy server labels</span>
             </article>
             <article class="stat-card channel-card">
                 <span class="channel-dot channel-dot-violet"></span>
                 <span class="card-label">DaisySMS Sales</span>
                 <span class="card-value">₦{{ stats.sms.daisysms_revenue|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ stats.sms.daisysms_orders|intcomma }} fulfilled orders, including legacy server labels</span>
             </article>
+            {% if stats.sms.other_sms_orders or stats.sms.other_sms_revenue %}
+            <article class="stat-card channel-card">
+                <span class="channel-dot channel-dot-slate"></span>
+                <span class="card-label">Other / Legacy SMS Sales</span>
+                <span class="card-value">₦{{ stats.sms.other_sms_revenue|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ stats.sms.other_sms_orders|intcomma }} fulfilled orders with older or unusual provider names</span>
+            </article>
+            {% endif %}
             <article class="stat-card channel-card">
                 <span class="channel-dot channel-dot-green"></span>
                 <span class="card-label">Log Purchase Sales</span>
                 <span class="card-value txt-green">₦{{ stats.logs.revenue|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ stats.logs.purchases|intcomma }} saved purchases — all historical dates included</span>
             </article>
             <article class="stat-card channel-card">
                 <span class="channel-dot channel-dot-orange"></span>
                 <span class="card-label">Boost Sales</span>
                 <span class="card-value txt-yellow">₦{{ stats.boost.revenue|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ stats.boost.orders|intcomma }} fulfilled boost orders</span>
             </article>
         </div>
     </section>

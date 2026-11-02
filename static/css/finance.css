@@ -570,6 +570,7 @@ a:hover { text-decoration: underline; }
 
 .channel-dot-blue { background: #2563eb; box-shadow: 0 0 0 4px #dbeafe; }
 .channel-dot-violet { background: #7c3aed; box-shadow: 0 0 0 4px #ede9fe; }
+.channel-dot-slate { background: #64748b; box-shadow: 0 0 0 4px #e2e8f0; }
 .channel-dot-green { background: #16a34a; box-shadow: 0 0 0 4px #dcfce7; }
 .channel-dot-orange { background: #d97706; box-shadow: 0 0 0 4px #fef3c7; }
 
@@ -820,7 +821,7 @@ a:hover { text-decoration: underline; }
 }
 
 @media (min-width: 641px) {
-    .analytics-table-wrap table { min-width: 900px; }
+    .analytics-table-wrap table { min-width: 1060px; }
 }
 
 [hidden] { display: none !important; }

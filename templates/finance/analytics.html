@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Revenue Analytics — ABFverify</title>
 <link rel="icon" type="image/jpeg" href="{% static 'img/favicon.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/finance.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/finance.css' %}?v=3">
 </head>
 <body class="finance-page">
 
@@ -58,7 +58,7 @@
             <article class="stat-card stat-card-primary">
                 <span class="card-label">Total Sales Revenue</span>
                 <span class="card-value">₦{{ analytics.total|floatformat:2|intcomma }}</span>
-                <span class="card-caption">SMS + logs + fulfilled boost orders</span>
+                <span class="card-caption">{{ analytics.record_count|intcomma }} tracked records — SMS + logs + fulfilled boosts</span>
             </article>
             <article class="stat-card">
                 <span class="card-label">Total Registered Users</span>
@@ -73,7 +73,7 @@
             <article class="stat-card">
                 <span class="card-label">SMS Revenue</span>
                 <span class="card-value">₦{{ analytics.sms|floatformat:2|intcomma }}</span>
-                <span class="card-caption">InstantNums and DaisySMS combined</span>
+                <span class="card-caption">{{ analytics.sms_count|intcomma }} fulfilled orders, including recognized legacy deliveries</span>
             </article>
         </div>
     </section>
@@ -85,21 +85,33 @@
                 <span class="channel-dot channel-dot-blue"></span>
                 <span class="card-label">InstantNums</span>
                 <span class="card-value txt-blue">₦{{ analytics.instantnums|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ analytics.instantnums_count|intcomma }} orders</span>
             </article>
             <article class="stat-card channel-card">
                 <span class="channel-dot channel-dot-violet"></span>
                 <span class="card-label">DaisySMS</span>
                 <span class="card-value">₦{{ analytics.daisysms|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ analytics.daisysms_count|intcomma }} orders</span>
             </article>
+            {% if analytics.other_sms_count or analytics.other_sms %}
+            <article class="stat-card channel-card">
+                <span class="channel-dot channel-dot-slate"></span>
+                <span class="card-label">Other / Legacy SMS</span>
+                <span class="card-value">₦{{ analytics.other_sms|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ analytics.other_sms_count|intcomma }} orders retained with their original provider labels</span>
+            </article>
+            {% endif %}
             <article class="stat-card channel-card">
                 <span class="channel-dot channel-dot-green"></span>
                 <span class="card-label">Log Purchases</span>
                 <span class="card-value txt-green">₦{{ analytics.logs|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ analytics.logs_count|intcomma }} purchases</span>
             </article>
             <article class="stat-card channel-card">
                 <span class="channel-dot channel-dot-orange"></span>
                 <span class="card-label">Boost Orders</span>
                 <span class="card-value txt-yellow">₦{{ analytics.boost|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ analytics.boost_count|intcomma }} fulfilled orders</span>
             </article>
         </div>
     </section>
@@ -130,6 +142,7 @@
                         <th>Date</th>
                         <th>InstantNums</th>
                         <th>DaisySMS</th>
+                        <th>Other / Legacy SMS</th>
                         <th>Logs</th>
                         <th>Boost</th>
                         <th>Total Sales</th>
@@ -141,6 +154,7 @@
                         <td data-label="Date">{{ row.day|date:"M d, Y" }}</td>
                         <td data-label="InstantNums">₦{{ row.instantnums|floatformat:2|intcomma }}</td>
                         <td data-label="DaisySMS">₦{{ row.daisysms|floatformat:2|intcomma }}</td>
+                        <td data-label="Other / Legacy SMS">₦{{ row.other_sms|floatformat:2|intcomma }}</td>
                         <td data-label="Logs">₦{{ row.logs|floatformat:2|intcomma }}</td>
                         <td data-label="Boost">₦{{ row.boost|floatformat:2|intcomma }}</td>
                         <td data-label="Total Sales" class="table-emphasis">₦{{ row.total|floatformat:2|intcomma }}</td>
@@ -152,6 +166,7 @@
                         <td data-label="Period">Selected total</td>
                         <td data-label="InstantNums">₦{{ analytics.instantnums|floatformat:2|intcomma }}</td>
                         <td data-label="DaisySMS">₦{{ analytics.daisysms|floatformat:2|intcomma }}</td>
+                        <td data-label="Other / Legacy SMS">₦{{ analytics.other_sms|floatformat:2|intcomma }}</td>
                         <td data-label="Logs">₦{{ analytics.logs|floatformat:2|intcomma }}</td>
                         <td data-label="Boost">₦{{ analytics.boost|floatformat:2|intcomma }}</td>
                         <td data-label="Total Sales">₦{{ analytics.total|floatformat:2|intcomma }}</td>

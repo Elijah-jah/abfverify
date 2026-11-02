@@ -2,7 +2,7 @@
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Min, Q, Sum
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 
@@ -14,10 +14,39 @@ from wallet.models import Transaction
 from .models import BoostFunding, LogBatch, SMSRecharge
 
 
-SMS_SUCCESS_STATUSES = ("completed", "received")
+# Completed normal orders plus status names used by some legacy datasets.
+SMS_SUCCESS_STATUSES = (
+    "completed",
+    "received",
+    "complete",
+    "success",
+    "successful",
+)
+SMS_EXCLUDED_STATUSES = (
+    "cancelled",
+    "canceled",
+    "expired",
+    "failed",
+    "refunded",
+)
 BOOST_SUCCESS_STATUSES = ("Completed", "Partial")
 
+# Recognize both current provider names and legacy server labels.
+INSTANTNUMS_PROVIDER = (
+    Q(provider__icontains="instantnums")
+    | Q(provider__iexact="server1")
+    | Q(provider__iexact="server 1")
+    | Q(provider__iexact="server_1")
+)
+DAISYSMS_PROVIDER = (
+    Q(provider__icontains="daisy")
+    | Q(provider__iexact="server2")
+    | Q(provider__iexact="server 2")
+    | Q(provider__iexact="server_2")
+)
+
 RANGE_OPTIONS = [
+    {"key": "all", "label": "All Time"},
     {"key": "today", "label": "Today"},
     {"key": "yesterday", "label": "Yesterday"},
     {"key": "last_3_days", "label": "Last 3 Days"},
@@ -63,22 +92,48 @@ def _between(queryset, start=None, end=None):
     return queryset
 
 
+def _tracked_sms_orders():
+    """Return fulfilled SMS orders, including legacy delivered orders.
+
+    Normal records are recognized by status. A legacy record with an incorrect
+    pending/waiting status is still included when its stored OTP, full SMS, or
+    delivery timestamp proves that the order was fulfilled. Explicitly cancelled,
+    expired, failed, or refunded orders are never recovered through that fallback.
+    """
+    has_code = ~Q(sms_code__isnull=True) & ~Q(sms_code="")
+    has_message = ~Q(full_sms__isnull=True) & ~Q(full_sms="")
+    delivered_evidence = (
+        Q(sms_received_at__isnull=False) | has_code | has_message
+    )
+    return Order.objects.filter(
+        Q(status__in=SMS_SUCCESS_STATUSES)
+        | (
+            delivered_evidence
+            & ~Q(status__in=SMS_EXCLUDED_STATUSES)
+        )
+    )
+
+
+def _other_sms_orders(queryset):
+    """Keep unusual legacy provider names visible instead of dropping them."""
+    return queryset.exclude(INSTANTNUMS_PROVIDER).exclude(DAISYSMS_PROVIDER)
+
+
 def _sales_summary(start=None, end=None):
     """Gross sales, separated by channel, for an optional local-time range."""
-    sms_orders = _between(
-        Order.objects.filter(status__in=SMS_SUCCESS_STATUSES), start, end
-    )
+    sms_orders = _between(_tracked_sms_orders(), start, end)
     log_purchases = _between(LogPurchase.objects.all(), start, end)
     boost_orders = _between(
         BoostOrder.objects.filter(status__in=BOOST_SUCCESS_STATUSES), start, end
     )
 
-    instantnums = _sum(
-        sms_orders.filter(provider__icontains="instantnums"), "price"
-    )
-    daisysms = _sum(
-        sms_orders.filter(provider__icontains="daisy"), "price"
-    )
+    instantnums_orders = sms_orders.filter(INSTANTNUMS_PROVIDER)
+    daisysms_orders = sms_orders.filter(DAISYSMS_PROVIDER)
+    other_sms_orders = _other_sms_orders(sms_orders)
+
+    instantnums = _sum(instantnums_orders, "price")
+    daisysms = _sum(daisysms_orders, "price")
+    other_sms = _sum(other_sms_orders, "price")
     sms_revenue = _sum(sms_orders, "price")
     logs_revenue = _sum(log_purchases, "price")
     boost_revenue = _sum(boost_orders, "price")
@@ -88,8 +143,18 @@ def _sales_summary(start=None, end=None):
         "sms": _q(sms_revenue),
         "instantnums": _q(instantnums),
         "daisysms": _q(daisysms),
+        "other_sms": _q(other_sms),
         "logs": _q(logs_revenue),
         "boost": _q(boost_revenue),
+        "record_count": (
+            sms_orders.count() + log_purchases.count() + boost_orders.count()
+        ),
+        "sms_count": sms_orders.count(),
+        "instantnums_count": instantnums_orders.count(),
+        "daisysms_count": daisysms_orders.count(),
+        "other_sms_count": other_sms_orders.count(),
+        "logs_count": log_purchases.count(),
+        "boost_count": boost_orders.count(),
     }
 
 
@@ -105,11 +170,26 @@ def _day_start(value):
     return value.replace(hour=0, minute=0, second=0, microsecond=0)
 
 
+def _first_historical_day(fallback):
+    """Find the oldest existing business record for the All Time report."""
+    earliest_values = []
+    for model in (Order, LogPurchase, BoostOrder, Transaction):
+        earliest = model.objects.aggregate(value=Min("created_at"))["value"]
+        if earliest is not None:
+            earliest_values.append(earliest)
+
+    if not earliest_values:
+        return fallback
+    return _day_start(timezone.localtime(min(earliest_values)))
+
+
 def _range_bounds(range_key):
     """Return start/end datetimes. Rolling ranges include today."""
     now = timezone.localtime()
     today = _day_start(now)
 
+    if range_key == "all":
+        return _first_historical_day(today), now
     if range_key == "yesterday":
         return today - timedelta(days=1), today
     if range_key in RANGE_DAYS:
@@ -128,27 +208,31 @@ def _daily_totals(queryset, amount_field, start, end):
     return {row["day"]: _q(row["total"] or 0) for row in rows}
 
 
-def get_analytics_context(range_key="today"):
+def get_analytics_context(range_key="all"):
     valid_keys = {option["key"] for option in RANGE_OPTIONS}
     if range_key not in valid_keys:
-        range_key = "today"
+        range_key = "all"
 
     start, end = _range_bounds(range_key)
     summary = _sales_summary(start, end)
     deposits = _successful_deposits(start, end)
 
-    sms_orders = Order.objects.filter(status__in=SMS_SUCCESS_STATUSES)
+    sms_orders = _tracked_sms_orders()
+    instantnums_orders = sms_orders.filter(INSTANTNUMS_PROVIDER)
+    daisysms_orders = sms_orders.filter(DAISYSMS_PROVIDER)
+    other_sms_orders = _other_sms_orders(sms_orders)
     log_purchases = LogPurchase.objects.all()
     boost_orders = BoostOrder.objects.filter(status__in=BOOST_SUCCESS_STATUSES)
 
     daily_maps = {
         "instantnums": _daily_totals(
-            sms_orders.filter(provider__icontains="instantnums"),
-            "price", start, end,
+            instantnums_orders, "price", start, end,
         ),
         "daisysms": _daily_totals(
-            sms_orders.filter(provider__icontains="daisy"),
-            "price", start, end,
+            daisysms_orders, "price", start, end,
+        ),
+        "other_sms": _daily_totals(
+            other_sms_orders, "price", start, end,
         ),
         "logs": _daily_totals(log_purchases, "price", start, end),
         "boost": _daily_totals(boost_orders, "price", start, end),
@@ -240,6 +324,13 @@ def get_dashboard_stats():
             "value": _q(line_value),
         })
 
+    # Old sold items without a LogPurchase cannot supply an exact buyer, price,
+    # or sale timestamp. Surface them rather than inventing financial records.
+    legacy_sold_without_purchase = LogItem.objects.filter(
+        status="sold",
+        purchase__isnull=True,
+    ).count()
+
     # ============ BOOST ============
     boost_funding = _sum(BoostFunding.objects.all(), "amount")
     boost_profit = sales["boost"] - boost_funding
@@ -271,6 +362,11 @@ def get_dashboard_stats():
             "revenue": sales["sms"],
             "instantnums_revenue": sales["instantnums"],
             "daisysms_revenue": sales["daisysms"],
+            "other_sms_revenue": sales["other_sms"],
+            "orders": sales["sms_count"],
+            "instantnums_orders": sales["instantnums_count"],
+            "daisysms_orders": sales["daisysms_count"],
+            "other_sms_orders": sales["other_sms_count"],
             "instantnums_funding": _q(instantnums_funding),
             "daisysms_funding": _q(daisysms_funding),
             "costs": _q(sms_costs),
@@ -278,6 +374,7 @@ def get_dashboard_stats():
         },
         "logs": {
             "revenue": sales["logs"],
+            "purchases": sales["logs_count"],
             "investment": _q(logs_investment),
             "stock_value": _q(stock_value),
             "stock_units": stock_units,
@@ -285,6 +382,7 @@ def get_dashboard_stats():
         },
         "boost": {
             "revenue": sales["boost"],
+            "orders": sales["boost_count"],
             "funding": _q(boost_funding),
             "profit": _q(boost_profit),
         },
@@ -292,8 +390,12 @@ def get_dashboard_stats():
             "users": total_users,
             "deposits": _q(total_deposits),
             "revenue": sales["total"],
+            "records": sales["record_count"],
             "costs": _q(total_costs),
             "profit": _q(grand_profit),
+        },
+        "coverage": {
+            "legacy_sold_without_purchase": legacy_sold_without_purchase,
         },
         "periods": periods,
         "pending_batches": pending_batches,
