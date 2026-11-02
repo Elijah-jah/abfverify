@@ -1,0 +1,250 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revenue Analytics — ABFverify</title>
+<link rel="icon" type="image/jpeg" href="{% static 'img/favicon.jpg' %}">
+<link rel="stylesheet" href="{% static 'css/finance.css' %}?v=2">
+</head>
+<body class="finance-page">
+
+<header class="page-header">
+    <div class="header-left">
+        <span class="page-kicker">ABFverify Finance</span>
+        <h1>Revenue Analytics</h1>
+        <p class="subtitle">Track sales performance across every business channel.</p>
+    </div>
+    <div class="header-actions">
+        <a class="btn-secondary" href="{% url 'finance_dashboard' %}">Finance Overview</a>
+        <a class="btn-back" href="/semilore/">Back to Admin</a>
+    </div>
+</header>
+
+<main>
+    <section class="range-panel" aria-labelledby="analytics-range-title">
+        <div>
+            <span class="section-eyebrow">Reporting Period</span>
+            <h2 id="analytics-range-title">{{ range_label }}</h2>
+            <p class="range-meta">
+                {{ range_start|date:"M d, Y H:i" }} to {{ range_end|date:"M d, Y H:i" }}
+            </p>
+        </div>
+        <form method="get" class="range-form">
+            <label for="rangeSelect">Choose a period</label>
+            <div class="range-controls">
+                <select id="rangeSelect" name="range">
+                    {% for option in range_options %}
+                    <option value="{{ option.key }}" {% if option.key == range_key %}selected{% endif %}>
+                        {{ option.label }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn-primary">Apply</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="stat-section" aria-labelledby="selected-performance">
+        <div class="section-heading-row">
+            <div>
+                <span class="section-eyebrow">Selected Period</span>
+                <h2 id="selected-performance" class="section-heading">Business Performance</h2>
+            </div>
+        </div>
+        <div class="cards-grid cards-grid-featured">
+            <article class="stat-card stat-card-primary">
+                <span class="card-label">Total Sales Revenue</span>
+                <span class="card-value">₦{{ analytics.total|floatformat:2|intcomma }}</span>
+                <span class="card-caption">SMS + logs + fulfilled boost orders</span>
+            </article>
+            <article class="stat-card">
+                <span class="card-label">Total Registered Users</span>
+                <span class="card-value txt-blue">{{ total_users|intcomma }}</span>
+                <span class="card-caption">All registered ABFverify accounts</span>
+            </article>
+            <article class="stat-card">
+                <span class="card-label">Successful Deposits</span>
+                <span class="card-value txt-blue">₦{{ analytics_deposits|floatformat:2|intcomma }}</span>
+                <span class="card-caption">Wallet funding, reported separately</span>
+            </article>
+            <article class="stat-card">
+                <span class="card-label">SMS Revenue</span>
+                <span class="card-value">₦{{ analytics.sms|floatformat:2|intcomma }}</span>
+                <span class="card-caption">InstantNums and DaisySMS combined</span>
+            </article>
+        </div>
+    </section>
+
+    <section class="stat-section" aria-labelledby="channel-revenue">
+        <h2 id="channel-revenue" class="section-title">Revenue by Channel</h2>
+        <div class="cards-grid channel-grid">
+            <article class="stat-card channel-card">
+                <span class="channel-dot channel-dot-blue"></span>
+                <span class="card-label">InstantNums</span>
+                <span class="card-value txt-blue">₦{{ analytics.instantnums|floatformat:2|intcomma }}</span>
+            </article>
+            <article class="stat-card channel-card">
+                <span class="channel-dot channel-dot-violet"></span>
+                <span class="card-label">DaisySMS</span>
+                <span class="card-value">₦{{ analytics.daisysms|floatformat:2|intcomma }}</span>
+            </article>
+            <article class="stat-card channel-card">
+                <span class="channel-dot channel-dot-green"></span>
+                <span class="card-label">Log Purchases</span>
+                <span class="card-value txt-green">₦{{ analytics.logs|floatformat:2|intcomma }}</span>
+            </article>
+            <article class="stat-card channel-card">
+                <span class="channel-dot channel-dot-orange"></span>
+                <span class="card-label">Boost Orders</span>
+                <span class="card-value txt-yellow">₦{{ analytics.boost|floatformat:2|intcomma }}</span>
+            </article>
+        </div>
+    </section>
+
+    <section class="chart-card" aria-labelledby="revenue-chart-title">
+        <div class="chart-head">
+            <div>
+                <span class="section-eyebrow">Daily Trend</span>
+                <h2 id="revenue-chart-title">Sales Revenue Chart</h2>
+                <p>Each bar shows the total successful sales recorded on that day.</p>
+            </div>
+            <span class="chart-period-badge">{{ range_label }}</span>
+        </div>
+        <div class="chart-wrap">
+            <canvas id="revenueChart" role="img" aria-label="Daily sales revenue bar chart"></canvas>
+        </div>
+        <p class="chart-fallback" id="chartFallback" hidden>
+            The chart could not load. Use the daily breakdown below for the same figures.
+        </p>
+    </section>
+
+    <section class="stat-section" aria-labelledby="daily-breakdown">
+        <h2 id="daily-breakdown" class="section-title">Daily Breakdown</h2>
+        <div class="table-wrap analytics-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>InstantNums</th>
+                        <th>DaisySMS</th>
+                        <th>Logs</th>
+                        <th>Boost</th>
+                        <th>Total Sales</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in chart_rows %}
+                    <tr>
+                        <td data-label="Date">{{ row.day|date:"M d, Y" }}</td>
+                        <td data-label="InstantNums">₦{{ row.instantnums|floatformat:2|intcomma }}</td>
+                        <td data-label="DaisySMS">₦{{ row.daisysms|floatformat:2|intcomma }}</td>
+                        <td data-label="Logs">₦{{ row.logs|floatformat:2|intcomma }}</td>
+                        <td data-label="Boost">₦{{ row.boost|floatformat:2|intcomma }}</td>
+                        <td data-label="Total Sales" class="table-emphasis">₦{{ row.total|floatformat:2|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-total">
+                        <td data-label="Period">Selected total</td>
+                        <td data-label="InstantNums">₦{{ analytics.instantnums|floatformat:2|intcomma }}</td>
+                        <td data-label="DaisySMS">₦{{ analytics.daisysms|floatformat:2|intcomma }}</td>
+                        <td data-label="Logs">₦{{ analytics.logs|floatformat:2|intcomma }}</td>
+                        <td data-label="Boost">₦{{ analytics.boost|floatformat:2|intcomma }}</td>
+                        <td data-label="Total Sales">₦{{ analytics.total|floatformat:2|intcomma }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </section>
+</main>
+
+{{ chart_labels|json_script:"chart-labels" }}
+{{ chart_values|json_script:"chart-values" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    "use strict";
+
+    var canvas = document.getElementById("revenueChart");
+    var labels = JSON.parse(document.getElementById("chart-labels").textContent);
+    var values = JSON.parse(document.getElementById("chart-values").textContent);
+
+    function naira(value) {
+        return "₦" + Number(value || 0).toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    if (!window.Chart) {
+        document.getElementById("chartFallback").hidden = false;
+        canvas.hidden = true;
+        return;
+    }
+
+    new Chart(canvas, {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Sales revenue",
+                data: values,
+                backgroundColor: "rgba(37, 99, 235, 0.78)",
+                hoverBackgroundColor: "#1d4ed8",
+                borderColor: "#2563eb",
+                borderWidth: 1,
+                borderRadius: 7,
+                maxBarThickness: 46
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: "index"
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: "#0f172a",
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: function (context) {
+                            return "Revenue: " + naira(context.parsed.y);
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        color: "#64748b",
+                        maxRotation: 45,
+                        minRotation: 0,
+                        autoSkip: true,
+                        maxTicksLimit: 14
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: { color: "rgba(100, 116, 139, 0.14)" },
+                    ticks: {
+                        color: "#64748b",
+                        callback: function (value) { return naira(value); }
+                    }
+                }
+            }
+        }
+    });
+})();
+</script>
+
+</body>
+</html>

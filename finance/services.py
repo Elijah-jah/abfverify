@@ -178,6 +178,7 @@ def get_analytics_context(range_key="today"):
     return {
         "analytics": summary,
         "analytics_deposits": _q(deposits),
+        "total_users": get_user_model().objects.count(),
         "range_key": range_key,
         "range_label": next(
             option["label"] for option in RANGE_OPTIONS
