@@ -1066,3 +1066,95 @@ a:hover { text-decoration: underline; }
         transition: none;
     }
 }
+/* ==========================================================
+   DAILY BREAKDOWN — STICKY TABLE HEADER
+   Keep the column headings visible while records scroll.
+   ========================================================== */
+
+.analytics-table-wrap {
+    position: relative;
+    max-height: min(600px, 70vh);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+}
+
+.analytics-table-wrap table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.analytics-table-wrap thead {
+    position: sticky;
+    top: 0;
+    z-index: 8;
+}
+
+.analytics-table-wrap thead th {
+    position: sticky;
+    top: 0;
+    z-index: 9;
+    background: var(--surface-hover);
+    box-shadow: inset 0 -1px 0 var(--border);
+    white-space: nowrap;
+}
+
+/* Mobile override:
+   Keep this particular table in normal table format so its header
+   can remain sticky. Horizontal scrolling stays inside the table,
+   not on the page. */
+@media (max-width: 640px) {
+    .finance-page .analytics-table-wrap {
+        max-height: 70vh;
+        overflow: auto;
+    }
+
+    .finance-page .analytics-table-wrap table {
+        display: table;
+        width: max-content;
+        min-width: 1060px;
+        max-width: none;
+    }
+
+    .finance-page .analytics-table-wrap thead {
+        display: table-header-group;
+        position: sticky;
+        top: 0;
+    }
+
+    .finance-page .analytics-table-wrap tbody {
+        display: table-row-group;
+    }
+
+    .finance-page .analytics-table-wrap tfoot {
+        display: table-footer-group;
+    }
+
+    .finance-page .analytics-table-wrap tr {
+        display: table-row;
+        width: auto;
+        padding: 0;
+        border: none;
+    }
+
+    .finance-page .analytics-table-wrap th,
+    .finance-page .analytics-table-wrap td {
+        display: table-cell;
+        width: auto;
+        padding: 11px 16px;
+        border: none;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .finance-page .analytics-table-wrap td::before {
+        content: none;
+    }
+
+    .finance-page .analytics-table-wrap tfoot td {
+        border-top: 2px solid var(--border);
+        border-bottom: none;
+    }
+}
