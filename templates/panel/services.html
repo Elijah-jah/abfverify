@@ -129,7 +129,8 @@
 <div class="mp-overlay" id="logModal" hidden>
     <div class="log-modal" role="dialog" aria-modal="true">
 
-        <div class="lm-icon lm-icon-check"><i class="bi bi-check-lg"></i></div>
+        <!-- Reuse the purchased product's image; keep the checkmark as fallback -->
+        <div class="lm-icon lm-icon-check" id="logModalIcon"><i class="bi bi-check-lg"></i></div>
 
         <h5 class="lm-title">Purchase Successful!</h5>
 
@@ -182,6 +183,7 @@
 
     var buyModal = document.getElementById("buyModal");
     var logModal = document.getElementById("logModal");
+    var logModalIcon = document.getElementById("logModalIcon");
     var modalIcon = document.getElementById("modalIcon");
     var modalProductName = document.getElementById("modalProductName");
     var modalProductDesc = document.getElementById("modalProductDesc");
@@ -360,6 +362,16 @@
                         var b = currentCard.querySelector(".prod-buy");
                         if (b) { b.disabled = true; b.textContent = "Sold out"; }
                     }
+                }
+
+                /* Show the exact product image on the purchase-success card */
+                var logImage = currentCard.getAttribute("data-image");
+                if (logImage) {
+                    logModalIcon.classList.remove("lm-icon-check");
+                    logModalIcon.innerHTML = '<img src="' + escapeAttr(logImage) + '" alt="" class="lm-icon-img">';
+                } else {
+                    logModalIcon.classList.add("lm-icon-check");
+                    logModalIcon.innerHTML = '<i class="bi bi-check-lg"></i>';
                 }
 
                 open(logModal);
