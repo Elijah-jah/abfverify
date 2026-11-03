@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Finance Overview — ABFverify</title>
 <link rel="icon" type="image/jpeg" href="{% static 'img/favicon.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/finance.css' %}?v=3">
+<link rel="stylesheet" href="{% static 'css/finance.css' %}?v=4">
 </head>
 <body class="finance-page">
 
@@ -18,6 +18,9 @@
         <p class="subtitle">Revenue, deposits, funding, profit, and log inventory in one place.</p>
     </div>
     <div class="header-actions">
+        <a class="btn-secondary" href="{% url 'finance_inventory' %}">
+            Daily Sales Inventory
+        </a>
         <a class="btn-analytics" href="{% url 'finance_analytics' %}">
             View Revenue Analytics <span aria-hidden="true">→</span>
         </a>

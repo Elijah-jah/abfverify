@@ -2,7 +2,9 @@
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
-from django.db.models import Count, Min, Q, Sum
+from django.db.models import (
+    Case, CharField, Count, F, Max, Min, Q, Sum, Value, When,
+)
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 
@@ -400,4 +402,104 @@ def get_dashboard_stats():
         "periods": periods,
         "pending_batches": pending_batches,
         "stock_by_product": stock_by_product,
+    }
+
+
+def get_daily_sales_inventory():
+    """Group today's log, SMS, and boost sales for the inventory page.
+
+    Logs use their purchase snapshots, SMS uses the same fulfilled-order rules as
+    finance analytics, and boosts include every paid order not marked cancelled.
+    No customer credentials, phone numbers, usernames, or boost links are queried.
+    """
+    today = _day_start(timezone.localtime())
+    tomorrow = today + timedelta(days=1)
+
+    log_sales = _between(LogPurchase.objects.all(), today, tomorrow)
+    log_rows = list(
+        log_sales
+        .values("product_title")
+        .annotate(
+            units_sold=Count("id"),
+            revenue=Sum("price"),
+            last_sold=Max("created_at"),
+        )
+        .order_by("-units_sold", "product_title")
+    )
+
+    sms_sales = _between(_tracked_sms_orders(), today, tomorrow)
+    sms_rows = list(
+        sms_sales
+        .annotate(
+            provider_group=Case(
+                When(
+                    INSTANTNUMS_PROVIDER,
+                    then=Value("Server 1 — InstantNums"),
+                ),
+                When(
+                    DAISYSMS_PROVIDER,
+                    then=Value("Server 2 — DaisySMS"),
+                ),
+                default=F("provider"),
+                output_field=CharField(),
+            )
+        )
+        .values("country__name", "service__name", "provider_group")
+        .annotate(
+            numbers_sold=Count("id"),
+            revenue=Sum("price"),
+            last_sold=Max("created_at"),
+        )
+        .order_by("country__name", "service__name", "provider_group")
+    )
+
+    # A boost is paid when accepted by the provider. Include open orders at once,
+    # but omit cancelled orders from this operational sales inventory.
+    boost_sales = _between(
+        BoostOrder.objects.exclude(status__iexact="Canceled")
+        .exclude(status__iexact="Cancelled"),
+        today,
+        tomorrow,
+    )
+    boost_rows = list(
+        boost_sales
+        .values("service__category", "service__name")
+        .annotate(
+            orders=Count("id"),
+            units=Sum("quantity"),
+            order_value=Sum("price"),
+            fulfilled_orders=Count(
+                "id", filter=Q(status__in=BOOST_SUCCESS_STATUSES)
+            ),
+            open_orders=Count(
+                "id",
+                filter=Q(status__in=("Pending", "Processing", "In progress")),
+            ),
+            last_ordered=Max("created_at"),
+        )
+        .order_by("service__category", "service__name")
+    )
+
+    totals = {
+        "logs_units": sum(row["units_sold"] for row in log_rows),
+        "logs_revenue": _q(_sum(log_sales, "price")),
+        "sms_numbers": sum(row["numbers_sold"] for row in sms_rows),
+        "sms_revenue": _q(_sum(sms_sales, "price")),
+        "boost_orders": sum(row["orders"] for row in boost_rows),
+        "boost_units": sum((row["units"] or 0) for row in boost_rows),
+        "boost_value": _q(_sum(boost_sales, "price")),
+    }
+    totals["sales_value"] = _q(
+        totals["logs_revenue"]
+        + totals["sms_revenue"]
+        + totals["boost_value"]
+    )
+
+    return {
+        "inventory_date": today.date(),
+        "inventory_generated_at": timezone.localtime(),
+        "log_rows": log_rows,
+        "sms_rows": sms_rows,
+        "boost_rows": boost_rows,
+        "inventory_totals": totals,
     }

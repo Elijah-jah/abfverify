@@ -10,7 +10,11 @@ from django.views.decorators.http import require_POST
 from marketplace.models import LogProduct
 
 from .models import BoostFunding, LogBatch, SMSRecharge
-from .services import get_analytics_context, get_dashboard_stats
+from .services import (
+    get_analytics_context,
+    get_daily_sales_inventory,
+    get_dashboard_stats,
+)
 
 
 def _clean_amount(raw):
@@ -63,6 +67,14 @@ def analytics(request):
     """All-time or date-ranged sales analytics with no stale browser cache."""
     context = get_analytics_context(request.GET.get("range", "all"))
     return render(request, "finance/analytics.html", context)
+
+
+@staff_member_required
+@never_cache
+def inventory(request):
+    """Today's product-level log, SMS, and boost sales inventory."""
+    context = get_daily_sales_inventory()
+    return render(request, "finance/inventory.html", context)
 
 
 @staff_member_required
