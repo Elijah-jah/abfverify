@@ -405,17 +405,24 @@ def get_dashboard_stats():
     }
 
 
-def get_daily_sales_inventory():
-    """Group today's log, SMS, and boost sales for the inventory page.
+def get_sales_inventory(range_key="today"):
+    """Group log, SMS, and boost sales for the selected reporting period.
 
     Logs use their purchase snapshots, SMS uses the same fulfilled-order rules as
     finance analytics, and boosts include every paid order not marked cancelled.
     No customer credentials, phone numbers, usernames, or boost links are queried.
     """
-    today = _day_start(timezone.localtime())
-    tomorrow = today + timedelta(days=1)
+    valid_keys = {option["key"] for option in RANGE_OPTIONS}
+    if range_key not in valid_keys:
+        range_key = "today"
 
-    log_sales = _between(LogPurchase.objects.all(), today, tomorrow)
+    start, end = _range_bounds(range_key)
+    range_label = next(
+        option["label"] for option in RANGE_OPTIONS
+        if option["key"] == range_key
+    )
+
+    log_sales = _between(LogPurchase.objects.all(), start, end)
     log_rows = list(
         log_sales
         .values("product_title")
@@ -427,7 +434,7 @@ def get_daily_sales_inventory():
         .order_by("-units_sold", "product_title")
     )
 
-    sms_sales = _between(_tracked_sms_orders(), today, tomorrow)
+    sms_sales = _between(_tracked_sms_orders(), start, end)
     sms_rows = list(
         sms_sales
         .annotate(
@@ -458,8 +465,8 @@ def get_daily_sales_inventory():
     boost_sales = _between(
         BoostOrder.objects.exclude(status__iexact="Canceled")
         .exclude(status__iexact="Cancelled"),
-        today,
-        tomorrow,
+        start,
+        end,
     )
     boost_rows = list(
         boost_sales
@@ -496,7 +503,11 @@ def get_daily_sales_inventory():
     )
 
     return {
-        "inventory_date": today.date(),
+        "range_key": range_key,
+        "range_label": range_label,
+        "range_options": RANGE_OPTIONS,
+        "range_start": start,
+        "range_end": end,
         "inventory_generated_at": timezone.localtime(),
         "log_rows": log_rows,
         "sms_rows": sms_rows,

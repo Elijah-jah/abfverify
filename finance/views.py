@@ -12,8 +12,8 @@ from marketplace.models import LogProduct
 from .models import BoostFunding, LogBatch, SMSRecharge
 from .services import (
     get_analytics_context,
-    get_daily_sales_inventory,
     get_dashboard_stats,
+    get_sales_inventory,
 )
 
 
@@ -72,8 +72,8 @@ def analytics(request):
 @staff_member_required
 @never_cache
 def inventory(request):
-    """Today's product-level log, SMS, and boost sales inventory."""
-    context = get_daily_sales_inventory()
+    """Product-level log, SMS, and boost sales for a selected period."""
+    context = get_sales_inventory(request.GET.get("range", "today"))
     return render(request, "finance/inventory.html", context)
 
 

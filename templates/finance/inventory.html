@@ -5,7 +5,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Daily Sales Inventory — ABFverify</title>
+<title>Sales Inventory — ABFverify</title>
 <link rel="icon" type="image/jpeg" href="{% static 'img/favicon.jpg' %}">
 <link rel="stylesheet" href="{% static 'css/finance.css' %}?v=4">
 </head>
@@ -14,8 +14,8 @@
 <header class="page-header">
     <div class="header-left">
         <span class="page-kicker">ABFverify Finance</span>
-        <h1>Daily Sales Inventory</h1>
-        <p class="subtitle">A product-level breakdown of today's logs, numbers, and boost orders.</p>
+        <h1>Sales Inventory</h1>
+        <p class="subtitle">A product-level breakdown of logs, numbers, and boost orders for any selected period.</p>
     </div>
     <div class="header-actions">
         <a class="btn-secondary" href="{% url 'finance_dashboard' %}">Finance Overview</a>
@@ -24,22 +24,33 @@
 </header>
 
 <main>
-    <section class="range-panel daily-inventory-banner" aria-labelledby="inventory-date-title">
+    <section class="range-panel daily-inventory-banner" aria-labelledby="inventory-range-title">
         <div>
-            <span class="section-eyebrow">Today's Sales</span>
-            <h2 id="inventory-date-title">{{ inventory_date|date:"l, F d, Y" }}</h2>
+            <span class="section-eyebrow">Reporting Period</span>
+            <h2 id="inventory-range-title">{{ range_label }}</h2>
             <p class="range-meta">
-                Generated at {{ inventory_generated_at|date:"H:i" }}.
-                New records appear whenever this page is freshly loaded.
+                {{ range_start|date:"M d, Y H:i" }} to {{ range_end|date:"M d, Y H:i" }}
             </p>
         </div>
-        <span class="chart-period-badge">Today only</span>
+        <form method="get" class="range-form">
+            <label for="inventoryRangeSelect">Choose a period</label>
+            <div class="range-controls">
+                <select id="inventoryRangeSelect" name="range">
+                    {% for option in range_options %}
+                    <option value="{{ option.key }}" {% if option.key == range_key %}selected{% endif %}>
+                        {{ option.label }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn-primary">Apply</button>
+            </div>
+        </form>
     </section>
 
     <section class="stat-section" aria-labelledby="inventory-summary">
         <div class="section-heading-row">
             <div>
-                <span class="section-eyebrow">Daily Summary</span>
+                <span class="section-eyebrow">{{ range_label }}</span>
                 <h2 id="inventory-summary" class="section-heading">Sales at a Glance</h2>
             </div>
         </div>
@@ -50,17 +61,17 @@
                 <span class="card-caption">Logs + fulfilled SMS + non-cancelled boost orders</span>
             </article>
             <article class="stat-card">
-                <span class="card-label">Logs Sold Today</span>
+                <span class="card-label">Logs Sold</span>
                 <span class="card-value txt-green">{{ inventory_totals.logs_units|intcomma }}</span>
                 <span class="card-caption">₦{{ inventory_totals.logs_revenue|floatformat:2|intcomma }} in log purchases</span>
             </article>
             <article class="stat-card">
-                <span class="card-label">Numbers Sold Today</span>
+                <span class="card-label">Numbers Sold</span>
                 <span class="card-value txt-blue">{{ inventory_totals.sms_numbers|intcomma }}</span>
                 <span class="card-caption">₦{{ inventory_totals.sms_revenue|floatformat:2|intcomma }} in fulfilled SMS orders</span>
             </article>
             <article class="stat-card">
-                <span class="card-label">Boost Orders Today</span>
+                <span class="card-label">Boost Orders</span>
                 <span class="card-value txt-yellow">{{ inventory_totals.boost_orders|intcomma }}</span>
                 <span class="card-caption">{{ inventory_totals.boost_units|intcomma }} total followers, likes, views, or other units</span>
             </article>
@@ -68,11 +79,11 @@
     </section>
 
     <!-- Logs grouped by their saved product title -->
-    <section class="stat-section" aria-labelledby="logs-sold-today">
+    <section class="stat-section" aria-labelledby="logs-sold-heading">
         <div class="section-heading-row">
             <div>
                 <span class="section-eyebrow">Marketplace</span>
-                <h2 id="logs-sold-today" class="section-heading">Logs Sold Today</h2>
+                <h2 id="logs-sold-heading" class="section-heading">Logs Sold — {{ range_label }}</h2>
             </div>
             <span class="inventory-count">{{ inventory_totals.logs_units|intcomma }} sold</span>
         </div>
@@ -92,11 +103,11 @@
                         <td data-label="Log Product"><strong>{{ row.product_title }}</strong></td>
                         <td data-label="Units Sold" class="quantity-cell">{{ row.units_sold|intcomma }}</td>
                         <td data-label="Sales Revenue" class="table-emphasis">₦{{ row.revenue|floatformat:2|intcomma }}</td>
-                        <td data-label="Latest Sale">{{ row.last_sold|date:"H:i" }}</td>
+                        <td data-label="Latest Sale">{{ row.last_sold|date:"M d, Y H:i" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4" class="table-empty">No logs have been sold today.</td>
+                        <td colspan="4" class="table-empty">No logs were sold during {{ range_label|lower }}.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -106,7 +117,7 @@
                         <td data-label="Total">All log products</td>
                         <td data-label="Units Sold">{{ inventory_totals.logs_units|intcomma }}</td>
                         <td data-label="Sales Revenue">₦{{ inventory_totals.logs_revenue|floatformat:2|intcomma }}</td>
-                        <td data-label="Latest Sale">Today</td>
+                        <td data-label="Period">{{ range_label }}</td>
                     </tr>
                 </tfoot>
                 {% endif %}
@@ -115,11 +126,11 @@
     </section>
 
     <!-- SMS grouped by country, service, and normalized provider -->
-    <section class="stat-section" aria-labelledby="numbers-sold-today">
+    <section class="stat-section" aria-labelledby="numbers-sold-heading">
         <div class="section-heading-row">
             <div>
                 <span class="section-eyebrow">SMS Verification</span>
-                <h2 id="numbers-sold-today" class="section-heading">Numbers Sold Today</h2>
+                <h2 id="numbers-sold-heading" class="section-heading">Numbers Sold — {{ range_label }}</h2>
             </div>
             <span class="inventory-count">{{ inventory_totals.sms_numbers|intcomma }} sold</span>
         </div>
@@ -145,11 +156,11 @@
                         </td>
                         <td data-label="Numbers Sold" class="quantity-cell">{{ row.numbers_sold|intcomma }}</td>
                         <td data-label="Sales Revenue" class="table-emphasis">₦{{ row.revenue|floatformat:2|intcomma }}</td>
-                        <td data-label="Latest Sale">{{ row.last_sold|date:"H:i" }}</td>
+                        <td data-label="Latest Sale">{{ row.last_sold|date:"M d, Y H:i" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="table-empty">No SMS numbers have been fulfilled today.</td>
+                        <td colspan="6" class="table-empty">No SMS numbers were fulfilled during {{ range_label|lower }}.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -159,7 +170,7 @@
                         <td data-label="Total" colspan="3">All SMS services</td>
                         <td data-label="Numbers Sold">{{ inventory_totals.sms_numbers|intcomma }}</td>
                         <td data-label="Sales Revenue">₦{{ inventory_totals.sms_revenue|floatformat:2|intcomma }}</td>
-                        <td data-label="Latest Sale">Today</td>
+                        <td data-label="Period">{{ range_label }}</td>
                     </tr>
                 </tfoot>
                 {% endif %}
@@ -168,11 +179,11 @@
     </section>
 
     <!-- Boost orders grouped by category and service -->
-    <section class="stat-section" aria-labelledby="boost-orders-today">
+    <section class="stat-section" aria-labelledby="boost-orders-heading">
         <div class="section-heading-row">
             <div>
                 <span class="section-eyebrow">Social Boosting</span>
-                <h2 id="boost-orders-today" class="section-heading">Boost Orders Today</h2>
+                <h2 id="boost-orders-heading" class="section-heading">Boost Orders — {{ range_label }}</h2>
             </div>
             <span class="inventory-count">{{ inventory_totals.boost_orders|intcomma }} orders</span>
         </div>
@@ -203,11 +214,11 @@
                             <span class="boost-progress">{{ row.fulfilled_orders|intcomma }} fulfilled · {{ row.open_orders|intcomma }} open</span>
                         </td>
                         <td data-label="Order Value" class="table-emphasis">₦{{ row.order_value|floatformat:2|intcomma }}</td>
-                        <td data-label="Latest Order">{{ row.last_ordered|date:"H:i" }}</td>
+                        <td data-label="Latest Order">{{ row.last_ordered|date:"M d, Y H:i" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="table-empty">No boost orders have been placed today.</td>
+                        <td colspan="7" class="table-empty">No boost orders were placed during {{ range_label|lower }}.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -218,7 +229,7 @@
                         <td data-label="Orders">{{ inventory_totals.boost_orders|intcomma }}</td>
                         <td data-label="Total Units">{{ inventory_totals.boost_units|intcomma }}</td>
                         <td data-label="Order Value" colspan="2">₦{{ inventory_totals.boost_value|floatformat:2|intcomma }}</td>
-                        <td data-label="Latest Order">Today</td>
+                        <td data-label="Period">{{ range_label }}</td>
                     </tr>
                 </tfoot>
                 {% endif %}
