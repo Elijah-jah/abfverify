@@ -654,7 +654,12 @@ body.light .ref-progress-pct {
         display: none;
     }
 }
-/* Light theme: keep the icon inside the redeem input clearly visible */
+/* Light theme fixes for the redeem input */
+body.light .redeem-input {
+    padding: 14px 14px 14px 42px;   /* restore icon space - beats the global light input rule */
+    background: var(--card-2);
+}
+
 body.light .redeem-input-wrap i {
     color: var(--brand);
 }
