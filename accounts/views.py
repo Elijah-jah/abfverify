@@ -537,6 +537,11 @@ def login_view(request):
 
             login(request, user)
             logger.info("User %s logged in successfully", user.id)
+
+            # REFERRAL CARD: a fresh login always shows the card -
+            # reset the 6-hour timer for this new session
+            ReferralProfile.objects.filter(user=user).update(card_dismissed_at=None)
+
             return redirect("dashboard")
 
         logger.warning("Login failed for %s: invalid credentials", email)
@@ -558,9 +563,12 @@ def login_view(request):
         "accounts/login.html"
     )
 
-
 @never_cache
 def logout_view(request):
+
+    # REFERRAL CARD: session over - kill the 6-hour timer
+    if request.user.is_authenticated:
+        ReferralProfile.objects.filter(user=request.user).update(card_dismissed_at=None)
 
     logout(request)
 
@@ -571,8 +579,6 @@ def logout_view(request):
     response["Expires"] = "0"
 
     return response
-
-
 # ==========================
 # USER DASHBOARD
 # ==========================
