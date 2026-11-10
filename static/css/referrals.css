@@ -654,3 +654,7 @@ body.light .ref-progress-pct {
         display: none;
     }
 }
+/* Light theme: keep the icon inside the redeem input clearly visible */
+body.light .redeem-input-wrap i {
+    color: var(--brand);
+}
