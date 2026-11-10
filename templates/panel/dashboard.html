@@ -1,3 +1,4 @@
+
 {% extends "panel/dashboard_base.html" %}
 {% load humanize %}
 {% load static %}
@@ -145,4 +146,50 @@ Dashboard
 
 </div>
 
+{% if show_referral_card %}
+<!-- REFERRAL CARD - shows on login, re-shows every 6 hours -->
+<div class="ref-modal" id="referralCardModal" data-dismiss-url="{% url 'dismiss_referral_card' %}">
+    {% csrf_token %}
+
+    <div class="ref-modal-box">
+
+        <button type="button" class="ref-modal-close" data-ref-dismiss aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="ref-modal-hero">
+            <div class="ref-modal-icon">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <h3>Refer friends &amp; earn cash!</h3>
+            <p class="ref-modal-sub">
+                Refer <strong>2 people</strong> and get <strong>&#8358;500</strong> credited
+                to your wallet when they make their first deposit. Keep going -
+                earn up to <strong>&#8358;4,000</strong>!
+            </p>
+        </div>
+
+        <span class="ref-code-label">Your referral code</span>
+        <div class="ref-code-box">
+            <code>{{ referral_code }}</code>
+            <button type="button" class="ref-copy-btn" data-copy="{{ referral_link }}">
+                <i class="fa-regular fa-copy"></i> Copy Link
+            </button>
+        </div>
+
+        <div class="ref-modal-actions">
+            <a href="{% url 'settings' %}" class="ref-btn ref-btn-primary">
+                Go to Settings to view more
+            </a>
+            <button type="button" class="ref-btn ref-btn-ghost" data-ref-dismiss>
+                No thanks
+            </button>
+        </div>
+
+    </div>
+
+</div>
+{% endif %}
+
 {% endblock %}
+

@@ -1,3 +1,4 @@
+
 {% extends 'panel/dashboard_base.html' %}
 {% load static %}
 
@@ -133,6 +134,121 @@
 
             <button class="st-btn-ghost" disabled>Coming Soon</button>
 
+        </div>
+
+    </div>
+
+    <!-- Referral Program -->
+    <div class="st-card st-card-full">
+
+        <div class="st-card-header">
+            <div class="st-card-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3>Referral Program</h3>
+        </div>
+
+        <p class="ref-lead">
+            Invite friends to ABFverify and earn cash rewards straight to your
+            wallet when they make their first deposit.
+        </p>
+
+        <div class="st-field">
+            <label>Your Referral Link</label>
+            <div class="ref-link-row">
+                <input type="text" value="{{ referral_link }}" readonly>
+                <button type="button" class="ref-copy-btn" data-copy="{{ referral_link }}">
+                    <i class="fas fa-copy"></i> Copy Link
+                </button>
+            </div>
+        </div>
+
+        <div class="st-field">
+            <label>Your Referral Code</label>
+            <div class="ref-link-row">
+                <input type="text" value="{{ referral_code }}" readonly>
+                <button type="button" class="ref-copy-btn" data-copy="{{ referral_code }}">
+                    <i class="fas fa-copy"></i> Copy Code
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="ref-stats">
+            <div class="ref-stat">
+                <span class="ref-stat-num">{{ invited_total }}</span>
+                <span class="ref-stat-label">Invited</span>
+            </div>
+            <div class="ref-stat">
+                <span class="ref-stat-num">{{ qualified_count }}</span>
+                <span class="ref-stat-label">Deposited</span>
+            </div>
+            <div class="ref-stat">
+                <span class="ref-stat-num">&#8358;{{ total_earned|floatformat:0|intcomma }}</span>
+                <span class="ref-stat-label">Earned</span>
+            </div>
+        </div>
+
+        <!-- Battery progress toward next reward -->
+        {% if next_tier %}
+        <div class="ref-progress-block">
+            <div class="ref-progress-head">
+                <span>
+                    Next reward: <strong>&#8358;{{ next_tier_amount }}</strong>
+                    at {{ next_tier }} depositing referrals
+                </span>
+                <span class="ref-progress-pct">{{ progress_percent }}%</span>
+            </div>
+            <div class="ref-battery">
+                <div class="ref-battery-fill" data-progress="{{ progress_percent }}"></div>
+            </div>
+        </div>
+        {% else %}
+        <p class="ref-maxed">
+            <i class="fas fa-crown"></i>
+            You've unlocked every referral reward. Keep inviting!
+        </p>
+        {% endif %}
+
+        <!-- Reward tiers -->
+        <div class="ref-tiers">
+            {% for tier in tiers %}
+            <div class="ref-tier {% if tier.earned %}earned{% endif %}">
+                <span class="ref-tier-count">
+                    <i class="fas fa-user-group"></i> {{ tier.count }} users
+                </span>
+                <span class="ref-tier-amount">&#8358;{{ tier.amount }}</span>
+                {% if tier.earned %}
+                <span class="ref-tier-badge"><i class="fas fa-check"></i> Paid</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <!-- Telegram / ABFverify Codes -->
+    <div class="st-card st-card-full ref-telegram">
+
+        <div class="st-card-header">
+            <div class="st-card-icon">
+                <i class="fab fa-telegram"></i>
+            </div>
+            <h3>ABFverify Codes</h3>
+        </div>
+
+        <div class="st-row">
+            <div class="st-row-text">
+                <h4>Join our Telegram channel</h4>
+                <p>
+                    Join the ABFverify Telegram channel to enjoy ABFverify code
+                    redeeming - redeem codes we drop there and get any amount
+                    credited straight to your wallet.
+                </p>
+            </div>
+            <a href="https://t.me/abflogs" target="_blank" class="st-btn">
+                <i class="fab fa-telegram"></i> Join Channel
+            </a>
         </div>
 
     </div>

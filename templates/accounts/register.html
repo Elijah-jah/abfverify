@@ -1,3 +1,4 @@
+
 {% load static %}
 
 <!DOCTYPE html>
@@ -136,6 +137,20 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
                        role="button" aria-label="Show password" tabindex="0"></i>
 
                 </div>
+
+            </div>
+
+            <!-- REFERRAL CODE (optional) -->
+            <div class="input-group">
+
+                <label>Referral Code <span style="opacity:.6;font-weight:400;">(optional)</span></label>
+
+                <input
+                    type="text"
+                    name="referral_code"
+                    value="{{ referral_code|default:'' }}"
+                    placeholder="Have a referral code? Enter it here"
+                    autocomplete="off">
 
             </div>
 

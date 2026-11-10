@@ -1,3 +1,4 @@
+
 import logging
 from django.http import JsonResponse
 import requests
@@ -29,6 +30,7 @@ from pricing.models import Pricing
 from providers.factory import get_provider
 from orders.models import Order
 from marketplace.models import LogPurchase
+from referrals.models import ReferralProfile, ReferralReward, REFERRAL_TIERS
 
 from .models import User, UserSettings
 
@@ -382,6 +384,7 @@ def register_view(request):
         email = request.POST.get("email")
         password1 = request.POST.get("password1")
         password2 = request.POST.get("password2")
+        referral_code = (request.POST.get("referral_code") or "").strip()
 
         if not username or not email or not password1 or not password2:
             logger.warning("Registration failed: missing fields")
@@ -392,6 +395,7 @@ def register_view(request):
                 {
                     "username": username,
                     "email": email,
+                    "referral_code": referral_code,
                 },
             )
 
@@ -404,6 +408,7 @@ def register_view(request):
                 {
                     "username": username,
                     "email": email,
+                    "referral_code": referral_code,
                 },
             )
 
@@ -416,6 +421,25 @@ def register_view(request):
                 {
                     "username": username,
                     "email": email,
+                    "referral_code": referral_code,
+                },
+            )
+
+        # Referral code is OPTIONAL - but if one was typed, it must be valid
+        if referral_code and not ReferralProfile.objects.filter(
+            code__iexact=referral_code
+        ).exists():
+            messages.error(
+                request,
+                "That referral code is invalid. Check it or leave it blank."
+            )
+            return render(
+                request,
+                "accounts/register.html",
+                {
+                    "username": username,
+                    "email": email,
+                    "referral_code": referral_code,
                 },
             )
 
@@ -440,6 +464,19 @@ def register_view(request):
 
         logger.info("Wallet created for user %s", user.id)
 
+        # Referral: link to the referrer and pay the N200 instant signup bonus
+        if referral_code:
+            try:
+                from referrals.services import attach_referrer
+                referrer = attach_referrer(user, referral_code)
+                if referrer:
+                    messages.success(
+                        request,
+                        "Referral applied - N200 bonus credited to your wallet!"
+                    )
+            except Exception:
+                logger.exception("Referral attach failed for user %s", user.id)
+
         # Automatically log the user in
         login(request, user)
 
@@ -453,9 +490,13 @@ def register_view(request):
         # Go straight to the dashboard
         return redirect("dashboard")
 
+    # GET - prefill the referral code when arriving from a referral link (?ref=CODE)
     return render(
         request,
         "accounts/register.html",
+        {
+            "referral_code": (request.GET.get("ref") or "").strip(),
+        },
     )
 
 
@@ -628,6 +669,21 @@ def dashboard(request):
             "status": tx.status,
         })
 
+    # --- REFERRAL CARD (shows on login, re-shows every 6 hours) ---
+    referral_profile, _ = ReferralProfile.objects.get_or_create(user=request.user)
+    show_referral_card = (
+        referral_profile.card_dismissed_at is None
+        or timezone.now() - referral_profile.card_dismissed_at >= timedelta(hours=6)
+    )
+    protocol = "https" if (
+        request.is_secure()
+        or request.META.get("HTTP_X_FORWARDED_PROTO") == "https"
+    ) else "http"
+    referral_link = (
+        f"{protocol}://{request.get_host()}"
+        f"/accounts/register/?ref={referral_profile.code}"
+    )
+
     context = {
         "wallet": wallet,
         "user_wallet": wallet,
@@ -637,6 +693,10 @@ def dashboard(request):
         "active_orders": active_orders,
         "recent_transactions": recent_transactions,
         "total_sms": 0,
+
+        "show_referral_card": show_referral_card,
+        "referral_code": referral_profile.code,
+        "referral_link": referral_link,
     }
 
     return render(
@@ -748,11 +808,74 @@ def settings_view(request):
             "Settings updated successfully."
         )
 
+    # ==========================
+    # REFERRAL PROGRAM DATA
+    # ==========================
+    referral_profile, _ = ReferralProfile.objects.get_or_create(user=request.user)
+
+    protocol = "https" if (
+        request.is_secure()
+        or request.META.get("HTTP_X_FORWARDED_PROTO") == "https"
+    ) else "http"
+    referral_link = (
+        f"{protocol}://{request.get_host()}"
+        f"/accounts/register/?ref={referral_profile.code}"
+    )
+
+    invited_total = ReferralProfile.objects.filter(
+        referred_by=request.user
+    ).count()
+
+    qualified_count = ReferralProfile.objects.filter(
+        referred_by=request.user, qualified=True
+    ).count()
+
+    earned_tiers = set(
+        ReferralReward.objects.filter(referrer=request.user)
+        .values_list("tier", flat=True)
+    )
+
+    total_earned = sum(
+        ReferralReward.objects.filter(referrer=request.user)
+        .values_list("amount", flat=True)
+    )
+
+    tiers = []
+    for tier_count, tier_amount in REFERRAL_TIERS:
+        tiers.append({
+            "count": tier_count,
+            "amount": f"{tier_amount:.0f}",
+            "earned": tier_count in earned_tiers,
+        })
+
+    # Progress toward the NEXT unpaid tier (battery bar)
+    next_tier = None
+    next_tier_amount = None
+    for tier_count, tier_amount in REFERRAL_TIERS:
+        if tier_count not in earned_tiers and qualified_count < tier_count:
+            next_tier = tier_count
+            next_tier_amount = f"{tier_amount:.0f}"
+            break
+
+    if next_tier:
+        progress_percent = min(100, int(round(qualified_count / next_tier * 100)))
+    else:
+        progress_percent = 100
+
     return render(
         request,
         "panel/settings.html",
         {
-            "settings": user_settings
+            "settings": user_settings,
+            "referral_code": referral_profile.code,
+            "referral_link": referral_link,
+            "invited_total": invited_total,
+            "qualified_count": qualified_count,
+            "total_earned": total_earned,
+            "tiers": tiers,
+            "next_tier": next_tier,
+            "next_tier_amount": next_tier_amount,
+            "progress_percent": progress_percent,
         }
     )
 

@@ -1,3 +1,4 @@
+
 import uuid
 import requests
 from decimal import Decimal
@@ -296,6 +297,15 @@ def pocketfi_webhook(request):
             status="successful",
             description="Wallet funding via bank transfer",
         )
+
+    # Referral: a FIRST successful deposit qualifies this user and
+    # pays any due tier rewards to whoever referred them.
+    try:
+        from referrals.services import process_first_deposit
+        process_first_deposit(wallet.user)
+    except Exception:
+        import traceback
+        traceback.print_exc()
 
     print(f"POCKETFI WEBHOOK: credited {wallet.user.email} ₦{amount}")
     return JsonResponse({"status": "success"}, status=200)

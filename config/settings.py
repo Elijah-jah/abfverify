@@ -1,3 +1,4 @@
+
 """
 Django settings for config project.
 
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
     "boost",
     'django.contrib.humanize',
     "finance",
+    "referrals",
 ]
 
 # APScheduler settings

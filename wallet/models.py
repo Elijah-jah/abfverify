@@ -1,3 +1,4 @@
+
 from django.db import models
 from django.conf import settings
 
@@ -9,6 +10,8 @@ class Transaction(models.Model):
         ("withdrawal", "Withdrawal"),
         ("payment", "Payment"),
         ("refund", "Refund"),
+        ("referral", "Referral Bonus"),
+        ("redeem", "Code Redemption"),
     )
 
     STATUS_CHOICES = (

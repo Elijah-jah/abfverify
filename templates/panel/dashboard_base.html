@@ -1,3 +1,4 @@
+
 {% load static %}
 {% load humanize %}
 <!DOCTYPE html>
@@ -27,6 +28,7 @@
 <link rel="stylesheet" href="{% static 'css/dashboard_base.css' %}">
 <link rel="stylesheet" href="{% static 'css/logout_modal.css' %}">
 <link rel="stylesheet" href="{% static 'css/toast.css' %}">
+<link rel="stylesheet" href="{% static 'css/referrals.css' %}">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <link rel="stylesheet"
@@ -296,10 +298,67 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </div>
 
+<button type="button" class="redeem-float" id="redeemFloatBtn" aria-label="Redeem ABFverify code">
+    <i class="fa-solid fa-gift"></i>
+    <span class="redeem-tooltip">Redeem Code</span>
+</button>
+
 <a href="https://t.me/abflogs" target="_blank" class="support-float" aria-label="Contact Support">
     <i class="fa-brands fa-telegram"></i>
     <span class="support-tooltip">Support</span>
 </a>
+
+<!-- REDEEM CODE MODAL -->
+<div class="redeem-modal" id="redeemModal">
+
+    <div class="redeem-box">
+
+        <button type="button" class="redeem-close" data-redeem-close aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="redeem-icon">
+            <i class="fa-solid fa-gift"></i>
+        </div>
+
+        <h3>Redeem ABFverify Code</h3>
+
+        <p class="redeem-sub">
+            Enter your code below and the amount on it will be
+            credited straight to your wallet.
+        </p>
+
+        <form id="redeemForm" action="{% url 'redeem_code' %}" method="POST">
+            {% csrf_token %}
+
+            <div class="redeem-input-wrap">
+                <i class="fa-solid fa-ticket"></i>
+                <input
+                    type="text"
+                    id="redeemCodeInput"
+                    class="redeem-input"
+                    placeholder="Enter your code"
+                    autocomplete="off"
+                    maxlength="32">
+            </div>
+
+            <button type="submit" class="redeem-submit" id="redeemSubmitBtn">
+                <i class="fa-solid fa-gift"></i> Redeem Code
+            </button>
+
+        </form>
+
+        <p class="redeem-note">
+            <i class="fa-solid fa-circle-info"></i>
+            Codes are one-time use only. Get codes on our
+            <a href="https://t.me/abflogs" target="_blank">Telegram channel</a>.
+        </p>
+
+    </div>
+
+</div>
+
+<script src="{% static 'js/referrals.js' %}"></script>
 
 {% block extra_js %}
 {% endblock %}
