@@ -101,7 +101,7 @@ def record_untracked_restock(request):
 
     quantity = untracked[0]["quantity"]
     LogBatch.objects.create(product=product, quantity=quantity, cost=cost)
-    messages.success(request, f"? Recorded restock   {product.title}  {quantity} at ?{cost:,.2f}")
+    messages.success(request, f"Recorded restock - {product.title}: {quantity} units at ₦{cost:,.2f}")
     return redirect("finance_dashboard")
 
 
@@ -121,7 +121,7 @@ def add_sms_recharge(request):
 
     SMSRecharge.objects.create(server=server, amount=amount, note=note)
     label = "InstantNums" if server == "server1" else "DaisySMS"
-    messages.success(request, f"? Recharge recorded   {label}: ?{amount:,.2f}")
+    messages.success(request, f"Recharge recorded - {label}: ₦{amount:,.2f}")
     return redirect("finance_dashboard")
 
 
@@ -136,7 +136,7 @@ def add_boost_funding(request):
         return redirect("finance_dashboard")
 
     BoostFunding.objects.create(amount=amount, note=note)
-    messages.success(request, f"? Boost funding recorded   ?{amount:,.2f}")
+    messages.success(request, f"Boost funding recorded - ₦{amount:,.2f}")
     return redirect("finance_dashboard")
 
 
@@ -172,9 +172,9 @@ def add_log_batch(request):
         product=product, quantity=quantity, cost=cost, note=note
     )
     if batch.status == "confirmed":
-        messages.success(request, f"? Restock confirmed   {product.title}  {quantity} at ?{cost:,.2f}")
+        messages.success(request, f"Restock confirmed - {product.title}: {quantity} units at ₦{cost:,.2f}")
     else:
-        messages.warning(request, f"? Restock added as PENDING   {product.title}  {quantity}. Enter the cost later to confirm it.")
+        messages.warning(request, f"Restock added as PENDING - {product.title}: {quantity} units. Enter the cost later to confirm it.")
     return redirect("finance_dashboard")
 
 
