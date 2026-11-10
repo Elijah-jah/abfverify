@@ -659,8 +659,10 @@ def dashboard(request):
     recent_transactions = []
     for tx in transactions.order_by("-created_at")[:6]:
         recent_transactions.append({
+            # FIXED: referral, redeem and refund are money IN -> credit (+)
             "txn_type": "credit" if tx.transaction_type in (
-                "funding", "credit", "deposit", "wallet_funding"
+                "funding", "credit", "deposit", "wallet_funding",
+                "referral", "redeem", "refund"
             ) else "debit",
             "description": getattr(tx, "description", "")
                            or tx.transaction_type.replace("_", " ").title(),
@@ -704,7 +706,6 @@ def dashboard(request):
         "panel/dashboard.html",
         context
     )
-
 
 @login_required
 def dismiss_notice(request):

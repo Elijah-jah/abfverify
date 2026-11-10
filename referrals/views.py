@@ -19,13 +19,29 @@ logger = logging.getLogger(__name__)
 @require_POST
 def redeem_code_view(request):
     """Redeem a one-time ABFverify code. The code's amount is credited
-    to the user's wallet exactly once (row lock + is_redeemed flag)."""
+    to the user's wallet exactly once (row lock + is_redeemed flag).
+    Limited to ONE successful redeem per user per day."""
     code_input = (request.POST.get("code") or "").strip().upper()
 
     if not code_input:
         return JsonResponse(
             {"success": False, "error": "Please enter a code."},
             status=400,
+        )
+
+    # One redeem per user per day
+    today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    redeemed_today = Transaction.objects.filter(
+        user=request.user,
+        transaction_type="redeem",
+        status="successful",
+        created_at__gte=today_start,
+    ).exists()
+
+    if redeemed_today:
+        return JsonResponse(
+            {"success": False, "error": "You can only redeem 1 code per day. Come back tomorrow!"},
+            status=429,
         )
 
     with transaction.atomic():
