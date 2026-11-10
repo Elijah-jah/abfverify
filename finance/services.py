@@ -1,4 +1,5 @@
-﻿from datetime import timedelta
+﻿
+from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
@@ -441,11 +442,11 @@ def get_sales_inventory(range_key="today"):
             provider_group=Case(
                 When(
                     INSTANTNUMS_PROVIDER,
-                    then=Value("Server 1 — InstantNums"),
+                    then=Value("Server 1   InstantNums"),
                 ),
                 When(
                     DAISYSMS_PROVIDER,
-                    then=Value("Server 2 — DaisySMS"),
+                    then=Value("Server 2   DaisySMS"),
                 ),
                 default=F("provider"),
                 output_field=CharField(),
@@ -514,3 +515,135 @@ def get_sales_inventory(range_key="today"):
         "boost_rows": boost_rows,
         "inventory_totals": totals,
     }
+
+def get_rewards_context():
+    """Referral program + redeem-code payout tracking for the
+    Rewards & Giveaways finance page.
+
+    All money figures come from successful wallet Transactions, so the
+    page always reflects what was ACTUALLY credited to users.
+    """
+    from referrals.models import (
+        REFERRAL_TIERS,
+        RedeemCode,
+        ReferralProfile,
+        ReferralReward,
+    )
+
+    # ---------------- Referral usage ----------------
+    total_profiles = ReferralProfile.objects.count()
+    referred_signups = ReferralProfile.objects.filter(
+        referred_by__isnull=False
+    ).count()
+    qualified_referrals = ReferralProfile.objects.filter(
+        qualified=True
+    ).count()
+
+    # ---------------- Money given out (referral) ----------------
+    referral_tx = Transaction.objects.filter(
+        transaction_type="referral", status="successful"
+    )
+    signup_qs = referral_tx.filter(reference__startswith="REF-SIGNUP")
+    tier_qs = referral_tx.filter(reference__startswith="REF-TIER")
+
+    signup_count = signup_qs.count()
+    signup_total = _sum(signup_qs, "amount")
+    tier_count = tier_qs.count()
+    tier_total = _sum(tier_qs, "amount")
+
+    # Per-tier breakdown
+    tier_rows = []
+    for tier, amount in REFERRAL_TIERS:
+        paid = ReferralReward.objects.filter(tier=tier)
+        tier_rows.append({
+            "tier": tier,
+            "reward": amount,
+            "count": paid.count(),
+            "total": _sum(paid, "amount"),
+        })
+
+    # ---------------- Redeem codes ----------------
+    codes = RedeemCode.objects.all()
+    codes_generated = codes.count()
+    codes_generated_value = _sum(codes, "amount")
+
+    redeemed_codes = codes.filter(is_redeemed=True)
+    codes_redeemed = redeemed_codes.count()
+    codes_redeemed_value = _sum(redeemed_codes, "amount")
+
+    active_codes = codes.filter(is_redeemed=False)
+    codes_active = active_codes.count()
+    codes_active_value = _sum(active_codes, "amount")
+
+    redeem_tx = Transaction.objects.filter(
+        transaction_type="redeem", status="successful"
+    )
+    redeem_tx_count = redeem_tx.count()
+    redeem_tx_total = _sum(redeem_tx, "amount")
+
+    # ---------------- Grand total given out ----------------
+    grand_total = signup_total + tier_total + redeem_tx_total
+
+    # ---------------- Top referrers ----------------
+    top_rows = (
+        ReferralProfile.objects
+        .filter(referred_by__isnull=False)
+        .values("referred_by__username", "referred_by__email")
+        .annotate(
+            invited=Count("id"),
+            deposited=Count("id", filter=Q(qualified=True)),
+        )
+        .order_by("-deposited", "-invited")[:10]
+    )
+    top_referrers = []
+    for row in top_rows:
+        earned = _sum(
+            ReferralReward.objects.filter(
+                referrer__email=row["referred_by__email"]
+            ),
+            "amount",
+        )
+        top_referrers.append({
+            "username": row["referred_by__username"],
+            "invited": row["invited"],
+            "deposited": row["deposited"],
+            "earned": earned,
+        })
+
+    # ---------------- Recent payouts ----------------
+    recent_tx = (
+        Transaction.objects
+        .filter(transaction_type__in=("referral", "redeem"), status="successful")
+        .select_related("user")
+        .order_by("-created_at")[:20]
+    )
+    recent_payouts = [{
+        "username": t.user.username,
+        "kind": "Referral Reward" if t.transaction_type == "referral" else "Code Redeem",
+        "description": t.description,
+        "amount": t.amount,
+        "created_at": t.created_at,
+    } for t in recent_tx]
+
+    return {
+        "total_profiles": total_profiles,
+        "referred_signups": referred_signups,
+        "qualified_referrals": qualified_referrals,
+        "signup_count": signup_count,
+        "signup_total": signup_total,
+        "tier_count": tier_count,
+        "tier_total": tier_total,
+        "tier_rows": tier_rows,
+        "codes_generated": codes_generated,
+        "codes_generated_value": codes_generated_value,
+        "codes_redeemed": codes_redeemed,
+        "codes_redeemed_value": codes_redeemed_value,
+        "codes_active": codes_active,
+        "codes_active_value": codes_active_value,
+        "redeem_tx_count": redeem_tx_count,
+        "redeem_tx_total": redeem_tx_total,
+        "grand_total": grand_total,
+        "top_referrers": top_referrers,
+        "recent_payouts": recent_payouts,
+    }
+

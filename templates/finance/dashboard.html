@@ -1,11 +1,12 @@
-﻿{% load static %}
+﻿
+{% load static %}
 {% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Finance Overview — ABFverify</title>
+<title>Finance Overview   ABFverify</title>
 <link rel="icon" type="image/jpeg" href="{% static 'img/favicon.jpg' %}">
 <link rel="stylesheet" href="{% static 'css/finance.css' %}?v=4">
 </head>
@@ -21,8 +22,11 @@
         <a class="btn-secondary" href="{% url 'finance_inventory' %}">
             Daily Sales Inventory
         </a>
+        <a class="btn-secondary" href="{% url 'finance_rewards' %}">
+            Rewards &amp; Giveaways
+        </a>
         <a class="btn-analytics" href="{% url 'finance_analytics' %}">
-            View Revenue Analytics <span aria-hidden="true">→</span>
+            View Revenue Analytics <span aria-hidden="true">?</span>
         </a>
         <a class="btn-back" href="/semilore/">Back to Admin</a>
     </div>
@@ -37,13 +41,13 @@
             <span class="modal-kicker">New Stock Detected</span>
             <h3 id="restock-title">Record your log upload cost</h3>
             <p class="modal-text">
-                You uploaded <strong>{{ untracked.quantity }} × {{ untracked.product.title }}</strong>.
+                You uploaded <strong>{{ untracked.quantity }}   {{ untracked.product.title }}</strong>.
                 How much did you spend on this upload in total?
             </p>
             <form method="post" action="{% url 'record_untracked_restock' %}">
                 {% csrf_token %}
                 <input type="hidden" name="product_id" value="{{ untracked.product.id }}">
-                <label for="restock-cost">Total cost (₦)</label>
+                <label for="restock-cost">Total cost (?)</label>
                 <input id="restock-cost" type="number" name="cost" min="1" step="0.01" placeholder="e.g. 30000" required autofocus>
                 <button type="submit" class="btn-primary">Record Restock</button>
             </form>
@@ -80,8 +84,8 @@
         <div class="cards-grid cards-grid-overview">
             <article class="stat-card stat-card-primary">
                 <span class="card-label">Total Website Sales</span>
-                <span class="card-value">₦{{ stats.totals.revenue|floatformat:2|intcomma }}</span>
-                <span class="card-caption">{{ stats.totals.records|intcomma }} tracked sales records — SMS + logs + fulfilled boosts</span>
+                <span class="card-value">?{{ stats.totals.revenue|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ stats.totals.records|intcomma }} tracked sales records   SMS + logs + fulfilled boosts</span>
             </article>
             <article class="stat-card">
                 <span class="card-label">Total Registered Users</span>
@@ -90,16 +94,16 @@
             </article>
             <article class="stat-card">
                 <span class="card-label">Successful Deposits</span>
-                <span class="card-value txt-blue">₦{{ stats.totals.deposits|floatformat:2|intcomma }}</span>
+                <span class="card-value txt-blue">?{{ stats.totals.deposits|floatformat:2|intcomma }}</span>
                 <span class="card-caption">Successful wallet deposits only</span>
             </article>
             <article class="stat-card">
                 <span class="card-label">Grand Profit</span>
-                <span class="card-value {% if stats.totals.profit < 0 %}txt-red{% else %}txt-green{% endif %}">₦{{ stats.totals.profit|floatformat:2|intcomma }}</span>
+                <span class="card-value {% if stats.totals.profit < 0 %}txt-red{% else %}txt-green{% endif %}">?{{ stats.totals.profit|floatformat:2|intcomma }}</span>
                 <span class="card-caption">After recorded provider and stock costs</span>
             </article>
         </div>
-        <p class="section-note">Total recorded costs: <strong>₦{{ stats.totals.costs|floatformat:2|intcomma }}</strong>. Deposits are not counted as sales revenue.</p>
+        <p class="section-note">Total recorded costs: <strong>?{{ stats.totals.costs|floatformat:2|intcomma }}</strong>. Deposits are not counted as sales revenue.</p>
     </section>
 
     <!-- Current day, week, month and year -->
@@ -109,24 +113,24 @@
                 <span class="section-eyebrow">Sales Generated</span>
                 <h2 id="period-revenue" class="section-heading">Current Periods</h2>
             </div>
-            <a class="section-link" href="{% url 'finance_analytics' %}">Choose another period →</a>
+            <a class="section-link" href="{% url 'finance_analytics' %}">Choose another period ?</a>
         </div>
         <div class="cards-grid period-grid">
             <article class="stat-card period-card">
                 <span class="card-label">Today</span>
-                <span class="card-value">₦{{ stats.periods.today.total|floatformat:2|intcomma }}</span>
+                <span class="card-value">?{{ stats.periods.today.total|floatformat:2|intcomma }}</span>
             </article>
             <article class="stat-card period-card">
                 <span class="card-label">This Week</span>
-                <span class="card-value">₦{{ stats.periods.week.total|floatformat:2|intcomma }}</span>
+                <span class="card-value">?{{ stats.periods.week.total|floatformat:2|intcomma }}</span>
             </article>
             <article class="stat-card period-card">
                 <span class="card-label">This Month</span>
-                <span class="card-value">₦{{ stats.periods.month.total|floatformat:2|intcomma }}</span>
+                <span class="card-value">?{{ stats.periods.month.total|floatformat:2|intcomma }}</span>
             </article>
             <article class="stat-card period-card">
                 <span class="card-label">This Year</span>
-                <span class="card-value">₦{{ stats.periods.year.total|floatformat:2|intcomma }}</span>
+                <span class="card-value">?{{ stats.periods.year.total|floatformat:2|intcomma }}</span>
             </article>
         </div>
     </section>
@@ -138,33 +142,33 @@
             <article class="stat-card channel-card">
                 <span class="channel-dot channel-dot-blue"></span>
                 <span class="card-label">InstantNums Sales</span>
-                <span class="card-value txt-blue">₦{{ stats.sms.instantnums_revenue|floatformat:2|intcomma }}</span>
+                <span class="card-value txt-blue">?{{ stats.sms.instantnums_revenue|floatformat:2|intcomma }}</span>
                 <span class="card-caption">{{ stats.sms.instantnums_orders|intcomma }} fulfilled orders, including legacy server labels</span>
             </article>
             <article class="stat-card channel-card">
                 <span class="channel-dot channel-dot-violet"></span>
                 <span class="card-label">DaisySMS Sales</span>
-                <span class="card-value">₦{{ stats.sms.daisysms_revenue|floatformat:2|intcomma }}</span>
+                <span class="card-value">?{{ stats.sms.daisysms_revenue|floatformat:2|intcomma }}</span>
                 <span class="card-caption">{{ stats.sms.daisysms_orders|intcomma }} fulfilled orders, including legacy server labels</span>
             </article>
             {% if stats.sms.other_sms_orders or stats.sms.other_sms_revenue %}
             <article class="stat-card channel-card">
                 <span class="channel-dot channel-dot-slate"></span>
                 <span class="card-label">Other / Legacy SMS Sales</span>
-                <span class="card-value">₦{{ stats.sms.other_sms_revenue|floatformat:2|intcomma }}</span>
+                <span class="card-value">?{{ stats.sms.other_sms_revenue|floatformat:2|intcomma }}</span>
                 <span class="card-caption">{{ stats.sms.other_sms_orders|intcomma }} fulfilled orders with older or unusual provider names</span>
             </article>
             {% endif %}
             <article class="stat-card channel-card">
                 <span class="channel-dot channel-dot-green"></span>
                 <span class="card-label">Log Purchase Sales</span>
-                <span class="card-value txt-green">₦{{ stats.logs.revenue|floatformat:2|intcomma }}</span>
-                <span class="card-caption">{{ stats.logs.purchases|intcomma }} saved purchases — all historical dates included</span>
+                <span class="card-value txt-green">?{{ stats.logs.revenue|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ stats.logs.purchases|intcomma }} saved purchases   all historical dates included</span>
             </article>
             <article class="stat-card channel-card">
                 <span class="channel-dot channel-dot-orange"></span>
                 <span class="card-label">Boost Sales</span>
-                <span class="card-value txt-yellow">₦{{ stats.boost.revenue|floatformat:2|intcomma }}</span>
+                <span class="card-value txt-yellow">?{{ stats.boost.revenue|floatformat:2|intcomma }}</span>
                 <span class="card-caption">{{ stats.boost.orders|intcomma }} fulfilled boost orders</span>
             </article>
         </div>
@@ -186,10 +190,10 @@
                 <p class="form-description">Log a new InstantNums or DaisySMS account top-up.</p>
                 <label for="sms-server">Provider</label>
                 <select id="sms-server" name="server" required>
-                    <option value="server1">Server 1 — InstantNums</option>
-                    <option value="server2">Server 2 — DaisySMS</option>
+                    <option value="server1">Server 1   InstantNums</option>
+                    <option value="server2">Server 2   DaisySMS</option>
                 </select>
-                <label for="sms-amount">Amount (₦)</label>
+                <label for="sms-amount">Amount (?)</label>
                 <input id="sms-amount" type="number" name="amount" min="1" step="0.01" placeholder="e.g. 20000" required>
                 <label for="sms-note">Note <span class="opt">(optional)</span></label>
                 <input id="sms-note" type="text" name="note" maxlength="255" placeholder="e.g. weekend top-up">
@@ -201,7 +205,7 @@
                 <span class="form-kicker">Boost Provider</span>
                 <h3>Record Boost Funding</h3>
                 <p class="form-description">Record money added to your boost provider account.</p>
-                <label for="boost-amount">Amount (₦)</label>
+                <label for="boost-amount">Amount (?)</label>
                 <input id="boost-amount" type="number" name="amount" min="1" step="0.01" placeholder="e.g. 15000" required>
                 <label for="boost-note">Note <span class="opt">(optional)</span></label>
                 <input id="boost-note" type="text" name="note" maxlength="255" placeholder="e.g. RSS wallet top-up">
@@ -215,14 +219,14 @@
                 <p class="form-description">Track stock quantity and its purchase cost.</p>
                 <label for="batch-product">Product</label>
                 <select id="batch-product" name="product" required>
-                    <option value="" disabled selected>Choose product…</option>
+                    <option value="" disabled selected>Choose product </option>
                     {% for p in products %}
                     <option value="{{ p.id }}">{{ p.title }}</option>
                     {% endfor %}
                 </select>
                 <label for="batch-qty">Quantity</label>
                 <input id="batch-qty" type="number" name="quantity" min="1" step="1" placeholder="e.g. 50" required>
-                <label for="batch-cost">Cost (₦) <span class="opt">— empty = pending</span></label>
+                <label for="batch-cost">Cost (?) <span class="opt">  empty = pending</span></label>
                 <input id="batch-cost" type="number" name="cost" min="0" step="0.01" placeholder="e.g. 30000">
                 <label for="batch-note">Note <span class="opt">(optional)</span></label>
                 <input id="batch-note" type="text" name="note" maxlength="255">
@@ -241,12 +245,12 @@
                         <span class="section-eyebrow">SMS Verification</span>
                         <h3>Provider Funding</h3>
                     </div>
-                    <span class="operation-total">₦{{ stats.sms.revenue|floatformat:2|intcomma }}</span>
+                    <span class="operation-total">?{{ stats.sms.revenue|floatformat:2|intcomma }}</span>
                 </div>
                 <div class="metric-list">
-                    <div class="metric-row"><span>InstantNums funding</span><strong>₦{{ stats.sms.instantnums_funding|floatformat:2|intcomma }}</strong></div>
-                    <div class="metric-row"><span>DaisySMS funding</span><strong>₦{{ stats.sms.daisysms_funding|floatformat:2|intcomma }}</strong></div>
-                    <div class="metric-row metric-total"><span>SMS profit</span><strong class="{% if stats.sms.profit < 0 %}txt-red{% else %}txt-green{% endif %}">₦{{ stats.sms.profit|floatformat:2|intcomma }}</strong></div>
+                    <div class="metric-row"><span>InstantNums funding</span><strong>?{{ stats.sms.instantnums_funding|floatformat:2|intcomma }}</strong></div>
+                    <div class="metric-row"><span>DaisySMS funding</span><strong>?{{ stats.sms.daisysms_funding|floatformat:2|intcomma }}</strong></div>
+                    <div class="metric-row metric-total"><span>SMS profit</span><strong class="{% if stats.sms.profit < 0 %}txt-red{% else %}txt-green{% endif %}">?{{ stats.sms.profit|floatformat:2|intcomma }}</strong></div>
                 </div>
             </article>
 
@@ -256,12 +260,12 @@
                         <span class="section-eyebrow">Logs Marketplace</span>
                         <h3>Stock Investment</h3>
                     </div>
-                    <span class="operation-total">₦{{ stats.logs.revenue|floatformat:2|intcomma }}</span>
+                    <span class="operation-total">?{{ stats.logs.revenue|floatformat:2|intcomma }}</span>
                 </div>
                 <div class="metric-list">
-                    <div class="metric-row"><span>Confirmed stock investment</span><strong>₦{{ stats.logs.investment|floatformat:2|intcomma }}</strong></div>
-                    <div class="metric-row"><span>Current stock value</span><strong>₦{{ stats.logs.stock_value|floatformat:2|intcomma }}</strong></div>
-                    <div class="metric-row metric-total"><span>Logs profit</span><strong class="{% if stats.logs.profit < 0 %}txt-red{% else %}txt-green{% endif %}">₦{{ stats.logs.profit|floatformat:2|intcomma }}</strong></div>
+                    <div class="metric-row"><span>Confirmed stock investment</span><strong>?{{ stats.logs.investment|floatformat:2|intcomma }}</strong></div>
+                    <div class="metric-row"><span>Current stock value</span><strong>?{{ stats.logs.stock_value|floatformat:2|intcomma }}</strong></div>
+                    <div class="metric-row metric-total"><span>Logs profit</span><strong class="{% if stats.logs.profit < 0 %}txt-red{% else %}txt-green{% endif %}">?{{ stats.logs.profit|floatformat:2|intcomma }}</strong></div>
                 </div>
             </article>
 
@@ -271,11 +275,11 @@
                         <span class="section-eyebrow">Boosting</span>
                         <h3>Provider Funding</h3>
                     </div>
-                    <span class="operation-total">₦{{ stats.boost.revenue|floatformat:2|intcomma }}</span>
+                    <span class="operation-total">?{{ stats.boost.revenue|floatformat:2|intcomma }}</span>
                 </div>
                 <div class="metric-list">
-                    <div class="metric-row"><span>Recorded provider funding</span><strong>₦{{ stats.boost.funding|floatformat:2|intcomma }}</strong></div>
-                    <div class="metric-row metric-total"><span>Boost profit</span><strong class="{% if stats.boost.profit < 0 %}txt-red{% else %}txt-green{% endif %}">₦{{ stats.boost.profit|floatformat:2|intcomma }}</strong></div>
+                    <div class="metric-row"><span>Recorded provider funding</span><strong>?{{ stats.boost.funding|floatformat:2|intcomma }}</strong></div>
+                    <div class="metric-row metric-total"><span>Boost profit</span><strong class="{% if stats.boost.profit < 0 %}txt-red{% else %}txt-green{% endif %}">?{{ stats.boost.profit|floatformat:2|intcomma }}</strong></div>
                 </div>
             </article>
         </div>
@@ -299,7 +303,7 @@
                         <td data-label="Product">{{ b.product.title }}</td>
                         <td data-label="Quantity">{{ b.quantity|intcomma }}</td>
                         <td data-label="Uploaded">{{ b.created_at|date:"M d, Y H:i" }}</td>
-                        <td data-label="Action"><a href="/semilore/finance/logbatch/{{ b.id }}/change/">Enter cost →</a></td>
+                        <td data-label="Action"><a href="/semilore/finance/logbatch/{{ b.id }}/change/">Enter cost ?</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -341,7 +345,7 @@
                         <td data-label="Inventory Total">Total stock value</td>
                         <td data-label="Stock Value">
                             <span class="inventory-total-units">{{ stats.logs.stock_units|intcomma }} units</span>
-                            <strong>₦{{ stats.logs.stock_value|floatformat:2|intcomma }}</strong>
+                            <strong>?{{ stats.logs.stock_value|floatformat:2|intcomma }}</strong>
                         </td>
                     </tr>
                 </tfoot>
