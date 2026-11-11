@@ -99,9 +99,26 @@ def process_first_deposit(user, amount=None):
         if profile.first_deposit_seen or profile.qualified:
             return 0
 
+        # Fallback: if the caller didn't pass the amount, read the
+        # user's FIRST successful deposit transaction ourselves.
+        if amount is None:
+            amount = (
+                Transaction.objects
+                .filter(
+                    user=user,
+                    transaction_type="deposit",
+                    status="successful",
+                )
+                .order_by("created_at")
+                .values_list("amount", flat=True)
+                .first()
+            )
+            if amount is None:
+                return 0  # no deposit yet - do NOT mark as checked
+
         profile.first_deposit_seen = True
 
-        if amount is None or amount < MIN_FIRST_DEPOSIT:
+        if amount < MIN_FIRST_DEPOSIT:
             # First deposit too small - this referral can NEVER qualify.
             profile.save(update_fields=["first_deposit_seen"])
             logger.info(
