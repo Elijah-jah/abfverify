@@ -302,7 +302,7 @@ def pocketfi_webhook(request):
     # pays any due tier rewards to whoever referred them.
     try:
         from referrals.services import process_first_deposit
-        process_first_deposit(wallet.user)
+        process_first_deposit(wallet.user, amount)
     except Exception:
         import traceback
         traceback.print_exc()

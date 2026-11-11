@@ -847,26 +847,36 @@ def settings_view(request):
         .values_list("amount", flat=True)
     )
 
+    # Stages reset: each tier counts NEW qualifying referrals only.
+    # Sizes 2/5/10/20/30 become cumulative thresholds 2/7/17/37/67.
     tiers = []
-    for tier_count, tier_amount in REFERRAL_TIERS:
-        tiers.append({
-            "count": tier_count,
-            "amount": f"{tier_amount:.0f}",
-            "earned": tier_count in earned_tiers,
-        })
-
-    # Progress toward the NEXT unpaid tier (battery bar)
     next_tier = None
     next_tier_amount = None
-    for tier_count, tier_amount in REFERRAL_TIERS:
-        if tier_count not in earned_tiers and qualified_count < tier_count:
-            next_tier = tier_count
-            next_tier_amount = f"{tier_amount:.0f}"
-            break
+    stage_progress = 0
+    progress_percent = 100
+    prev_threshold = 0
 
-    if next_tier:
-        progress_percent = min(100, int(round(qualified_count / next_tier * 100)))
-    else:
+    for tier_size, tier_amount in REFERRAL_TIERS:
+        threshold = prev_threshold + tier_size
+        earned = tier_size in earned_tiers
+
+        tiers.append({
+            "count": tier_size,
+            "amount": f"{tier_amount:.0f}",
+            "earned": earned,
+        })
+
+        if next_tier is None and not earned and qualified_count < threshold:
+            next_tier = tier_size
+            next_tier_amount = f"{tier_amount:.0f}"
+            stage_progress = max(0, qualified_count - prev_threshold)
+            progress_percent = min(
+                100, int(round(stage_progress / tier_size * 100))
+            )
+
+        prev_threshold = threshold
+
+    if next_tier is None:
         progress_percent = 100
 
     return render(
@@ -882,11 +892,10 @@ def settings_view(request):
             "tiers": tiers,
             "next_tier": next_tier,
             "next_tier_amount": next_tier_amount,
+            "stage_progress": stage_progress,
             "progress_percent": progress_percent,
         }
     )
-
-
 # ==========================
 # PASSWORD RESET (Brevo HTTP API)
 # ==========================

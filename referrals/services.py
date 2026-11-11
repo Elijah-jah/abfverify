@@ -5,6 +5,7 @@ from django.db import models, transaction
 from wallet.models import Transaction, Wallet
 
 from .models import (
+    MIN_FIRST_DEPOSIT,
     REFERRAL_TIERS,
     SIGNUP_BONUS,
     ReferralProfile,
@@ -68,61 +69,89 @@ def attach_referrer(new_user, code):
     return referrer
 
 
-def process_first_deposit(user):
-    """Call after a successful wallet deposit. If this is the user's
-    FIRST deposit, mark them qualified and pay the referrer any tier
-    rewards that are now due (each tier pays once, in order).
+def _cumulative_thresholds():
+    """Stage sizes (2, 5, 10, 20, 30) as running totals, because each
+    stage counts NEW qualifying referrals only:
+    stage 1 = 2 total, stage 2 = 7, stage 3 = 17, stage 4 = 37, stage 5 = 67."""
+    total = 0
+    stages = []
+    for size, amount in REFERRAL_TIERS:
+        total += size
+        stages.append((size, total, amount))
+    return stages
 
-    Returns the number of tier rewards paid.
+
+def process_first_deposit(user, amount=None):
+    """Call after EVERY successful wallet deposit. Only the user's
+    FIRST ever deposit can qualify them - and only if it is
+    MIN_FIRST_DEPOSIT or more. Later deposits never count.
+
+    When a referral qualifies, the referrer is paid any stage rewards
+    now due. Each stage resets: it needs NEW qualifying referrals
+    (2, then 5 more, then 10 more, then 20 more, then 30 more).
     """
-    profile = get_or_create_profile(user)
+    with transaction.atomic():
+        profile = ReferralProfile.objects.select_for_update().get_or_create(
+            user=user
+        )[0]
 
-    if profile.qualified:
-        return 0  # not their first deposit - nothing to do
+        # Their first deposit was already checked (qualified or not).
+        if profile.first_deposit_seen or profile.qualified:
+            return 0
 
-    profile.qualified = True
-    profile.save(update_fields=["qualified"])
+        profile.first_deposit_seen = True
 
-    referrer = profile.referred_by
-    if not referrer:
-        return 0
+        if amount is None or amount < MIN_FIRST_DEPOSIT:
+            # First deposit too small - this referral can NEVER qualify.
+            profile.save(update_fields=["first_deposit_seen"])
+            logger.info(
+                "Referral not qualified: %s first deposit N%s is below N%s",
+                user.email, amount, MIN_FIRST_DEPOSIT,
+            )
+            return 0
 
-    qualified_count = ReferralProfile.objects.filter(
-        referred_by=referrer, qualified=True
-    ).count()
+        profile.qualified = True
+        profile.save(update_fields=["first_deposit_seen", "qualified"])
 
-    paid = 0
-    for tier, amount in REFERRAL_TIERS:
-        if qualified_count < tier:
-            continue
-        with transaction.atomic():
+        referrer = profile.referred_by
+        if not referrer:
+            return 0
+
+        qualified_count = ReferralProfile.objects.filter(
+            referred_by=referrer, qualified=True
+        ).count()
+
+        paid = 0
+        for size, threshold, reward_amount in _cumulative_thresholds():
+            if qualified_count < threshold:
+                continue
             # unique_together (referrer, tier) makes this race-safe:
-            # even if two deposits process at the same moment, the
-            # reward row can only be created once.
+            # each stage can only ever be paid once per referrer.
             reward, created = ReferralReward.objects.get_or_create(
                 referrer=referrer,
-                tier=tier,
-                defaults={"amount": amount},
+                tier=size,
+                defaults={"amount": reward_amount},
             )
             if not created:
                 continue
             Wallet.objects.filter(user=referrer).update(
-                balance=models.F("balance") + amount
+                balance=models.F("balance") + reward_amount
             )
             Transaction.objects.create(
                 user=referrer,
-                amount=amount,
+                amount=reward_amount,
                 transaction_type="referral",
                 status="successful",
-                reference=f"REF-TIER-{tier}-{referrer.id}",
+                reference=f"REF-TIER-{size}-{referrer.id}",
                 description=(
-                    f"Referral reward: {tier} referrals made their first deposit"
+                    f"Referral reward: {size} new referrals deposited "
+                    f"\u20A6{MIN_FIRST_DEPOSIT:.0f}+"
                 ),
             )
             paid += 1
             logger.info(
-                "Referral tier paid: %s reached %s depositing referrals (N%s)",
-                referrer.email, tier, amount,
+                "Referral stage paid: %s completed %s-user stage (N%s)",
+                referrer.email, size, reward_amount,
             )
 
     return paid

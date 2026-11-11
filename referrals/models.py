@@ -20,7 +20,8 @@ SIGNUP_BONUS = Decimal("200")
 
 # How often the dashboard referral card re-appears after dismissal.
 REFERRAL_CARD_INTERVAL_HOURS = 6
-
+# Minimum FIRST deposit for a referral to count toward tier rewards.
+MIN_FIRST_DEPOSIT = Decimal("500")
 
 def generate_referral_code():
     """Unique user-facing referral code, e.g. ABF7K2QX9P."""
@@ -62,6 +63,10 @@ class ReferralProfile(models.Model):
     )
     # True once this user has made their FIRST successful deposit.
     qualified = models.BooleanField(default=False)
+        # True once the user's FIRST deposit has been checked. The first
+    # deposit is the only one that can ever qualify them - if it's
+    # below the minimum, later deposits never count.
+    first_deposit_seen = models.BooleanField(default=False)
     # Server-side 6-hour tracking for the dashboard referral card.
     card_dismissed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
