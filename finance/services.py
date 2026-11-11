@@ -329,9 +329,9 @@ def get_dashboard_stats():
 
     # Old sold items without a LogPurchase cannot supply an exact buyer, price,
     # or sale timestamp. Surface them rather than inventing financial records.
-    legacy_sold_without_purchase = LogItem.objects.filter(
+        legacy_sold_without_purchase = LogItem.objects.filter(
         status="sold",
-        purchase__isnull=True,
+        purchases__isnull=True,
     ).count()
 
     # ============ BOOST ============
