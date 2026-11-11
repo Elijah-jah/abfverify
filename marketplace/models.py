@@ -150,8 +150,8 @@ class LogPurchase(models.Model):
     order_id = models.CharField(
         max_length=20, unique=True, editable=False
     )
-    log_item = models.OneToOneField(
-        LogItem, on_delete=models.CASCADE, related_name="purchase"
+    log_item = models.ForeignKey(
+        LogItem, on_delete=models.CASCADE, related_name="purchases"
     )
     product_title = models.CharField(max_length=200)
     product_description = models.TextField(blank=True, default="")

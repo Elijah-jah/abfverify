@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST
 from datetime import datetime, timedelta
 from django.utils import timezone
-
+from django.db import IntegrityError
 from .models import (
     LogCategory, LogSubCategory, LogProduct, LogItem, LogPurchase,
 )
@@ -89,6 +89,8 @@ def services_view(request):
             "show_notice": show_notice,
         },
     )
+
+
 
 
 @login_required
