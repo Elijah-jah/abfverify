@@ -2,6 +2,7 @@
 import logging
 from django.http import JsonResponse
 import requests
+import uuid
 from datetime import timedelta
 from boost.models import BoostOrder
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
@@ -32,7 +33,7 @@ from orders.models import Order
 from marketplace.models import LogPurchase
 from referrals.models import ReferralProfile, ReferralReward, REFERRAL_TIERS
 
-from .models import User, UserSettings
+from .models import DeviceRegistration, User, UserSettings
 
 logger = logging.getLogger(__name__)
 
@@ -371,7 +372,12 @@ def sms_view(request):
 # AUTH
 # ==========================
 
-@ratelimit(key='ip', rate='2/d', method='POST', block=True)
+# Max accounts one device (browser) can create per day
+DEVICE_ACCOUNT_LIMIT = 2
+DEVICE_COOKIE_NAME = "abf_did"
+
+
+@ratelimit(key='ip', rate='20/d', method='POST', block=True)
 def register_view(request):
 
     if request.user.is_authenticated:
@@ -385,6 +391,36 @@ def register_view(request):
         password1 = request.POST.get("password1")
         password2 = request.POST.get("password2")
         referral_code = (request.POST.get("referral_code") or "").strip()
+
+        # ---- DEVICE LIMIT: max 2 accounts per device per day ----
+        device_id = request.COOKIES.get(DEVICE_COOKIE_NAME, "")
+        if device_id:
+            today_start = timezone.now().replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+            accounts_today = DeviceRegistration.objects.filter(
+                device_id=device_id, created_at__gte=today_start
+            ).count()
+            if accounts_today >= DEVICE_ACCOUNT_LIMIT:
+                logger.warning(
+                    "Registration blocked: device %s already created %s accounts today",
+                    device_id[:8], accounts_today,
+                )
+                messages.error(
+                    request,
+                    "This device has reached today's registration limit "
+                    "(2 accounts per day). Please try again tomorrow."
+                )
+                return render(
+                    request,
+                    "accounts/register.html",
+                    {
+                        "username": username,
+                        "email": email,
+                        "referral_code": referral_code,
+                    },
+                )
+        # ---- END DEVICE LIMIT ----
 
         if not username or not email or not password1 or not password2:
             logger.warning("Registration failed: missing fields")
@@ -482,13 +518,26 @@ def register_view(request):
 
         logger.info("User %s logged in after registration", user.id)
 
+        # Record this device + stamp the browser with a 1-year cookie
+        if not device_id:
+            device_id = uuid.uuid4().hex
+        DeviceRegistration.objects.create(device_id=device_id, user=user)
+
         messages.success(
             request,
             f"Welcome to ABFverify, {user.username}!"
         )
 
-        # Go straight to the dashboard
-        return redirect("dashboard")
+        # Go straight to the dashboard (and set the device cookie)
+        response = redirect("dashboard")
+        response.set_cookie(
+            DEVICE_COOKIE_NAME,
+            device_id,
+            max_age=365 * 24 * 60 * 60,  # 1 year
+            httponly=True,
+            samesite="Lax",
+        )
+        return response
 
     # GET - prefill the referral code when arriving from a referral link (?ref=CODE)
     return render(
@@ -498,7 +547,6 @@ def register_view(request):
             "referral_code": (request.GET.get("ref") or "").strip(),
         },
     )
-
 
 @ratelimit(key='ip', rate='5/m', method='POST', block=True)
 def login_view(request):

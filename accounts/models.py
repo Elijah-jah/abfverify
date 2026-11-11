@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
-
+from django.conf import settings
 
 class UserManager(BaseUserManager):
     def create_user(self, email, username, password=None):
@@ -61,3 +61,22 @@ class UserSettings(models.Model):
 
     def __str__(self):
         return self.user.email
+
+
+class DeviceRegistration(models.Model):
+    """One row per account created, stamped with a browser cookie ID.
+    Used to enforce: max 2 new accounts per device per day."""
+
+    device_id = models.CharField(max_length=64, db_index=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="device_registrations",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.device_id[:8]}... -> {self.user.username}"

@@ -374,3 +374,7 @@ if CLOUDINARY_CLOUD_NAME:
     STORAGES["default"] = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     }
+
+
+# django-ratelimit: read the real visitor IP from Render's proxy header
+RATELIMIT_USE_X_FORWARDED_FOR = True
