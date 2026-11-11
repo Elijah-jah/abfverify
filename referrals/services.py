@@ -82,9 +82,12 @@ def _cumulative_thresholds():
 
 
 def process_first_deposit(user, amount=None):
-    """Call after EVERY successful wallet deposit. Only the user's
-    FIRST ever deposit can qualify them - and only if it is
-    MIN_FIRST_DEPOSIT or more. Later deposits never count.
+    """Call after EVERY successful wallet deposit.
+
+    A referral qualifies the moment they make their FIRST deposit of
+    MIN_FIRST_DEPOSIT or more. Smaller deposits are simply ignored -
+    they never disqualify the user. Once qualified, later deposits
+    change nothing.
 
     When a referral qualifies, the referrer is paid any stage rewards
     now due. Each stage resets: it needs NEW qualifying referrals
@@ -95,12 +98,12 @@ def process_first_deposit(user, amount=None):
             user=user
         )[0]
 
-        # Their first deposit was already checked (qualified or not).
-        if profile.first_deposit_seen or profile.qualified:
+        # Already qualified - nothing more to do.
+        if profile.qualified:
             return 0
 
-        # Fallback: if the caller didn't pass the amount, read the
-        # user's FIRST successful deposit transaction ourselves.
+        # Fallback: if the caller didn't pass the amount, check whether
+        # the user has ANY successful deposit of the minimum or more.
         if amount is None:
             amount = (
                 Transaction.objects
@@ -108,27 +111,23 @@ def process_first_deposit(user, amount=None):
                     user=user,
                     transaction_type="deposit",
                     status="successful",
+                    amount__gte=MIN_FIRST_DEPOSIT,
                 )
                 .order_by("created_at")
                 .values_list("amount", flat=True)
                 .first()
             )
             if amount is None:
-                return 0  # no deposit yet - do NOT mark as checked
+                return 0  # no qualifying deposit yet
 
-        profile.first_deposit_seen = True
-
+        # Deposit below the minimum - ignore it. The user can still
+        # qualify whenever they make a deposit of MIN_FIRST_DEPOSIT+.
         if amount < MIN_FIRST_DEPOSIT:
-            # First deposit too small - this referral can NEVER qualify.
-            profile.save(update_fields=["first_deposit_seen"])
-            logger.info(
-                "Referral not qualified: %s first deposit N%s is below N%s",
-                user.email, amount, MIN_FIRST_DEPOSIT,
-            )
             return 0
 
         profile.qualified = True
-        profile.save(update_fields=["first_deposit_seen", "qualified"])
+        profile.first_deposit_seen = True
+        profile.save(update_fields=["qualified", "first_deposit_seen"])
 
         referrer = profile.referred_by
         if not referrer:
