@@ -371,7 +371,7 @@ def sms_view(request):
 # AUTH
 # ==========================
 
-@ratelimit(key='ip', rate='3/m', method='POST', block=True)
+@ratelimit(key='ip', rate='2/d', method='POST', block=True)
 def register_view(request):
 
     if request.user.is_authenticated:
