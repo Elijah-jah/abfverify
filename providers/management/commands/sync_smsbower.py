@@ -70,15 +70,29 @@ class Command(BaseCommand):
             name = (c.get("eng") or "").strip()
             if not cid.isdigit() or not name:
                 continue
-            Country.objects.update_or_create(
-                server="server1",
-                provider_id=int(cid),
-                defaults={
-                    "name": name,
-                    "iso_code": ISO_MAP.get(name.lower(), ""),
-                    "status": "active",
-                },
-            )
+            cid_int = int(cid)
+            # Never empty - unique(iso_code, server) rejects duplicate ""
+            iso = ISO_MAP.get(name.lower()) or f"SB{cid}"
+
+            obj = Country.objects.filter(
+                server="server1", provider_id=cid_int).first()
+            if obj:
+                obj.name, obj.iso_code, obj.status = name, iso, "active"
+                obj.save(update_fields=["name", "iso_code", "status"])
+            else:
+                # Adopt a kept InstantNums row with the same name instead of
+                # creating a duplicate (unique name+server)
+                obj = Country.objects.filter(server="server1", name=name).first()
+                if obj:
+                    obj.provider_id = cid_int
+                    obj.iso_code = iso
+                    obj.status = "active"
+                    obj.save(update_fields=["provider_id", "iso_code", "status"])
+                else:
+                    Country.objects.create(
+                        server="server1", provider_id=cid_int,
+                        name=name, iso_code=iso, status="active",
+                    )
         self.stdout.write(self.style.SUCCESS(f"Countries synced: {len(rows)}"))
 
         # ---------------- SERVICES -> server1 (1 call) ----------------
@@ -90,11 +104,14 @@ class Command(BaseCommand):
             if not code or not name:
                 continue
             seen_codes.add(code)
-            Service.objects.update_or_create(
-                server="server1",
-                code=code,
-                defaults={"name": name, "status": "active"},
-            )
+            # Adopt kept order-referenced rows by code (unique server+code)
+            obj = Service.objects.filter(server="server1", code=code).first()
+            if obj:
+                obj.name, obj.status = name, "active"
+                obj.save(update_fields=["name", "status"])
+            else:
+                Service.objects.create(server="server1", code=code,
+                                       name=name, status="active")
         self.stdout.write(self.style.SUCCESS(f"Services synced: {len(seen_codes)}"))
 
         # Deactivate server1 services SMSBower doesn't offer (InstantNums leftovers)
