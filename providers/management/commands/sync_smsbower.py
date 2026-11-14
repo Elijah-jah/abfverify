@@ -98,21 +98,46 @@ class Command(BaseCommand):
         # ---------------- SERVICES -> server1 (1 call) ----------------
         services = provider.get_services()
         seen_codes = set()
+        skipped = 0
         for s in services:
             code = str(s.get("code", "")).strip().lower()[:100]
             name = str(s.get("name", "")).strip()[:255]
             if not code or not name:
                 continue
-            seen_codes.add(code)
-            # Adopt kept order-referenced rows by code (unique server+code)
+
+            # 1. Match by code -> just refresh
             obj = Service.objects.filter(server="server1", code=code).first()
             if obj:
                 obj.name, obj.status = name, "active"
                 obj.save(update_fields=["name", "status"])
-            else:
-                Service.objects.create(server="server1", code=code,
-                                       name=name, status="active")
-        self.stdout.write(self.style.SUCCESS(f"Services synced: {len(seen_codes)}"))
+                seen_codes.add(code)
+                continue
+
+            # 2. unique(name, server): adopt an existing row with this name
+            #    whose code isn't claimed by another SMSBower service
+            obj = Service.objects.filter(server="server1", name=name).first()
+            if obj and obj.code not in seen_codes:
+                obj.code, obj.status = code, "active"
+                obj.save(update_fields=["code", "status"])
+                seen_codes.add(code)
+                continue
+
+            # 3. Name taken by something else (or duplicate name in provider
+            #    list) - skip rather than crash
+            if Service.objects.filter(server="server1", name=name).exists():
+                self.stdout.write(self.style.WARNING(
+                    f"  Skipped service {code} ({name}): name already on server1"
+                ))
+                skipped += 1
+                continue
+
+            Service.objects.create(server="server1", code=code,
+                                   name=name, status="active")
+            seen_codes.add(code)
+
+        self.stdout.write(self.style.SUCCESS(
+            f"Services synced: {len(seen_codes)} (skipped {skipped})"
+        ))
 
         # Deactivate server1 services SMSBower doesn't offer (InstantNums leftovers)
         stale = Service.objects.filter(server="server1").exclude(code__in=seen_codes)
