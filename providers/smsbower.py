@@ -237,3 +237,18 @@ class SMSBowerProvider(BaseProvider):
                     "count": info.get("count", 0),
                 }
         return out
+
+
+    def get_prices_by_country_id(self, country_id):
+        """Bulk prices for one country: one API call returns ALL services.
+        {service_code: {"cost": usd, "count": stock}}"""
+        res = self._request("getPrices", country=str(country_id))
+        out = {}
+        for services in (res or {}).values():
+            for svc, info in (services or {}).items():
+                if isinstance(info, dict) and "cost" in info:
+                    out[str(svc).strip().lower()] = {
+                        "cost": info.get("cost", 0),
+                        "count": info.get("count", 0),
+                    }
+        return out
