@@ -179,6 +179,7 @@ AUTH_USER_MODEL = "accounts.User"
 
 DAISYSMS_API_KEY = config("DAISYSMS_API_KEY", default="")
 
+SMSBOWER_API_KEY = config("SMSBOWER_API_KEY", default="")
 
 # PocketFi
 POCKETFI_SECRET_KEY = os.getenv("POCKETFI_SECRET_KEY")
