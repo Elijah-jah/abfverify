@@ -1,5 +1,5 @@
 import time
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -25,11 +25,9 @@ ISO_MAP = {
 
 
 def to_ngn(usd, config):
-    """Same pricing formula as Daisy (server2):
-    cost_ngn = usd * exchange_rate, selling = cost_ngn + fixed_profit"""
-    cost = (Decimal(str(usd)) * config.exchange_rate).quantize(
-        Decimal("0.01"), rounding=ROUND_HALF_UP
-    )
+    """cost_ngn = usd * exchange_rate (NO rounding),
+    selling = cost_ngn + fixed_profit"""
+    cost = Decimal(str(usd)) * config.exchange_rate
     return cost, cost + config.fixed_profit
 
 
