@@ -23,13 +23,13 @@ class Pricing(models.Model):
     )
 
     selling_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2
+        max_digits=14,
+        decimal_places=6
     )
 
     provider_cost = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
+        max_digits=14,
+        decimal_places=6,
         default=0
     )
 
@@ -60,8 +60,6 @@ class Pricing(models.Model):
 
     def __str__(self):
         return f"{self.country.name} - {self.service.name}"
-
-
 
 
 class PricingConfiguration(models.Model):
