@@ -144,7 +144,7 @@ class SMSBowerProvider(BaseProvider):
                 if eng and cid.isdigit():
                     mapping[eng] = int(cid)
         return mapping
-    
+
     def resolve_country_id(self, name_or_id):
         """Accept an already-numeric id, or map a country name to SMSBower's id."""
         s = str(name_or_id or "").strip()
@@ -188,12 +188,16 @@ class SMSBowerProvider(BaseProvider):
         info = self.get_price(service, country)
         return {"success": True, "count": info["count"]}
 
-    def purchase(self, service, country, max_price=None):
+    def purchase(self, service, country, max_price=None, provider_ids=None):
         """getNumberV2 — returns the same shape views already use:
-        result["order_id"], result["phone_number"]."""
+        result["order_id"], result["phone_number"], plus real "cost"."""
         cid = self.resolve_country_id(country)
-        res = self._request("getNumberV2", service=service, country=cid,
-                            maxPrice=max_price)
+        params = {"service": service, "country": cid}
+        if max_price is not None:
+            params["maxPrice"] = max_price
+        if provider_ids:
+            params["providerIds"] = provider_ids
+        res = self._request("getNumberV2", **params)
         if isinstance(res, dict) and "activationId" in res:
             return {
                 "success": True,
@@ -226,7 +230,7 @@ class SMSBowerProvider(BaseProvider):
         self._fail(res)
 
     def get_all_prices(self, country):
-        """{service_code: {"cost": usd, "count": stock}} — feeds sync commands."""
+        """{service_code: {"cost": usd, "count": stock}} — legacy V1 view."""
         cid = self.resolve_country_id(country)
         res = self._request("getPrices", country=cid)
         out = {}
@@ -238,17 +242,35 @@ class SMSBowerProvider(BaseProvider):
                 }
         return out
 
-
     def get_prices_by_country_id(self, country_id):
-        """Bulk prices for one country: one API call returns ALL services.
-        {service_code: {"cost": usd, "count": stock}}"""
-        res = self._request("getPrices", country=str(country_id))
+        """Bulk V3: ONE call returns all services with per-partner prices.
+        V1's default cost can be 3-4x the real bulk price (it may reflect a
+        minority expensive partner), so we price off the DOMINANT partner
+        (highest stock) and remember their id for purchases.
+        Returns {service: {"cost": usd, "count": total, "provider_id": str}}"""
+        res = self._request("getPricesV3", country=str(country_id))
         out = {}
         for services in (res or {}).values():
-            for svc, info in (services or {}).items():
-                if isinstance(info, dict) and "cost" in info:
+            for svc, partners in (services or {}).items():
+                if not isinstance(partners, dict):
+                    continue
+                best = None  # (count, price, provider_id)
+                total = 0
+                for pid, info in partners.items():
+                    if not isinstance(info, dict):
+                        continue
+                    cnt = int(info.get("count") or 0)
+                    total += cnt
+                    price = info.get("price")
+                    if price is None:
+                        continue
+                    if best is None or cnt > best[0]:
+                        best = (cnt, float(price),
+                                str(info.get("provider_id") or pid))
+                if best:
                     out[str(svc).strip().lower()] = {
-                        "cost": info.get("cost", 0),
-                        "count": info.get("count", 0),
+                        "cost": best[1],
+                        "count": total,
+                        "provider_id": best[2],
                     }
         return out

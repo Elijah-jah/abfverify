@@ -46,6 +46,12 @@ class Pricing(models.Model):
         default="active"
     )
 
+    provider_meta = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Provider partner info: provider_id to pin purchases to, cost_usd for maxPrice cap",
+    )
+
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -54,7 +60,7 @@ class Pricing(models.Model):
 
     def __str__(self):
         return f"{self.country.name} - {self.service.name}"
-    
+
 
 
 

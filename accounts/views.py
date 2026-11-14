@@ -253,7 +253,7 @@ def sms_view(request):
             messages.error(request, "Server 2 only supports USA numbers.")
             return ajax_error_response("sms")
 
-        # Price MUST come from a synced Pricing row (run sync_instantnums first)
+        # Price MUST come from a synced Pricing row (run sync_smsbower for server1)
         try:
             pricing = Pricing.objects.get(
                 country=country,
@@ -304,12 +304,20 @@ def sms_view(request):
         if server == "server2":
             country_identifier = 187            # DaisySMS USA
         else:
-            country_identifier = country.name   # InstantNums accepts full names (tested)
+            country_identifier = country.name   # SMSBower resolves the name to its numeric id
 
         try:
+            extra = {}
+            if server == "server1":
+                meta = pricing.provider_meta or {}
+                if meta.get("cost_usd"):
+                    extra["max_price"] = meta["cost_usd"]        # never pay more than we charged
+                if meta.get("provider_id"):
+                    extra["provider_ids"] = meta["provider_id"]  # buy from the dominant partner
             result = provider.purchase(
                 service=service_identifier,
                 country=country_identifier,
+                **extra,
             )
 
         except Exception as e:
@@ -367,7 +375,6 @@ def sms_view(request):
             "active_orders": active_orders,
         },
     )
-
 # ==========================
 # AUTH
 # ==========================

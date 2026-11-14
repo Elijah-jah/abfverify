@@ -34,7 +34,7 @@ def to_ngn(usd, config):
 
 
 class Command(BaseCommand):
-    help = "Sync SMSBower countries, services and prices into server1 (bulk endpoint)"
+    help = "Sync SMSBower countries, services and prices into server1 (bulk V3 endpoint)"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -145,7 +145,7 @@ class Command(BaseCommand):
         if stale_count:
             self.stdout.write(f"Deactivated {stale_count} old server1 services")
 
-        # ---------------- PRICES (1 bulk call per country) ----------------
+        # ---------------- PRICES (1 bulk V3 call per country) ----------------
         qs = Country.objects.filter(server="server1", status="active")
         if options["countries"]:
             wanted = [x.strip() for x in options["countries"].split(",") if x.strip()]
@@ -181,6 +181,10 @@ class Command(BaseCommand):
                         "selling_price": sell_ngn,
                         "is_available": info.get("count", 0) > 0,
                         "status": "active",
+                        "provider_meta": {
+                            "provider_id": info.get("provider_id"),
+                            "cost_usd": info["cost"],
+                        },
                     },
                 )
                 ok += 1
