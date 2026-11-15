@@ -195,9 +195,7 @@ class Command(BaseCommand):
                 ):
                     if svc.name.lower() == CANONICAL_WHATSAPP_NAME:
                         canon_wa = svc
-                    wa_variants.append(
-                        (Decimal(str(info["cost"])), info.get("count", 0), info)
-                    )
+                    wa_variants.append((info["cost"], info.get("count", 0), info))
 
                 cost_ngn, sell_ngn = to_ngn(info["cost"], config)
                 Pricing.objects.update_or_create(
@@ -221,7 +219,7 @@ class Command(BaseCommand):
             if pin_id and wa_variants:
                 in_stock = [v for v in wa_variants if v[1] > 0]
                 pool = in_stock or wa_variants  # fall back to cheapest overall
-                cost_usd, cnt, cheapest_info = min(pool, key=lambda v: v[0])
+                raw_cost, cnt, cheapest_info = min(pool, key=lambda v: Decimal(str(v[0])))
 
                 if not canon_wa:
                     canon_wa = Service.objects.filter(
@@ -229,7 +227,7 @@ class Command(BaseCommand):
                     ).first()
 
                 if canon_wa:
-                    cost_ngn, sell_ngn = to_ngn(cost_usd, config)
+                    cost_ngn, sell_ngn = to_ngn(raw_cost, config)
                     Pricing.objects.update_or_create(
                         country=ctry,
                         service=canon_wa,
@@ -240,7 +238,7 @@ class Command(BaseCommand):
                             "status": "active",
                             "provider_meta": {
                                 "provider_id": pin_id,
-                                "cost_usd": cost_usd,
+                                "cost_usd": raw_cost,
                             },
                         },
                     )
