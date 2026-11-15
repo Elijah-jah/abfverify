@@ -23,6 +23,19 @@ ISO_MAP = {
     "viet nam": "VN", "bangladesh": "BD", "pakistan": "PK",
 }
 
+# --- WHATSAPP CHEAPEST-VARIANT + PINNED PROVIDER ID -------------------------
+# For each country listed here, the main "WhatsApp" service row on server1:
+#   * price  = the CHEAPEST in-stock WhatsApp variant SMSBower offers for that
+#     country (out-of-stock variants are ignored when picking)
+#   * provider_id in provider_meta = the pinned value below, ALWAYS,
+#     no matter what the sync fetches
+# Add more countries like:  "united kingdom": 1234,
+WHATSAPP_PIN = {
+    "united states": 3535,
+}
+WHATSAPP_EXCLUDE_BUSINESS = True   # ignore "WhatsApp Business" variants
+CANONICAL_WHATSAPP_NAME = "whatsapp"  # the main WhatsApp service name on server1
+
 
 def to_ngn(usd, config):
     """cost_ngn = usd * exchange_rate (NO rounding),
@@ -164,12 +177,28 @@ class Command(BaseCommand):
                 time.sleep(options["sleep"])
                 continue
 
+            pin_id = WHATSAPP_PIN.get(ctry.name.lower())
+            canon_wa = None
+            wa_variants = []
+
             seen_service_ids = set()
             for code, info in prices.items():
                 svc = Service.objects.filter(server="server1", code=code).first()
                 if not svc:
                     continue
                 seen_service_ids.add(svc.id)
+
+                # Collect WhatsApp variants for the cheapest-variant logic
+                if CANONICAL_WHATSAPP_NAME in svc.name.lower() and (
+                    not WHATSAPP_EXCLUDE_BUSINESS
+                    or "business" not in svc.name.lower()
+                ):
+                    if svc.name.lower() == CANONICAL_WHATSAPP_NAME:
+                        canon_wa = svc
+                    wa_variants.append(
+                        (Decimal(str(info["cost"])), info.get("count", 0), info)
+                    )
+
                 cost_ngn, sell_ngn = to_ngn(info["cost"], config)
                 Pricing.objects.update_or_create(
                     country=ctry,
@@ -186,6 +215,42 @@ class Command(BaseCommand):
                     },
                 )
                 ok += 1
+
+            # --- PINNED WHATSAPP: cheapest in-stock variant's price,
+            #     pinned provider id, on the main WhatsApp row ---
+            if pin_id and wa_variants:
+                in_stock = [v for v in wa_variants if v[1] > 0]
+                pool = in_stock or wa_variants  # fall back to cheapest overall
+                cost_usd, cnt, cheapest_info = min(pool, key=lambda v: v[0])
+
+                if not canon_wa:
+                    canon_wa = Service.objects.filter(
+                        server="server1", name__iexact=CANONICAL_WHATSAPP_NAME
+                    ).first()
+
+                if canon_wa:
+                    cost_ngn, sell_ngn = to_ngn(cost_usd, config)
+                    Pricing.objects.update_or_create(
+                        country=ctry,
+                        service=canon_wa,
+                        defaults={
+                            "provider_cost": cost_ngn,
+                            "selling_price": sell_ngn,
+                            "is_available": cnt > 0,
+                            "status": "active",
+                            "provider_meta": {
+                                "provider_id": pin_id,
+                                "cost_usd": cost_usd,
+                            },
+                        },
+                    )
+                    ok += 1
+                    seen_service_ids.add(canon_wa.id)
+                else:
+                    self.stdout.write(self.style.WARNING(
+                        f"  [{i}/{total}] {ctry.name}: WHATSAPP_PIN set but no "
+                        f"'{CANONICAL_WHATSAPP_NAME}' service found on server1"
+                    ))
 
             # Anything not in the response is out of stock -> unavailable
             marked = Pricing.objects.filter(
