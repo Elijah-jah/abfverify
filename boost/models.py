@@ -5,14 +5,14 @@ from django.db import models
 
 
 class BoostSettings(models.Model):
-    """Singleton â€” edit exchange rate & profit from admin, like SMS pricing."""
+    """Singleton — edit exchange rate & profit from admin, like SMS pricing."""
     exchange_rate = models.DecimalField(
         max_digits=10, decimal_places=2, default=1.0,
-        help_text="Provider currency â†’ NGN. Your provider bills in NGN, so keep this at 1.0.",
+        help_text="Provider bills in USD. Set this to the USD→NGN rate (e.g. 1600).",
     )
     profit_flat = models.DecimalField(
         max_digits=10, decimal_places=2, default=1000.0,
-        help_text="Minimum profit (NGN) on EVERY order. 1000 = you never earn less than â‚¦1,000.",
+        help_text="Minimum profit (NGN) on EVERY order. 1000 = you never earn less than ₦1,000.",
     )
     profit_percent = models.DecimalField(
         max_digits=6, decimal_places=2, default=15.0,
@@ -34,7 +34,7 @@ class BoostSettings(models.Model):
         return obj
 
     def __str__(self):
-        return f"Rate {self.exchange_rate} Â· +â‚¦{self.profit_flat} + {self.profit_percent}%"
+        return f"Rate {self.exchange_rate} · +₦{self.profit_flat} + {self.profit_percent}%"
 
 
 class BoostService(models.Model):
@@ -47,7 +47,7 @@ class BoostService(models.Model):
         blank=True, default="",
         help_text="Shown to users on the order form (e.g. what link to paste)",
     )
-    rate = models.DecimalField(max_digits=12, decimal_places=4, help_text="Provider cost per 1000 units")
+    rate = models.DecimalField(max_digits=16, decimal_places=4, help_text="Provider cost per 1000 units (USD)")
     min_order = models.PositiveIntegerField(default=1)
     max_order = models.PositiveIntegerField(default=1000)
     refill = models.BooleanField(default=False)
@@ -89,7 +89,7 @@ class BoostOrder(models.Model):
     link = models.URLField(max_length=500)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=12, decimal_places=2)          # what user paid (NGN)
-    provider_cost = models.DecimalField(max_digits=12, decimal_places=4, blank=True, null=True)
+    provider_cost = models.DecimalField(max_digits=16, decimal_places=4, blank=True, null=True)
     provider_order_id = models.CharField(max_length=50, db_index=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending", db_index=True)
     start_count = models.CharField(max_length=50, blank=True, default="")
@@ -101,4 +101,4 @@ class BoostOrder(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"Boost #{self.provider_order_id} â€” {self.service.name} x{self.quantity}"
+        return f"Boost #{self.provider_order_id} — {self.service.name} x{self.quantity}"
