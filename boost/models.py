@@ -65,9 +65,11 @@ class BoostService(models.Model):
         """What the customer pays in NGN for `quantity` units."""
         settings_obj = settings_obj or BoostSettings.get_solo()
         qty = Decimal(quantity)
-        provider_cost = (self.rate / Decimal("1000")) * qty
-        profit = settings_obj.profit_flat + (provider_cost * settings_obj.profit_percent / Decimal("100"))
-        price = (provider_cost + profit) * settings_obj.exchange_rate
+        # Convert provider cost (USD per 1000) to NGN FIRST
+        cost_ngn = (self.rate / Decimal("1000")) * qty * settings_obj.exchange_rate
+        # THEN add profits, both in NGN
+        profit = settings_obj.profit_flat + (cost_ngn * settings_obj.profit_percent / Decimal("100"))
+        price = cost_ngn + profit
         return price.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
