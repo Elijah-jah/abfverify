@@ -1,18 +1,18 @@
-from decimal import Decimal, ROUND_HALF_UP
+﻿from decimal import Decimal, ROUND_HALF_UP
 
 from django.conf import settings
 from django.db import models
 
 
 class BoostSettings(models.Model):
-    """Singleton — edit exchange rate & profit from admin, like SMS pricing."""
+    """Singleton â€” edit exchange rate & profit from admin, like SMS pricing."""
     exchange_rate = models.DecimalField(
         max_digits=10, decimal_places=2, default=1.0,
-        help_text="Provider currency → NGN. Your provider bills in NGN, so keep this at 1.0.",
+        help_text="Provider currency â†’ NGN. Your provider bills in NGN, so keep this at 1.0.",
     )
     profit_flat = models.DecimalField(
         max_digits=10, decimal_places=2, default=1000.0,
-        help_text="Minimum profit (NGN) on EVERY order. 1000 = you never earn less than ₦1,000.",
+        help_text="Minimum profit (NGN) on EVERY order. 1000 = you never earn less than â‚¦1,000.",
     )
     profit_percent = models.DecimalField(
         max_digits=6, decimal_places=2, default=15.0,
@@ -34,11 +34,11 @@ class BoostSettings(models.Model):
         return obj
 
     def __str__(self):
-        return f"Rate {self.exchange_rate} · +₦{self.profit_flat} + {self.profit_percent}%"
+        return f"Rate {self.exchange_rate} Â· +â‚¦{self.profit_flat} + {self.profit_percent}%"
 
 
 class BoostService(models.Model):
-    """Synced from ReallySimpleSocial API."""
+    """Synced from GoodLuckBoostHub API."""
     service_id = models.PositiveIntegerField(unique=True)  # provider's ID
     name = models.CharField(max_length=255)
     category = models.CharField(max_length=255, blank=True, db_index=True)
@@ -101,4 +101,4 @@ class BoostOrder(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"Boost #{self.provider_order_id} — {self.service.name} x{self.quantity}"
+        return f"Boost #{self.provider_order_id} â€” {self.service.name} x{self.quantity}"

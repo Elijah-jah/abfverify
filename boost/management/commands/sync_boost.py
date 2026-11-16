@@ -1,17 +1,17 @@
-from django.core.management.base import BaseCommand
+﻿from django.core.management.base import BaseCommand
 
 from boost.models import BoostService
-from boost.providers import ReallySimpleSocial, ReallySimpleSocialError
+from boost.providers import GoodLuckBoostHub, GoodLuckBoostHubError
 
 
 class Command(BaseCommand):
-    help = "Sync boost services from ReallySimpleSocial into the database"
+    help = "Sync boost services from GoodLuckBoostHub into the database"
 
     def handle(self, *args, **options):
         try:
-            provider = ReallySimpleSocial()
+            provider = GoodLuckBoostHub()
             services = provider.get_services()
-        except ReallySimpleSocialError as e:
+        except GoodLuckBoostHubError as e:
             self.stderr.write(self.style.ERROR(f"Sync failed: {e}"))
             return
 

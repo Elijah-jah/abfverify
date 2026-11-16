@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 from django.db.models import Count
 
 from boost.models import BoostService
-from boost.providers import ReallySimpleSocial, ReallySimpleSocialError
+from boost.providers import GoodLuckBoostHub, GoodLuckBoostHubError
 
 
 TIMEFRAME_PATTERNS = [
@@ -46,10 +46,10 @@ class Command(BaseCommand):
         # What does the provider currently offer?
         provider_ids = set()
         try:
-            api = ReallySimpleSocial().get_services()
+            api = GoodLuckBoostHub().get_services()
             provider_ids = {str(s["service"]) for s in api}
             self.stdout.write(f"Provider offers: {len(provider_ids)} services")
-        except ReallySimpleSocialError as e:
+        except GoodLuckBoostHubError as e:
             self.stdout.write(self.style.WARNING(f"Provider unreachable - excess check skipped: {e}"))
 
         services = BoostService.objects.annotate(order_count=Count("orders"))

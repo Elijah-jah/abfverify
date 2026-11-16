@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from django.core.management.base import BaseCommand
 
-from boost.providers import ReallySimpleSocial, ReallySimpleSocialError
+from boost.providers import GoodLuckBoostHub, GoodLuckBoostHubError
 
 
 def tf_summary(s):
@@ -21,8 +21,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **opts):
         try:
-            services = ReallySimpleSocial().get_services()
-        except ReallySimpleSocialError as e:
+            services = GoodLuckBoostHub().get_services()
+        except GoodLuckBoostHubError as e:
             self.stdout.write(self.style.ERROR(f"Provider error: {e}"))
             return
 

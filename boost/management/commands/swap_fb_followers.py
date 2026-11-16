@@ -1,7 +1,7 @@
 ﻿from django.core.management.base import BaseCommand
 
 from boost.models import BoostService
-from boost.providers import ReallySimpleSocial, ReallySimpleSocialError
+from boost.providers import GoodLuckBoostHub, GoodLuckBoostHubError
 
 
 NEW_SERVICE_ID = 9819  # Facebook Page Followers | Non Drop @ 200
@@ -12,8 +12,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            api = {str(s["service"]): s for s in ReallySimpleSocial().get_services()}
-        except ReallySimpleSocialError as e:
+            api = {str(s["service"]): s for s in GoodLuckBoostHub().get_services()}
+        except GoodLuckBoostHubError as e:
             self.stdout.write(self.style.ERROR(f"Provider unreachable: {e}"))
             return
 

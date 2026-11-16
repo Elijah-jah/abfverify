@@ -1,7 +1,7 @@
 ﻿from django.core.management.base import BaseCommand
 
 from boost.models import BoostService
-from boost.providers import ReallySimpleSocial, ReallySimpleSocialError
+from boost.providers import GoodLuckBoostHub, GoodLuckBoostHubError
 
 
 def base_name(name):
@@ -22,8 +22,8 @@ class Command(BaseCommand):
     def handle(self, *args, **opts):
         dry = opts["dry_run"]
         try:
-            api = ReallySimpleSocial().get_services()
-        except ReallySimpleSocialError as e:
+            api = GoodLuckBoostHub().get_services()
+        except GoodLuckBoostHubError as e:
             self.stdout.write(self.style.ERROR(f"Provider unreachable: {e}"))
             return
 

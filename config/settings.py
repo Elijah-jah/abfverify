@@ -188,7 +188,7 @@ POCKETFI_BASE_URL = os.getenv("POCKETFI_BASE_URL", "https://api.pocketfi.ng")
 POCKETFI_CALLBACK_URL = os.getenv("POCKETFI_CALLBACK_URL")
 POCKETFI_WEBHOOK_SECRET = config("POCKETFI_WEBHOOK_SECRET")
 
-RSS_API_KEY = config("RSS_API_KEY", default="")
+GLBH_API_KEY = config("GLBH_API_KEY", default="")
 
 
 # Email Settings
