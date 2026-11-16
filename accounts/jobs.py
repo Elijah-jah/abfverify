@@ -11,7 +11,7 @@ from orders.models import Order
 from providers.factory import get_provider
 from wallet.models import Wallet, Transaction
 from boost.models import BoostOrder, OPEN_STATUSES
-from boost.providers import ReallySimpleSocial
+from boost.providers import GoodLuckBoostHub
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +131,7 @@ def deliver_waiting_orders_job():
 
 @register_job(scheduler, "interval", minutes=5, id="sync_boost_orders", replace_existing=True)
 def sync_boost_orders_job():
-    """Update open boost orders from ReallySimpleSocial (batch of up to 100)."""
+    """Update open boost orders from GoodLuckBoostHub (batch of up to 100)."""
     open_orders = list(
         BoostOrder.objects.filter(status__in=OPEN_STATUSES)
         .values_list("provider_order_id", flat=True)[:100]
@@ -142,7 +142,7 @@ def sync_boost_orders_job():
     print(">>> BOOST SYNC RAN AT", timezone.now(), "-", len(open_orders), "open orders <<<")
 
     try:
-        provider = ReallySimpleSocial()
+        provider = GoodLuckBoostHub()
         results = provider.get_orders_status(open_orders)
     except Exception as e:
         logger.exception("Boost status sync failed: %s", e)
