@@ -7,12 +7,12 @@ class GoodLuckBoostHubError(Exception):
 
 
 class GoodLuckBoostHub:
-    BASE_URL = "https://GoodLuckBoostHub.com/api/v2"
+    BASE_URL = "https://goodluckboosthub.com/api/v2"
 
     def __init__(self, api_key=None):
-        self.api_key = api_key or settings.RSS_API_KEY
+        self.api_key = api_key or settings.GLBH_API_KEY
         if not self.api_key:
-            raise GoodLuckBoostHubError("RSS_API_KEY is not configured")
+            raise GoodLuckBoostHubError("GLBH_API_KEY is not configured")
 
     def _request(self, **params):
         params["key"] = self.api_key
@@ -45,9 +45,25 @@ class GoodLuckBoostHub:
         )
         return data["order"]
 
+    def get_order_status(self, order_id):
+        """Single order status."""
+        return self._request(action="status", order=order_id)
+
     def get_orders_status(self, order_ids):
         """order_ids: list of provider order IDs (max 100)"""
         return self._request(action="status", orders=",".join(str(i) for i in order_ids))
+
+    def refill(self, order_id):
+        """Create a refill for a single order. Returns refill ID."""
+        return self._request(action="refill", order=order_id)
+
+    def cancel(self, order_ids):
+        """Cancel one or more orders. Returns list of {order, cancel} results."""
+        if isinstance(order_ids, (list, tuple)):
+            ids = ",".join(str(i) for i in order_ids)
+        else:
+            ids = str(order_ids)
+        return self._request(action="cancel", orders=ids)
 
     def get_balance(self):
         return self._request(action="balance")
