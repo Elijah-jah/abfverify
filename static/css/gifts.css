@@ -565,6 +565,8 @@ body.light .gf-detail-img::before {
 
 .gf-modal-close:hover { color: var(--text); border-color: var(--brand-border); }
 
+.gf-modal-close { z-index: 8; }   /* stays clickable above sticky headers */
+
 /* Gift summary inside modal */
 .gf-modal-gift {
     display: flex;
@@ -1142,6 +1144,43 @@ body.light .gf-detail-img::before {
 
 .gf-tracking-link:hover { text-decoration: underline; }
 
+.gf-tracking-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 0;
+}
+
+.gf-tracking-line .gf-tracking-link,
+.gf-tracking-line .gf-tracking-text { flex: 1; min-width: 0; }
+
+.gf-tracking-copy {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    border: 1px solid var(--brand-border);
+    background: var(--brand-soft);
+    color: var(--brand-2);
+    font-size: .82rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .18s ease;
+}
+
+.gf-tracking-copy:hover {
+    transform: translateY(-1px);
+    border-color: var(--brand);
+}
+
+.gf-tracking-copy.copied {
+    background: rgba(34, 197, 94, .14);
+    border-color: rgba(34, 197, 94, .4);
+    color: var(--success);
+}
+
 .gf-tracking-text {
     color: var(--text);
     font-size: .95rem;
@@ -1155,6 +1194,22 @@ body.light .gf-detail-img::before {
     color: var(--muted);
     font-size: .85rem;
     margin: 0;
+}
+
+/* ---------- Order details: pinned summary header ----------
+   The image, order id, name, status and price stay fixed at the
+   top of the card; only the content below (tracking, details,
+   photos) scrolls. */
+#gfOrderModal .gf-modal-gift {
+    position: sticky;
+    top: 0;
+    z-index: 6;
+    margin: -22px -22px 16px;
+    padding: 14px 22px;
+    background: var(--card);
+    border: none;
+    border-bottom: 1px solid var(--border-soft);
+    border-radius: 0;
 }
 
 /* ---------- Detail grid ---------- */
@@ -1376,6 +1431,12 @@ body.light .gf-detail-img::before {
     /* Tracking + detail blocks breathe better */
     .gf-tracking { padding: 12px; }
     .gf-detail { padding: 10px 12px; }
+
+    /* Pinned header matches the mobile card padding */
+    #gfOrderModal .gf-modal-gift {
+        margin: -18px -16px 14px;
+        padding: 12px 16px;
+    }
 }
 
 /* Very small phones: one card per row keeps images large and readable */
