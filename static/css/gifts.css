@@ -373,7 +373,7 @@ body.light .gf-card-img::before {
 .gf-detail-modal {
     max-width: 560px;
     padding: 0;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 .gf-detail-img {
@@ -512,6 +512,8 @@ body.light .gf-detail-img::before {
 .gf-modal {
     width: 100%;
     max-width: 640px;
+    max-height: 90vh;
+    overflow-y: auto;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -520,6 +522,7 @@ body.light .gf-detail-img::before {
     position: relative;
     transform: translateY(14px);
     transition: transform .22s ease;
+    -webkit-overflow-scrolling: touch;
 }
 
 .gf-modal-overlay.open .gf-modal { transform: translateY(0); }
@@ -1240,7 +1243,7 @@ body.light .gf-detail-img::before {
 }
 
 /* =========================================================
-   MOBILE — bottom-sheet modals, sticky action bar
+   MOBILE — centered floating cards (like the Logout dialog)
    ========================================================= */
 @media (max-width: 640px) {
     /* Prevent iOS focus-zoom on inputs (needs >= 16px font) */
@@ -1248,56 +1251,47 @@ body.light .gf-detail-img::before {
     .gf-field textarea,
     .gf-search input { font-size: 16px; }
 
-    /* Form / details modals become bottom sheets */
-    #gfFormModal,
-    #gfOrderModal,
-    #gfDetailModal {
-        padding: 0;
-        align-items: flex-end;
+    /* Every modal floats centered with margin on ALL sides —
+       never glued to the top or bottom of the screen */
+    .gf-modal-overlay {
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
     }
 
-    #gfFormModal .gf-modal,
-    #gfOrderModal .gf-modal,
-    #gfDetailModal .gf-modal {
-        max-width: 100%;
-        max-height: 92vh;
+    .gf-modal {
+        max-height: 86vh;
         overflow-y: auto;
-        border-radius: 20px 20px 0 0;
-        border-bottom: none;
-        padding: 18px 14px 0;
-        -webkit-overflow-scrolling: touch;
+        border-radius: 18px;
+        padding: 18px 16px;
     }
 
-    /* Product details sheet: image header sits flush at the top */
+    /* Product details: picture sits neatly inside the rounded card */
     #gfDetailModal .gf-modal { padding: 0; }
-    #gfDetailModal .gf-detail-body { padding: 16px 14px 0; }
+    #gfDetailModal .gf-detail-img { border-radius: 18px 18px 0 0; }
+    #gfDetailModal .gf-detail-body { padding: 16px 16px 0; }
 
-    /* Drag handle illusion at the top of the sheet */
-    #gfFormModal .gf-modal::before,
-    #gfOrderModal .gf-modal::before {
-        content: "";
-        display: block;
-        width: 44px;
-        height: 5px;
-        border-radius: 999px;
-        background: var(--border);
-        margin: 0 auto 14px;
-    }
-
-    /* Sticky action bar — Back / Confirm always reachable */
+    /* Sticky action bar inside the card for long content */
     #gfFormModal .gf-modal-actions,
-    #gfOrderModal .gf-modal-actions,
-    #gfDetailModal .gf-modal-actions {
+    #gfOrderModal .gf-modal-actions {
         position: sticky;
         bottom: 0;
         background: var(--card);
         border-top: 1px solid var(--border);
-        margin: 18px -14px 0;
-        padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+        margin: 16px -16px 0;
+        padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
         z-index: 5;
     }
 
-    #gfDetailModal .gf-detail-body .gf-modal-actions { margin: 16px -14px 0; }
+    #gfDetailModal .gf-detail-body .gf-modal-actions {
+        position: sticky;
+        bottom: 0;
+        background: var(--card);
+        border-top: 1px solid var(--border);
+        margin: 16px -16px 0;
+        padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+        z-index: 5;
+    }
 
     #gfFormModal .gf-modal-actions .gf-btn,
     #gfOrderModal .gf-modal-actions .gf-btn,
