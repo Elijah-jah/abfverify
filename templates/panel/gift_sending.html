@@ -86,7 +86,7 @@
                 <div class="gf-card-body">
                     <span class="gf-card-cat">{{ category.name }}</span>
                     <h3 class="gf-card-name">{{ group.name }}</h3>
-                    <p class="gf-card-desc">{{ group.description|default:"\u00a0"|truncatewords:18 }}</p>
+                    <p class="gf-card-desc">{% if group.description %}{{ group.description|truncatewords:18 }}{% else %}&nbsp;{% endif %}</p>
                     <div class="gf-card-foot">
                         <span class="gf-card-price">₦{{ group.price|floatformat:2|intcomma }}</span>
                         <button type="button"
