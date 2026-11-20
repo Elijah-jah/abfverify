@@ -1,4 +1,4 @@
-﻿from django.contrib import admin
+from django.contrib import admin
 from django.utils.html import format_html
 
 from .models import BoostFunding, LogBatch, SMSRecharge
@@ -39,5 +39,5 @@ class LogBatchAdmin(admin.ModelAdmin):
     @admin.display(description="Status")
     def status_badge(self, obj):
         if obj.status == "confirmed":
-            return format_html('<span style="color:#28a745;font-weight:bold">CONFIRMED</span>')
-        return format_html('<span style="color:#ffc107;font-weight:bold">PENDING</span>')
+            return format_html('<span style="color:#28a745;font-weight:bold">{}</span>', "CONFIRMED")
+        return format_html('<span style="color:#ffc107;font-weight:bold">{}</span>', "PENDING")
