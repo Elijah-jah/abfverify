@@ -27,7 +27,10 @@
             </p>
         </div>
         <div class="gf-head-side">
-            
+            <div class="gf-wallet-pill" title="Wallet balance">
+                <i class="fa-solid fa-wallet"></i>
+                <span>₦{{ user_wallet.balance|floatformat:2|intcomma }}</span>
+            </div>
             <button type="button" class="gf-myorders-link"
                     onclick="location.href='{% url 'my_gift_orders' %}'">
                 <i class="fa-solid fa-box-open"></i>
