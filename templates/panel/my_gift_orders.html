@@ -53,6 +53,7 @@
                     "state": "{{ order.state|escapejs }}",
                     "zip_code": "{{ order.zip_code|escapejs }}",
                     "phone": "{{ order.phone|escapejs }}",
+                    "note": "{{ order.note|escapejs }}",
                     "tracking_link": "{{ order.tracking_link|escapejs }}",
                     "images": [{% for img in order.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]
                 }'>
@@ -133,8 +134,9 @@
                 Track your gift
                 <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </a>
+            <strong class="gf-tracking-text" id="gfTrackingText"></strong>
             <p class="gf-tracking-wait" id="gfTrackingWait">
-                No tracking link yet — it will appear here once your gift ships.
+                No tracking details yet — they will appear here once your gift ships.
             </p>
         </div>
 
@@ -170,6 +172,10 @@
             <div class="gf-detail">
                 <span>Placed On</span>
                 <strong id="gfDetailCreated">—</strong>
+            </div>
+            <div class="gf-detail gf-detail-full gf-hidden" id="gfDetailNoteWrap">
+                <span>Gift Note</span>
+                <strong id="gfDetailNote">—</strong>
             </div>
         </div>
 

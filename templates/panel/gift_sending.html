@@ -8,7 +8,7 @@
 {% block section_title %}Send a Gift{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/gifts.css' %}">
+<link rel="stylesheet" href="{% static 'css/gifts.css' %}?v=2">
 {% endblock %}
 
 {% block content %}
@@ -40,6 +40,16 @@
     </div>
 
     {% if categories %}
+    <!-- SEARCH -->
+    <div class="gf-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="search" id="gfSearch" placeholder="Search gifts by name, category or keyword…"
+               autocomplete="off" aria-label="Search gifts">
+        <button type="button" class="gf-search-clear" id="gfSearchClear" aria-label="Clear search">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
     <!-- CATEGORY PILLS -->
     <div class="gf-pills" id="gfPills" role="tablist" aria-label="Gift categories">
         <button type="button" class="gf-pill active" data-cat="all" role="tab" aria-selected="true">
@@ -56,8 +66,9 @@
     <div class="gf-grid" id="gfGrid">
         {% for category in categories %}
             {% for group in category.groups.all %}
-            <article class="gf-card" data-cat="{{ category.id }}">
-                <div class="gf-card-img">
+            <article class="gf-card" data-cat="{{ category.id }}"
+                     data-search="{{ group.name|lower }} {{ category.name|lower }} {{ group.description|lower }}">
+                <div class="gf-card-img"{% if group.image %} style="--gf-img: url('{{ group.image.url }}')"{% endif %}>
                     {% if group.image %}
                     <img src="{{ group.image.url }}" alt="{{ group.name }}" loading="lazy">
                     {% else %}
@@ -75,9 +86,7 @@
                 <div class="gf-card-body">
                     <span class="gf-card-cat">{{ category.name }}</span>
                     <h3 class="gf-card-name">{{ group.name }}</h3>
-                    {% if group.description %}
-                    <p class="gf-card-desc">{{ group.description|truncatewords:18 }}</p>
-                    {% endif %}
+                    <p class="gf-card-desc">{{ group.description|default:"\u00a0"|truncatewords:18 }}</p>
                     <div class="gf-card-foot">
                         <span class="gf-card-price">₦{{ group.price|floatformat:2|intcomma }}</span>
                         <button type="button"
@@ -138,59 +147,84 @@
         <form id="gfOrderForm" novalidate>
             {% csrf_token %}
 
-            <div class="gf-form-grid">
-                <div class="gf-field">
-                    <label for="gf_sender">Sender's Name</label>
-                    <input type="text" id="gf_sender" name="sender_name" maxlength="150"
-                           placeholder="Your name" autocomplete="name" required>
-                </div>
-                <div class="gf-field">
-                    <label for="gf_receiver">Receiver's Name</label>
-                    <input type="text" id="gf_receiver" name="receiver_name" maxlength="150"
-                           placeholder="Who is receiving it?" required>
-                </div>
-                <div class="gf-field gf-field-full">
-                    <label for="gf_address">Address</label>
-                    <textarea id="gf_address" name="address" rows="2"
-                              placeholder="Street address / house details" required></textarea>
-                </div>
-                <div class="gf-field">
-                    <label for="gf_city">City</label>
-                    <input type="text" id="gf_city" name="city" maxlength="100"
-                           placeholder="City" required>
-                </div>
-                <div class="gf-field">
-                    <label for="gf_state">State</label>
-                    <input type="text" id="gf_state" name="state" maxlength="100"
-                           placeholder="State" required>
-                </div>
-                <div class="gf-field">
-                    <label for="gf_zip">Zip Code</label>
-                    <input type="text" id="gf_zip" name="zip_code" maxlength="20"
-                           placeholder="Zip code" required>
-                </div>
-                <div class="gf-field">
-                    <label for="gf_phone">Phone Number</label>
-                    <input type="tel" id="gf_phone" name="phone" maxlength="30"
-                           placeholder="Receiver's phone number" autocomplete="tel" required>
+            <!-- DELIVERY DETAILS -->
+            <div class="gf-section">
+                <span class="gf-section-title">
+                    <i class="fa-solid fa-truck-fast"></i>
+                    Delivery Details
+                </span>
+                <div class="gf-form-grid">
+                    <div class="gf-field">
+                        <label for="gf_sender">Sender's Name</label>
+                        <input type="text" id="gf_sender" name="sender_name" maxlength="150"
+                               placeholder="Your name" autocomplete="name" required>
+                    </div>
+                    <div class="gf-field">
+                        <label for="gf_receiver">Receiver's Name</label>
+                        <input type="text" id="gf_receiver" name="receiver_name" maxlength="150"
+                               placeholder="Who is receiving it?" required>
+                    </div>
+                    <div class="gf-field gf-field-full">
+                        <label for="gf_address">Address</label>
+                        <textarea id="gf_address" name="address" rows="2"
+                                  placeholder="Street address / house details" required></textarea>
+                    </div>
+                    <div class="gf-field">
+                        <label for="gf_city">City</label>
+                        <input type="text" id="gf_city" name="city" maxlength="100"
+                               placeholder="City" required>
+                    </div>
+                    <div class="gf-field">
+                        <label for="gf_state">State</label>
+                        <input type="text" id="gf_state" name="state" maxlength="100"
+                               placeholder="State" required>
+                    </div>
+                    <div class="gf-field">
+                        <label for="gf_zip">Zip Code</label>
+                        <input type="text" id="gf_zip" name="zip_code" maxlength="20"
+                               placeholder="Zip code" required>
+                    </div>
+                    <div class="gf-field">
+                        <label for="gf_phone">Phone Number</label>
+                        <input type="tel" id="gf_phone" name="phone" maxlength="30"
+                               placeholder="Receiver's phone number" autocomplete="tel" required>
+                    </div>
                 </div>
             </div>
 
-            <div class="gf-field gf-field-full">
-                <label>
-                    Pictures
-                    <span class="gf-label-hint">Optional — up to 5 photos. They are compressed automatically without losing visible quality.</span>
-                </label>
-                <div class="gf-dropzone" id="gfDropzone">
-                    <input type="file" id="gfImages" accept="image/*" multiple hidden>
-                    <button type="button" class="gf-dropzone-btn" id="gfPickImages">
-                        <i class="fa-solid fa-cloud-arrow-up"></i>
-                        Add Pictures
-                    </button>
-                    <span class="gf-dropzone-count" id="gfImageCount">0 / 5</span>
+            <!-- GIFT NOTE -->
+            <div class="gf-section">
+                <span class="gf-section-title">
+                    <i class="fa-solid fa-note-sticky"></i>
+                    Gift Note
+                    <em>optional</em>
+                </span>
+                <div class="gf-field gf-field-full">
+                    <textarea id="gf_note" name="note" rows="3" maxlength="2000"
+                              placeholder="Any message or special note you want to add to this gift…"></textarea>
                 </div>
-                <div class="gf-previews" id="gfPreviews"></div>
-                <p class="gf-field-error" id="gfImagesError"></p>
+            </div>
+
+            <!-- PICTURES -->
+            <div class="gf-section">
+                <span class="gf-section-title">
+                    <i class="fa-solid fa-images"></i>
+                    Pictures
+                    <em>optional · up to 5</em>
+                </span>
+                <div class="gf-field gf-field-full">
+                    <div class="gf-dropzone" id="gfDropzone">
+                        <input type="file" id="gfImages" accept="image/*" multiple hidden>
+                        <button type="button" class="gf-dropzone-btn" id="gfPickImages">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            Add Pictures
+                        </button>
+                        <span class="gf-dropzone-hint">Compressed automatically — quality stays the same</span>
+                        <span class="gf-dropzone-count" id="gfImageCount">0 / 5</span>
+                    </div>
+                    <div class="gf-previews" id="gfPreviews"></div>
+                    <p class="gf-field-error" id="gfImagesError"></p>
+                </div>
             </div>
 
             <p class="gf-form-error" id="gfFormError"></p>
@@ -213,10 +247,10 @@
 <!-- ==================== ARE YOU SURE MINI DIALOG ==================== -->
 <div class="gf-modal-overlay gf-overlay-top" id="gfSureModal" aria-hidden="true">
     <div class="gf-mini" role="alertdialog" aria-modal="true" aria-labelledby="gfSureTitle">
-        <div class="gf-mini-icon">
-            <i class="fa-solid fa-circle-question"></i>
+        <div class="gf-mini-icon gf-sure-icon">
+            <i class="fa-solid fa-gift"></i>
         </div>
-        <h3 id="gfSureTitle">Are you sure?</h3>
+        <h3 id="gfSureTitle">Confirm Your Gift</h3>
         <p>
             You are about to send <strong id="gfSureGift">this gift</strong> for
             <strong id="gfSurePrice">₦0.00</strong>. The amount will be deducted
@@ -272,5 +306,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/gifts.js' %}"></script>
+<script src="{% static 'js/gifts.js' %}?v=2"></script>
 {% endblock %}

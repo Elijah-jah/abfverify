@@ -1527,10 +1527,30 @@ a:hover { text-decoration: underline; }
 
 .go-empty h3 { color: var(--text); margin-bottom: 6px; }
 
+/* ---------- Mobile: kill auto-zoom on all finance pages ---------- */
+/* iOS zooms in when an input under 16px gets focus — force 16px. */
 @media (max-width: 640px) {
+    body.finance-page input,
+    body.finance-page textarea,
+    body.finance-page select {
+        font-size: 16px !important;
+    }
+
     .go-summary { gap: 10px; }
     .go-num { order: -1; }
     .go-side { flex-direction: row; align-items: center; gap: 10px; width: 100%; justify-content: space-between; }
     .go-tracking-row { grid-template-columns: 1fr; }
     .go-tracking-row button { width: 100%; }
+}
+
+/* Kill double-tap zoom on tappable elements across finance pages */
+body.finance-page a,
+body.finance-page button,
+body.finance-page summary,
+body.finance-page input,
+body.finance-page textarea,
+body.finance-page select,
+body.finance-page label {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }

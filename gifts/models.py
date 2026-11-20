@@ -93,9 +93,11 @@ class GiftOrder(models.Model):
     state = models.CharField(max_length=100)
     zip_code = models.CharField(max_length=20)
     phone = models.CharField(max_length=30)
+    note = models.TextField(blank=True, default="")  # optional message from the sender
 
-    # Filled by staff on the finance page
-    tracking_link = models.URLField(max_length=500, blank=True, default="")
+    # Filled by staff on the finance page — accepts a tracking number,
+    # a full tracking link, or any plain text.
+    tracking_link = models.CharField(max_length=500, blank=True, default="")
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)

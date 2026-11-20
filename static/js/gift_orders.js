@@ -77,21 +77,40 @@
             document.getElementById("gfDetailPhone").textContent = data.phone || "—";
             document.getElementById("gfDetailCreated").textContent = data.created || "—";
 
-            // Tracking link
+            // Tracking: clickable when it is a link, plain text for numbers/notes
             var link = document.getElementById("gfTrackingLink");
+            var text = document.getElementById("gfTrackingText");
             var wait = document.getElementById("gfTrackingWait");
-            if (data.tracking_link) {
+            var tracking = (data.tracking_link || "").trim();
+            if (tracking && /^https?:\/\//i.test(tracking)) {
                 link.style.display = "inline-flex";
-                link.href = data.tracking_link;
+                link.href = tracking;
                 link.textContent = "";
                 link.appendChild(document.createTextNode("Track your gift"));
                 var icon = document.createElement("i");
                 icon.className = "fa-solid fa-arrow-up-right-from-square";
                 link.appendChild(icon);
+                text.style.display = "none";
+                wait.style.display = "none";
+            } else if (tracking) {
+                link.style.display = "none";
+                text.style.display = "block";
+                text.textContent = tracking;
                 wait.style.display = "none";
             } else {
                 link.style.display = "none";
+                text.style.display = "none";
                 wait.style.display = "block";
+            }
+
+            // Gift note (optional)
+            var noteWrap = document.getElementById("gfDetailNoteWrap");
+            var noteEl = document.getElementById("gfDetailNote");
+            if (data.note) {
+                noteEl.textContent = data.note;
+                noteWrap.classList.remove("gf-hidden");
+            } else {
+                noteWrap.classList.add("gf-hidden");
             }
 
             // Photos

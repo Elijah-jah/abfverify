@@ -73,6 +73,6 @@ class GiftOrderAdmin(admin.ModelAdmin):
     readonly_fields = (
         "order_id", "user", "group", "group_name", "category_name",
         "group_image_url", "price", "sender_name", "receiver_name",
-        "address", "city", "state", "zip_code", "phone",
+        "address", "city", "state", "zip_code", "phone", "note",
         "created_at", "updated_at",
     )

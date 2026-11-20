@@ -84,6 +84,9 @@ def create_gift_order(user, group_id, form_data, images=None):
             raise GiftOrderError(f"{label} is too long ({max_length} characters max).", field=field)
         cleaned[field] = value
 
+    # Optional gift note from the sender
+    cleaned["note"] = (form_data.get("note") or "").strip()
+
     wallet = Wallet.objects.select_for_update().get(user=user)
     if wallet.balance < group.price:
         raise GiftOrderError(

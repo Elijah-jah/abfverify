@@ -239,21 +239,17 @@ def gift_order_update(request, pk):
     action = request.POST.get("action", "")
 
     if action == "save_tracking":
+        # Accept anything: tracking number, full link, or plain text.
         link = (request.POST.get("tracking_link") or "").strip()
         if len(link) > 500:
-            messages.error(request, "That tracking link is too long (500 characters max).")
-        elif link and not link.lower().startswith(("http://", "https://")):
-            messages.error(
-                request,
-                "Please paste a full tracking link starting with http:// or https://.",
-            )
+            messages.error(request, "That tracking entry is too long (500 characters max).")
         else:
             order.tracking_link = link
             order.save(update_fields=["tracking_link", "updated_at"])
             if link:
-                messages.success(request, f"Tracking link saved for order {order.order_id}.")
+                messages.success(request, f"Tracking saved for order {order.order_id}.")
             else:
-                messages.success(request, f"Tracking link cleared for order {order.order_id}.")
+                messages.success(request, f"Tracking cleared for order {order.order_id}.")
 
     elif action == "processing":
         if order.can_mark_processing():

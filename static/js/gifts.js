@@ -10,10 +10,40 @@
     var MAX_DIMENSION = 2000;   // px, longest side
     var JPEG_QUALITY = 0.85;    // visually lossless for web viewing
 
-    /* ---------------- Category pill filter ---------------- */
+    /* ---------------- Search + category pill filter ---------------- */
     var pills = document.querySelectorAll(".gf-pill");
     var cards = document.querySelectorAll(".gf-card");
     var emptyCat = document.getElementById("gfEmptyCat");
+    var searchInput = document.getElementById("gfSearch");
+    var searchClear = document.getElementById("gfSearchClear");
+    var activeCat = "all";
+
+    function applyFilters() {
+        var query = (searchInput ? searchInput.value : "").trim().toLowerCase();
+        var visible = 0;
+
+        cards.forEach(function (card) {
+            var inCat = activeCat === "all" || card.getAttribute("data-cat") === activeCat;
+            var haystack = card.getAttribute("data-search") || "";
+            var matches = !query || haystack.indexOf(query) !== -1;
+            var show = inCat && matches;
+            card.classList.toggle("gf-hidden", !show);
+            if (show) visible++;
+        });
+
+        if (emptyCat) {
+            emptyCat.classList.toggle("gf-hidden", visible > 0);
+            var msg = emptyCat.querySelector("p");
+            if (msg) {
+                msg.textContent = query
+                    ? "No gifts match \"" + searchInput.value.trim() + "\" in this section."
+                    : "No gifts available in this category yet.";
+            }
+        }
+        if (searchClear) {
+            searchClear.classList.toggle("gf-hidden", query.length === 0);
+        }
+    }
 
     pills.forEach(function (pill) {
         pill.addEventListener("click", function () {
@@ -23,17 +53,22 @@
             });
             pill.classList.add("active");
             pill.setAttribute("aria-selected", "true");
-
-            var cat = pill.getAttribute("data-cat");
-            var visible = 0;
-            cards.forEach(function (card) {
-                var show = cat === "all" || card.getAttribute("data-cat") === cat;
-                card.classList.toggle("gf-hidden", !show);
-                if (show) visible++;
-            });
-            if (emptyCat) emptyCat.classList.toggle("gf-hidden", visible > 0);
+            activeCat = pill.getAttribute("data-cat");
+            applyFilters();
         });
     });
+
+    if (searchInput) {
+        searchInput.addEventListener("input", applyFilters);
+        searchInput.addEventListener("search", applyFilters); // native clear (x) on some browsers
+    }
+    if (searchClear) {
+        searchClear.addEventListener("click", function () {
+            searchInput.value = "";
+            applyFilters();
+            searchInput.focus();
+        });
+    }
 
     /* ---------------- Modal helpers ---------------- */
     function openOverlay(el) {
