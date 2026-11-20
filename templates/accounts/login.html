@@ -12,7 +12,7 @@
 <title>Login | ABFverify</title>
 
 <link rel="stylesheet" href="{% static 'css/login.css' %}">
-<link rel="icon" href="{% static 'images/mylogo1.png' %}">
+<link rel="icon" href="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% static 'images/mylogo1.png' %}{% endif %}">
 
 <link rel="stylesheet" href="{% static 'css/toast.css' %}">
 
@@ -45,7 +45,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     <!-- BRAND SIDE -->
     <div class="login-brand">
 
-        <img src="{% static 'images/mylogo1.png' %}"
+        <img src="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% static 'images/mylogo1.png' %}{% endif %}"
              alt="ABFverify Logo"
              class="brand-logo">
 

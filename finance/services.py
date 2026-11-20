@@ -1,4 +1,4 @@
-﻿
+
 from datetime import timedelta
 from decimal import Decimal
 
@@ -141,8 +141,15 @@ def _sales_summary(start=None, end=None):
     logs_revenue = _sum(log_purchases, "price")
     boost_revenue = _sum(boost_orders, "price")
 
+    # Gift orders (gifts app) - record every paid gift as its own channel.
+    from gifts.models import GiftOrder
+    gift_orders = _between(GiftOrder.objects.all(), start, end)
+    gift_revenue = _sum(gift_orders, "price")
+
     return {
-        "total": _q(sms_revenue + logs_revenue + boost_revenue),
+        "total": _q(sms_revenue + logs_revenue + boost_revenue + gift_revenue),
+        "gifts": _q(gift_revenue),
+        "gifts_count": gift_orders.count(),
         "sms": _q(sms_revenue),
         "instantnums": _q(instantnums),
         "daisysms": _q(daisysms),
@@ -151,6 +158,7 @@ def _sales_summary(start=None, end=None):
         "boost": _q(boost_revenue),
         "record_count": (
             sms_orders.count() + log_purchases.count() + boost_orders.count()
+            + gift_orders.count()
         ),
         "sms_count": sms_orders.count(),
         "instantnums_count": instantnums_orders.count(),
@@ -388,6 +396,10 @@ def get_dashboard_stats():
             "orders": sales["boost_count"],
             "funding": _q(boost_funding),
             "profit": _q(boost_profit),
+        },
+        "gifts": {
+            "revenue": sales["gifts"],
+            "orders": sales["gifts_count"],
         },
         "totals": {
             "users": total_users,

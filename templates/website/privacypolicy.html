@@ -10,7 +10,7 @@
 <title>Privacy Policy | ABFverify</title>
 
 <link rel="stylesheet" href="{% static 'css/privacypolicy.css' %}">
-<link rel="icon" href="{% static 'images/mylogo1.png' %}">
+<link rel="icon" href="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% static 'images/mylogo1.png' %}{% endif %}">
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -43,7 +43,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
         <div class="logo-section">
 
-            <img src="{% static 'images/mylogo1.png' %}"
+            <img src="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% static 'images/mylogo1.png' %}{% endif %}"
                  alt="ABFverify Logo"
                  class="logo">
 

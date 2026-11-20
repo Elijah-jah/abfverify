@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "finance",
     "referrals",
     "gifts",
+    "siteconfig",
 ]
 
 # APScheduler settings
@@ -93,6 +94,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 "wallet.context_processors.wallet_balance",
                 "gifts.context_processors.pending_gift_orders",
+                "siteconfig.context_processors.site_settings",
+                "siteconfig.context_processors.admin_home_stats",
             ],
         },
     },

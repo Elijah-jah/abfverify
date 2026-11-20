@@ -9,7 +9,7 @@
 <meta name="description" content="ABFverify - Secure SMS verification and virtual number platform">
 <meta property="og:title" content="ABFverify">
 <meta property="og:description" content="Secure SMS verification and virtual number platform">
-<meta property="og:image" content="{% static 'images/mylogo1.png' %}">
+<meta property="og:image" content="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% static 'images/mylogo1.png' %}{% endif %}">
 <meta name="google-site-verification" content="dB107PkjCje9eLimA_JTSOO689oGJhHYKb1RD-cJY6A" />
 <meta name="theme-color" content="#0b1220">
 
@@ -22,7 +22,7 @@
 
 <title>{% block title %}ABFverify{% endblock %}</title>
 
-<link rel="shortcut icon" href="{% static 'images/mylogo1.png'%}" type="image/x-icon">
+<link rel="shortcut icon" href="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% static 'images/mylogo1.png' %}{% endif %}" type="image/x-icon">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
 <link rel="stylesheet" href="{% static 'css/dashboard_base.css' %}">
@@ -60,7 +60,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 <aside class="sidebar" id="sidebar">
 
     <div class="logo">
-        <img src="{% static 'images/mylogo1.png' %}"
+        <img src="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% static 'images/mylogo1.png' %}{% endif %}"
              class="logo-icon"
              alt="ABFverify Logo">
 
@@ -219,7 +219,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
         <button class="hamburger" id="hamburger" aria-label="Open menu">☰</button>
 
         <div class="logos">
-            <img src="{% static 'images/mylogo1.png' %}" class="logo-icon" alt="ABFverify Logo">
+            <img src="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% static 'images/mylogo1.png' %}{% endif %}" class="logo-icon" alt="ABFverify Logo">
         </div>
 
         <h1 class="bot">ABFverify</h1>

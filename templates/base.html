@@ -9,10 +9,10 @@
     <meta name="description" content="ABFverify - Secure SMS verification and virtual number platform">
     <meta property="og:title" content="ABFverify">
     <meta property="og:description" content="Secure SMS verification and virtual number platform">
-    <meta property="og:image" content="{% static 'images/mylogo1.png' %}">
+    <meta property="og:image" content="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% static 'images/mylogo1.png' %}{% endif %}">
     <meta name="google-site-verification" content="dB107PkjCje9eLimA_JTSOO689oGJhHYKb1RD-cJY6A" />
 
-    <link rel="icon" href="{% static 'images/mylogo1.png' %}" type="image/png">
+    <link rel="icon" href="{% if site_settings.logo %}{{ site_settings.logo.url }}{% else %}{% static 'images/mylogo1.png' %}{% endif %}" type="image/png">
 
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-XPxZ8G9FaD0vXL5jswvJX.js"></script>

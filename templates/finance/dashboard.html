@@ -172,6 +172,12 @@
                 <span class="card-value txt-yellow">&#8358;{{ stats.boost.revenue|floatformat:2|intcomma }}</span>
                 <span class="card-caption">{{ stats.boost.orders|intcomma }} fulfilled boost orders</span>
             </article>
+            <article class="stat-card channel-card">
+                <span class="channel-dot channel-dot-violet"></span>
+                <span class="card-label">Gift Sales</span>
+                <span class="card-value txt-pink">&#8358;{{ stats.gifts.revenue|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ stats.gifts.orders|intcomma }} paid gift orders - all historical dates included</span>
+            </article>
         </div>
     </section>
 
