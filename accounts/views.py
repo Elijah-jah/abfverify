@@ -831,13 +831,36 @@ def transactions_page(request):
     # ADD both so everything counts
     total_spent = total_spent_transactions + total_spent_orders
 
+    # Successful deposits (money in)
+    total_deposit = Transaction.objects.filter(
+        user=request.user,
+        transaction_type="deposit",
+        status="successful",
+    ).aggregate(total=Sum("amount"))["total"] or 0
+
+    # Dashboard-style rows: credit/debit direction + description text
+    tx_rows = []
+    for tx in transactions:
+        tx_rows.append({
+            "txn_type": "credit" if tx.transaction_type in (
+                "deposit", "refund", "referral", "redeem",
+                "funding", "credit", "wallet_funding",
+            ) else "debit",
+            "description": getattr(tx, "description", "")
+                           or tx.transaction_type.replace("_", " ").title(),
+            "created_at": tx.created_at,
+            "amount": tx.amount,
+            "status": tx.status,
+        })
+
     return render(
         request,
         "panel/transactions.html",
         {
-            "transactions": transactions,
+            "transactions": tx_rows,
             "user_wallet": user_wallet,
             "total_spent": total_spent,
+            "total_deposit": total_deposit,
         }
     )
 

@@ -8,7 +8,7 @@
 
 {% block content %}
 
-<link rel="stylesheet" href="{% static 'css/transactions.css' %}">
+<link rel="stylesheet" href="{% static 'css/transactions.css' %}?v=2">
 
 <div class="transactions-container">
 
@@ -19,15 +19,15 @@
             <p class="transactions-subtitle">All your deposits, purchases, and refunds</p>
         </div>
         <div class="transactions-badge">
-            Total: {{ transactions.count }}
+            Total: {{ transactions|length }}
         </div>
     </div>
 
     <!-- SUMMARY -->
     <div class="transactions-summary">
         <div class="transactions-card">
-            <h3>Wallet Balance</h3>
-           <p>&#8358;{{ user_wallet.balance|floatformat:2|intcomma }}</p>
+            <h3>Total Deposits</h3>
+            <p>&#8358;{{ total_deposit|floatformat:2|intcomma }}</p>
         </div>
         <div class="transactions-card">
             <h3>Total Spent</h3>
@@ -35,86 +35,43 @@
         </div>
     </div>
 
-    <!-- TABLE -->
-    <div class="transactions-table-wrap">
-        <table class="transactions-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for transaction in transactions %}
-                <tr>
-                    <td class="tx-num">{{ forloop.counter }}</td>
-                    <td>
-                        {% if transaction.transaction_type == "deposit" %}
-                            <span class="tx-type tx-deposit">Deposit</span>
-                        {% elif transaction.transaction_type == "payment" %}
-                            <span class="tx-type tx-payment">Purchase</span>
-                        {% elif transaction.transaction_type == "refund" %}
-                            <span class="tx-type tx-refund">Refund</span>
-                        {% else %}
-                            <span class="tx-type tx-other">{{ transaction.transaction_type|title }}</span>
-                        {% endif %}
-                    </td>
-                    <td class="tx-amount">&#8358;{{ transaction.amount|floatformat:2|intcomma }}</td>
-                    <td>
-                        {% if transaction.status == "successful" %}
-                            <span class="tx-status tx-success">Successful</span>
-                        {% else %}
-                            <span class="tx-status tx-failed">Failed</span>
-                        {% endif %}
-                    </td>
-                    <td class="tx-date">{{ transaction.created_at|date:"d M Y, H:i" }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="transactions-empty">No transactions yet</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    <!-- TRANSACTION LIST (same style as dashboard Recent Transactions) -->
+    <div class="transactions-list-card">
+        {% for tx in transactions %}
+        <div class="dash-row">
 
-    <!-- MOBILE CARD VIEW -->
-    <div class="tx-mobile-list">
-        {% for transaction in transactions %}
-        <div class="tx-card">
-            <div class="tx-card-top">
-                <span class="tx-type
-                    {% if transaction.transaction_type == 'deposit' %}tx-deposit
-                    {% elif transaction.transaction_type == 'payment' %}tx-payment
-                    {% elif transaction.transaction_type == 'refund' %}tx-refund
-                    {% else %}tx-other{% endif %}">
-                    {% if transaction.transaction_type == "deposit" %}Deposit
-                    {% elif transaction.transaction_type == "payment" %}Purchase
-                    {% elif transaction.transaction_type == "refund" %}Refund
-                    {% else %}{{ transaction.transaction_type|title }}{% endif %}
-                </span>
-                {% if transaction.status == "successful" %}
-                    <span class="tx-status tx-success">Successful</span>
-                {% else %}
-                    <span class="tx-status tx-failed">Failed</span>
-                {% endif %}
+            {% if tx.txn_type == 'credit' %}
+            <span class="dash-row-icon row-green">
+                <i class="fa-solid fa-arrow-down"></i>
+            </span>
+            {% else %}
+            <span class="dash-row-icon row-red">
+                <i class="fa-solid fa-arrow-up"></i>
+            </span>
+            {% endif %}
+
+            <div class="dash-row-info">
+                <p class="dash-row-title">{{ tx.description|default:"Transaction" }}</p>
+                <p class="dash-row-sub">{{ tx.created_at|date:"M j, Y · H:i" }}</p>
             </div>
-            <div class="tx-card-body">
-                <p>
-                    <strong>Amount</strong>
-                    <span class="tx-amount">&#8358;{{ transaction.amount|floatformat:2|intcomma }}</span>
+
+            <div class="dash-row-state tx-state">
+
+                <p class="tx-amount {% if tx.txn_type == 'credit' %}tx-credit{% else %}tx-debit{% endif %}">
+                    {% if tx.txn_type == 'credit' %}+{% else %}-{% endif %}&#8358;{{ tx.amount|floatformat:2|intcomma }}
                 </p>
-                <p>
-                    <strong>Date</strong>
-                    {{ transaction.created_at|date:"d M Y, H:i" }}
-                </p>
+
+                <span class="tx-badge tx-{{ tx.status|default:'successful' }}">{{ tx.status|default:"successful"|title }}</span>
+
             </div>
+
         </div>
         {% empty %}
-        <p class="transactions-empty">No transactions yet</p>
+        <div class="dash-empty">
+            <i class="fa-solid fa-receipt"></i>
+            <p>No transactions yet.</p>
+            <a href="{% url 'wallet' %}" class="dash-empty-btn">Fund wallet</a>
+        </div>
         {% endfor %}
     </div>
 

@@ -1,0 +1,1173 @@
+
+import logging
+from django.http import JsonResponse
+import requests
+import uuid
+from datetime import timedelta
+from boost.models import BoostOrder
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.db import transaction
+from django.db.models import Sum
+from django.conf import settings
+from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.views.decorators.cache import never_cache
+from django_ratelimit.decorators import ratelimit
+from countries.models import Country
+from services.models import Service
+from wallet.models import Wallet, Transaction
+from pricing.models import Pricing
+from providers.factory import get_provider
+from orders.models import Order
+from marketplace.models import LogPurchase
+from referrals.models import ReferralProfile, ReferralReward, REFERRAL_TIERS
+
+from .models import DeviceRegistration, User, UserSettings
+
+logger = logging.getLogger(__name__)
+
+
+# ==========================
+# ORDERS
+# ==========================
+@ratelimit(key='user', rate='10/m', method='POST', block=True)
+@login_required
+def cancel_order_view(request):
+    if request.method != "POST":
+        return redirect("sms")
+
+    order_id = request.POST.get("order_id")
+
+    if not order_id:
+        messages.error(request, "Invalid order request.")
+        return redirect("sms")
+
+    order = Order.objects.filter(id=order_id, user=request.user).first()
+
+    if not order:
+        messages.error(request, "Order not found.")
+        return redirect("sms")
+
+    if order.status == "cancelled":
+        messages.info(request, "This order has already been cancelled.")
+        return redirect("sms")
+
+    # Cannot cancel if the SMS already arrived
+    if order.status in ("completed", "received"):
+        messages.error(request, "This order cannot be cancelled. SMS code has already been received.")
+        return redirect("sms")
+
+    if order.status not in ("waiting", "pending"):
+        messages.error(request, "This order cannot be cancelled.")
+        return redirect("sms")
+
+    # ---- 4-minute rule: cancel opens once 4 minutes have passed
+    #      (when the 20-minute countdown timer reaches 16:00) ----
+    elapsed = timezone.now() - order.created_at
+    if elapsed < timedelta(minutes=4):
+        mins_left = int((timedelta(minutes=4) - elapsed).total_seconds() // 60) + 1
+        messages.error(
+            request,
+            f"You can cancel this order in about {mins_left} minute(s). Please try again."
+        )
+        return redirect("sms")
+
+    provider = get_provider(server=order.provider)
+
+    # ---- Cancel with the provider FIRST ----
+    # Our database only changes if the provider confirms it worked.
+    try:
+        result = provider.cancel(order.provider_order_id)
+        if isinstance(result, dict) and result.get("success") is False:
+            raise ValueError("cancel declined")
+    except Exception as e:
+        logger.warning("Cancel failed for order %s: %s", order.order_id, str(e))
+        messages.error(
+            request,
+            "We couldn't cancel this order right now. Please try again shortly."
+        )
+        return redirect("sms")
+
+    # Provider confirmed - update our side
+    order.status = "cancelled"
+    order.save(update_fields=["status", "updated_at"])
+
+    messages.success(request, "Your order has been cancelled. No charge was made.")
+    return redirect("sms")
+
+@login_required
+def orders_view(request):
+    user_orders = Order.objects.filter(user=request.user).order_by("-created_at")
+    log_purchases = LogPurchase.objects.filter(user=request.user).order_by("-created_at")
+    boost_orders = BoostOrder.objects.filter(user=request.user).order_by("-created_at")
+    wallet, _ = Wallet.objects.get_or_create(user=request.user)
+
+    # Map internal SMS order statuses to display statuses the template
+    # understands. A number that got its SMS ("received") IS completed.
+    SMS_STATUS_MAP = {
+        "received": "completed",   # SMS arrived = success
+        "waiting": "pending",      # still waiting for SMS
+        "pending": "pending",
+        "cancelled": "cancelled",
+        "expired": "expired",
+        "refunded": "refunded",
+    }
+
+    # Build one unified list the template can loop over.
+    purchases = []
+
+    # ---- SMS / number orders ----
+    for o in user_orders:
+        purchases.append({
+            "type": "number",
+            "name": o.service.name,
+            "detail": o.phone_number or "",
+            "otp": o.sms_code or "",
+            "uid": "",
+            "format_string": "",
+            "format_labels": "",
+            "description": "",
+            "price": o.price,
+            "status": SMS_STATUS_MAP.get(o.status, o.status),
+            "created_at": o.created_at,
+            "order_id": getattr(o, "order_id", "") or "",
+        })
+
+    # ---- Log purchases ----
+    # format_labels is snapshotted on LogPurchase at buy time, so the
+    # details card shows the format the log group actually had.
+    for lp in log_purchases:
+        purchases.append({
+            "type": "log",
+            "name": lp.product_title or "Log Purchase",
+            "detail": "",
+            "otp": "",
+            "uid": "",
+            "format_string": lp.creds,
+            "format_labels": lp.format_labels or "UID | PASSWORD | EMAIL PASSWORD | 2FA | RECOVERY EMAIL",
+            "description": lp.product_description or "",
+            "price": lp.price,
+            "status": "completed",
+            "created_at": lp.created_at,
+            "order_id": lp.order_id or "",
+        })
+
+    # ---- Boost orders ----
+    # Status comes from the provider (Pending / Processing / In progress /
+    # Completed / Partial / Canceled), kept fresh by sync_boost_orders_job
+    # every 5 minutes — lowercased here so the template pills match.
+    for b in boost_orders:
+        purchases.append({
+            "type": "boost",
+            "name": b.service.name,
+            "detail": b.link or "",
+            "otp": "",
+            "uid": "",
+            "format_string": "",
+            "format_labels": "",
+            "description": f"{b.quantity:,} units",
+            "price": b.price,
+            "status": b.status.lower(),
+            "created_at": b.created_at,
+            "order_id": b.provider_order_id or "",
+        })
+
+    # newest first across all three types
+    purchases.sort(key=lambda x: x["created_at"], reverse=True)
+
+    return render(
+        request,
+        "panel/orders.html",
+        {
+            "orders": purchases,
+            "user_wallet": wallet,
+        },
+    )
+
+
+@login_required
+def sms_view(request):
+
+    wallet, created = Wallet.objects.get_or_create(
+        user=request.user
+    )
+
+    # --- AJAX support: works whether fetch() sends the header or a flag ---
+    ajax = (
+        request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        or request.POST.get("ajax") == "1"
+    )
+
+    def ajax_error_response(redirect_to="sms"):
+        if ajax:
+            msg_text, msg_level = "", "error"
+            for m in messages.get_messages(request):
+                msg_text = str(m)
+                msg_level = m.level_tag
+            return JsonResponse({
+                "success": False,
+                "message": msg_text,
+                "level": msg_level,
+                "redirect": reverse(redirect_to),
+            })
+        return redirect(redirect_to)
+
+    if request.method == "POST":
+
+        # Get server selection
+        server = request.POST.get("server", "server2")
+
+        # Validate server
+        if server not in ("server1", "server2"):
+            messages.error(request, "Invalid server selected.")
+            return ajax_error_response("sms")
+
+        # Lookups pinned to the chosen server so IDs can't be mixed across servers
+        country = get_object_or_404(
+            Country,
+            id=request.POST.get("country"),
+            status="active",
+            server=server,
+        )
+
+        service = get_object_or_404(
+            Service,
+            id=request.POST.get("service"),
+            status="active",
+            server=server,
+        )
+
+        # Server 2 (DaisySMS) — USA only validation
+        if server == "server2" and country.iso_code.upper() not in ("US", "USA"):
+            messages.error(request, "Server 2 only supports USA numbers.")
+            return ajax_error_response("sms")
+
+        # Price MUST come from a synced Pricing row (run sync_smsbower for server1)
+        try:
+            pricing = Pricing.objects.get(
+                country=country,
+                service=service,
+                status="active",
+                is_available=True,
+            )
+        except Pricing.DoesNotExist:
+            messages.error(request, "This service is currently unavailable.")
+            return ajax_error_response("sms")
+
+        # Check wallet balance including pending orders
+        pending_total = Order.objects.filter(
+            user=request.user,
+            status__in=["waiting", "pending"],
+        ).aggregate(total=Sum("price"))["total"] or 0
+
+        total_needed = pending_total + pricing.selling_price
+
+        if wallet.balance < total_needed:
+            if pending_total > 0:
+                messages.error(
+                    request,
+                    "Insufficient balance. You have pending orders. Cancel uncompleted orders and try again."
+                )
+            else:
+                messages.error(request, "Your balance is low. Please recharge to continue.")
+            return ajax_error_response("wallet")
+
+        # Prevent duplicate requests within 10 seconds
+        recent_order = Order.objects.filter(
+            user=request.user,
+            country=country,
+            service=service,
+            status="waiting",
+            created_at__gte=timezone.now() - timedelta(seconds=10),
+        ).exists()
+
+        if recent_order:
+            messages.warning(request, "Your previous request is still being processed.")
+            return ajax_error_response("sms")
+
+        # Get provider based on server
+        provider = get_provider(server=server)
+
+        # Provider identifiers
+        service_identifier = service.code
+        if server == "server2":
+            country_identifier = 187            # DaisySMS USA
+        else:
+            country_identifier = country.name   # SMSBower resolves the name to its numeric id
+
+        try:
+            extra = {}
+            if server == "server1":
+                meta = pricing.provider_meta or {}
+                if meta.get("cost_usd"):
+                    extra["max_price"] = meta["cost_usd"]        # never pay more than we charged
+                if meta.get("provider_id"):
+                    extra["provider_ids"] = meta["provider_id"]  # buy from the dominant partner
+            result = provider.purchase(
+                service=service_identifier,
+                country=country_identifier,
+                **extra,
+            )
+
+        except Exception as e:
+            logger.exception(
+                "Provider purchase failed for user %s, country %s, service %s, server %s: %s",
+                request.user.id, country.name, service.name, server, str(e),
+            )
+            messages.error(request, "Unable to complete your request. Please try again later.")
+            return ajax_error_response("sms")
+
+        # Create order — NO wallet deduction yet
+        order = Order.objects.create(
+            user=request.user,
+            country=country,
+            service=service,
+            phone_number=result["phone_number"],
+            provider=server,
+            provider_order_id=result["order_id"],
+            price=pricing.selling_price,
+            status="waiting",
+        )
+
+        # --- AJAX success: return the order as JSON, page stays put ---
+        if ajax:
+            return JsonResponse({
+                "success": True,
+                "message": "Virtual number reserved. You will only be charged if SMS is received.",
+                "order": {
+                    "id": order.id,
+                    "phone_number": order.phone_number,
+                    "country_iso": country.iso_code,
+                    "service_name": service.name,
+                    "provider_order_id": order.provider_order_id,
+                    "created_at": order.created_at.isoformat(),
+                },
+            })
+
+        messages.success(request, "Virtual number reserved. You will only be charged if SMS is received.")
+        return redirect("sms")
+
+    # Load all active orders (waiting + received)
+    active_orders = (
+        Order.objects.filter(
+            user=request.user,
+            status__in=["waiting", "received"],
+        )
+        .order_by("-created_at")
+    )
+
+    return render(
+        request,
+        "panel/sms.html",
+        {
+            "user_wallet": wallet,
+            "active_orders": active_orders,
+        },
+    )
+# ==========================
+# AUTH
+# ==========================
+
+# Max accounts one device (browser) can create per day
+DEVICE_ACCOUNT_LIMIT = 2
+DEVICE_COOKIE_NAME = "abf_did"
+
+
+@ratelimit(key='ip', rate='20/d', method='POST', block=True)
+def register_view(request):
+
+    if request.user.is_authenticated:
+        logger.info("Authenticated user %s tried to access register page", request.user.id)
+        return redirect("dashboard")
+
+    if request.method == "POST":
+
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password1 = request.POST.get("password1")
+        password2 = request.POST.get("password2")
+        referral_code = (request.POST.get("referral_code") or "").strip()
+
+        # ---- DEVICE LIMIT: max 2 accounts per device per day ----
+        device_id = request.COOKIES.get(DEVICE_COOKIE_NAME, "")
+        if device_id:
+            today_start = timezone.now().replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
+            accounts_today = DeviceRegistration.objects.filter(
+                device_id=device_id, created_at__gte=today_start
+            ).count()
+            if accounts_today >= DEVICE_ACCOUNT_LIMIT:
+                logger.warning(
+                    "Registration blocked: device %s already created %s accounts today",
+                    device_id[:8], accounts_today,
+                )
+                messages.error(
+                    request,
+                    "This device has reached today's registration limit "
+                    "(2 accounts per day). Please try again tomorrow."
+                )
+                return render(
+                    request,
+                    "accounts/register.html",
+                    {
+                        "username": username,
+                        "email": email,
+                        "referral_code": referral_code,
+                    },
+                )
+        # ---- END DEVICE LIMIT ----
+
+        if not username or not email or not password1 or not password2:
+            logger.warning("Registration failed: missing fields")
+            messages.error(request, "Please fill in all required fields.")
+            return render(
+                request,
+                "accounts/register.html",
+                {
+                    "username": username,
+                    "email": email,
+                    "referral_code": referral_code,
+                },
+            )
+
+        if password1 != password2:
+            logger.warning("Registration failed for %s: passwords do not match", email)
+            messages.error(request, "Passwords do not match.")
+            return render(
+                request,
+                "accounts/register.html",
+                {
+                    "username": username,
+                    "email": email,
+                    "referral_code": referral_code,
+                },
+            )
+
+        if User.objects.filter(email=email).exists():
+            logger.warning("Registration failed: email already registered - %s", email)
+            messages.error(request, "Email already registered.")
+            return render(
+                request,
+                "accounts/register.html",
+                {
+                    "username": username,
+                    "email": email,
+                    "referral_code": referral_code,
+                },
+            )
+
+        # Referral code is OPTIONAL - but if one was typed, it must be valid
+        if referral_code and not ReferralProfile.objects.filter(
+            code__iexact=referral_code
+        ).exists():
+            messages.error(
+                request,
+                "That referral code is invalid. Check it or leave it blank."
+            )
+            return render(
+                request,
+                "accounts/register.html",
+                {
+                    "username": username,
+                    "email": email,
+                    "referral_code": referral_code,
+                },
+            )
+
+        # Create the user
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password1,
+        )
+
+        # Activate the user immediately
+        user.is_active = True
+        user.save()
+
+        logger.info("New user registered: %s (ID: %s)", username, user.id)
+
+        # Create wallet if it doesn't already exist
+        Wallet.objects.get_or_create(
+            user=user,
+            defaults={"balance": 0},
+        )
+
+        logger.info("Wallet created for user %s", user.id)
+
+        # Referral: link to the referrer and pay the N200 instant signup bonus
+        if referral_code:
+            try:
+                from referrals.services import attach_referrer
+                referrer = attach_referrer(user, referral_code)
+                if referrer:
+                    messages.success(
+                        request,
+                        "Referral applied - N200 bonus credited to your wallet!"
+                    )
+            except Exception:
+                logger.exception("Referral attach failed for user %s", user.id)
+
+        # Automatically log the user in
+        login(request, user)
+
+        logger.info("User %s logged in after registration", user.id)
+
+        # Record this device + stamp the browser with a 1-year cookie
+        if not device_id:
+            device_id = uuid.uuid4().hex
+        DeviceRegistration.objects.create(device_id=device_id, user=user)
+
+        messages.success(
+            request,
+            f"Welcome to ABFverify, {user.username}!"
+        )
+
+        # Go straight to the dashboard (and set the device cookie)
+        response = redirect("dashboard")
+        response.set_cookie(
+            DEVICE_COOKIE_NAME,
+            device_id,
+            max_age=365 * 24 * 60 * 60,  # 1 year
+            httponly=True,
+            samesite="Lax",
+        )
+        return response
+
+    # GET - prefill the referral code when arriving from a referral link (?ref=CODE)
+    return render(
+        request,
+        "accounts/register.html",
+        {
+            "referral_code": (request.GET.get("ref") or "").strip(),
+        },
+    )
+
+@ratelimit(key='ip', rate='5/m', method='POST', block=True)
+def login_view(request):
+
+    if request.user.is_authenticated:
+        logger.info("Authenticated user %s tried to access login page", request.user.id)
+        return redirect("dashboard")
+
+    if request.method == "POST":
+
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        user = authenticate(
+            request,
+            email=email,
+            password=password
+        )
+
+        if user:
+
+            if not user.is_active:
+                logger.warning("Login failed for %s: account is inactive", email)
+                messages.warning(
+                    request,
+                    "Please verify your email before logging in."
+                )
+
+                return render(
+                    request,
+                    "accounts/login.html",
+                    {
+                        "email": email,
+                    }
+                )
+
+            login(request, user)
+            logger.info("User %s logged in successfully", user.id)
+
+            # REFERRAL CARD: a fresh login always shows the card -
+            # reset the 6-hour timer for this new session
+            ReferralProfile.objects.filter(user=user).update(card_dismissed_at=None)
+
+            return redirect("dashboard")
+
+        logger.warning("Login failed for %s: invalid credentials", email)
+        messages.error(
+            request,
+            "Invalid email or password."
+        )
+
+        return render(
+            request,
+            "accounts/login.html",
+            {
+                "email": email,
+            }
+        )
+
+    return render(
+        request,
+        "accounts/login.html"
+    )
+
+@never_cache
+def logout_view(request):
+
+    # REFERRAL CARD: session over - kill the 6-hour timer
+    if request.user.is_authenticated:
+        ReferralProfile.objects.filter(user=request.user).update(card_dismissed_at=None)
+
+    logout(request)
+
+    response = redirect("website:home")
+
+    response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+
+    return response
+# ==========================
+# USER DASHBOARD
+# ==========================
+
+def _order_timer_running(o):
+    """True only while the order's countdown is still ticking."""
+
+    # 1) If the model already has a helper, trust it
+    is_expired = getattr(o, "is_expired", None)
+    if callable(is_expired):
+        return not is_expired()
+
+    now = timezone.now()
+
+    # 2) Explicit expiry timestamp field
+    expires_at = getattr(o, "expires_at", None)
+    if expires_at is not None:
+        return expires_at > now
+
+    # 3) created_at + TTL in minutes
+    created_at = getattr(o, "created_at", None)
+    ttl = (
+        getattr(o, "expires_minutes", None)
+        or getattr(o, "ttl_minutes", None)
+        or 20  # <-- set this to your real order lifetime (minutes)
+    )
+    if created_at is not None:
+        return created_at + timedelta(minutes=ttl) > now
+
+    # No timer info found — fall back to status only
+    return True
+
+
+@login_required
+def dashboard(request):
+
+    wallet, created = Wallet.objects.get_or_create(
+        user=request.user
+    )
+
+    transactions = Transaction.objects.filter(
+        user=request.user
+    )
+
+    total_transactions = transactions.count()
+
+    # Buy Logs purchases
+    total_spent_transactions = Transaction.objects.filter(
+        user=request.user,
+        transaction_type="payment",
+        status="successful",
+    ).aggregate(total=Sum("amount"))["total"] or 0
+
+    # SMS number orders
+    total_spent_orders = Order.objects.filter(
+        user=request.user,
+        status__in=["completed", "received"],
+    ).aggregate(total=Sum("price"))["total"] or 0
+
+    # ADD both so everything counts
+    total_spent = total_spent_transactions + total_spent_orders
+
+    # --- ACTIVE NUMBERS (only orders whose timer is still running) ---
+    active_orders = []
+    orders = (
+        Order.objects
+        .filter(user=request.user, status__in=["pending", "received"])
+        .order_by("-created_at")[:15]          # fetch extra, trim below
+    )
+    for o in orders:
+        if not _order_timer_running(o):
+            continue                            # countdown finished — skip it
+        active_orders.append({
+            "service_name": getattr(o, "service_name", "") or "Number",
+            "phone_number": getattr(o, "phone_number", "")
+                            or getattr(o, "number", "") or "—",
+            "status": "received" if o.status == "received" else "pending",
+            "otp_code": getattr(o, "otp_code", "") or "",
+        })
+        if len(active_orders) >= 5:
+            break
+
+    # --- RECENT TRANSACTIONS (list on dashboard) ---
+    recent_transactions = []
+    for tx in transactions.order_by("-created_at")[:6]:
+        recent_transactions.append({
+            # FIXED: referral, redeem and refund are money IN -> credit (+)
+            "txn_type": "credit" if tx.transaction_type in (
+                "funding", "credit", "deposit", "wallet_funding",
+                "referral", "redeem", "refund"
+            ) else "debit",
+            "description": getattr(tx, "description", "")
+                           or tx.transaction_type.replace("_", " ").title(),
+            "created_at": tx.created_at,
+            "amount": tx.amount,
+            "status": tx.status,
+        })
+
+    # --- REFERRAL CARD (shows on login, re-shows every 6 hours) ---
+    referral_profile, _ = ReferralProfile.objects.get_or_create(user=request.user)
+    show_referral_card = (
+        referral_profile.card_dismissed_at is None
+        or timezone.now() - referral_profile.card_dismissed_at >= timedelta(hours=6)
+    )
+    protocol = "https" if (
+        request.is_secure()
+        or request.META.get("HTTP_X_FORWARDED_PROTO") == "https"
+    ) else "http"
+    referral_link = (
+        f"{protocol}://{request.get_host()}"
+        f"/accounts/register/?ref={referral_profile.code}"
+    )
+
+    context = {
+        "wallet": wallet,
+        "user_wallet": wallet,
+        "total_transactions": total_transactions,
+        "total_spent": total_spent,
+
+        "active_orders": active_orders,
+        "recent_transactions": recent_transactions,
+        "total_sms": 0,
+
+        "show_referral_card": show_referral_card,
+        "referral_code": referral_profile.code,
+        "referral_link": referral_link,
+    }
+
+    return render(
+        request,
+        "panel/dashboard.html",
+        context
+    )
+
+@login_required
+def dismiss_notice(request):
+    """Called when user clicks 'Got it, Thanks' on the popup.
+    Stores the dismiss time so the notice reappears after 5 hours."""
+    if request.method == 'POST':
+        request.session['services_notice_dismissed_at'] = timezone.now().isoformat()
+
+        # AJAX dismiss — no page reload
+        if (
+            request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            or request.POST.get("ajax") == "1"
+        ):
+            return JsonResponse({"success": True})
+
+    return redirect('services')
+
+
+# ==========================
+# WALLET & TRANSACTIONS
+# ==========================
+
+@login_required
+def wallet_view(request):
+
+    wallet, created = Wallet.objects.get_or_create(
+        user=request.user
+    )
+
+    return render(
+        request,
+        "panel/wallet.html",
+        {
+            "wallet": wallet
+        }
+    )
+
+
+@login_required
+def transactions_page(request):
+    transactions = Transaction.objects.filter(
+        user=request.user
+    ).order_by("-created_at")
+
+    user_wallet, created = Wallet.objects.get_or_create(
+        user=request.user
+    )
+
+    # Buy Logs purchases
+    total_spent_transactions = Transaction.objects.filter(
+        user=request.user,
+        transaction_type="payment",
+        status="successful",
+    ).aggregate(total=Sum("amount"))["total"] or 0
+
+    # SMS number orders
+    total_spent_orders = Order.objects.filter(
+        user=request.user,
+        status__in=["completed", "received"],
+    ).aggregate(total=Sum("price"))["total"] or 0
+
+    # ADD both so everything counts
+    total_spent = total_spent_transactions + total_spent_orders
+
+    return render(
+        request,
+        "panel/transactions.html",
+        {
+            "transactions": transactions,
+            "user_wallet": user_wallet,
+            "total_spent": total_spent,
+        }
+    )
+
+
+# ==========================
+# SETTINGS
+# ==========================
+
+@login_required
+def settings_view(request):
+
+    user_settings, created = UserSettings.objects.get_or_create(
+        user=request.user
+    )
+
+    if request.method == "POST":
+
+        user_settings.email_notifications = (
+            "email_notifications" in request.POST
+        )
+
+        user_settings.order_notifications = (
+            "order_notifications" in request.POST
+        )
+
+        user_settings.save()
+
+        messages.success(
+            request,
+            "Settings updated successfully."
+        )
+
+    # ==========================
+    # REFERRAL PROGRAM DATA
+    # ==========================
+    referral_profile, _ = ReferralProfile.objects.get_or_create(user=request.user)
+
+    protocol = "https" if (
+        request.is_secure()
+        or request.META.get("HTTP_X_FORWARDED_PROTO") == "https"
+    ) else "http"
+    referral_link = (
+        f"{protocol}://{request.get_host()}"
+        f"/accounts/register/?ref={referral_profile.code}"
+    )
+
+    invited_total = ReferralProfile.objects.filter(
+        referred_by=request.user
+    ).count()
+
+    qualified_count = ReferralProfile.objects.filter(
+        referred_by=request.user, qualified=True
+    ).count()
+
+    earned_tiers = set(
+        ReferralReward.objects.filter(referrer=request.user)
+        .values_list("tier", flat=True)
+    )
+
+    total_earned = sum(
+        ReferralReward.objects.filter(referrer=request.user)
+        .values_list("amount", flat=True)
+    )
+
+    # Stages reset: each tier counts NEW qualifying referrals only.
+    # Sizes 2/5/10/20/30 become cumulative thresholds 2/7/17/37/67.
+    tiers = []
+    next_tier = None
+    next_tier_amount = None
+    stage_progress = 0
+    progress_percent = 100
+    prev_threshold = 0
+
+    for tier_size, tier_amount in REFERRAL_TIERS:
+        threshold = prev_threshold + tier_size
+        earned = tier_size in earned_tiers
+
+        tiers.append({
+            "count": tier_size,
+            "amount": f"{tier_amount:.0f}",
+            "earned": earned,
+        })
+
+        if next_tier is None and not earned and qualified_count < threshold:
+            next_tier = tier_size
+            next_tier_amount = f"{tier_amount:.0f}"
+            stage_progress = max(0, qualified_count - prev_threshold)
+            progress_percent = min(
+                100, int(round(stage_progress / tier_size * 100))
+            )
+
+        prev_threshold = threshold
+
+    if next_tier is None:
+        progress_percent = 100
+
+    return render(
+        request,
+        "panel/settings.html",
+        {
+            "settings": user_settings,
+            "referral_code": referral_profile.code,
+            "referral_link": referral_link,
+            "invited_total": invited_total,
+            "qualified_count": qualified_count,
+            "total_earned": total_earned,
+            "tiers": tiers,
+            "next_tier": next_tier,
+            "next_tier_amount": next_tier_amount,
+            "stage_progress": stage_progress,
+            "progress_percent": progress_percent,
+        }
+    )
+# ==========================
+# PASSWORD RESET (Brevo HTTP API)
+# ==========================
+
+def forgot_password_view(request):
+    """Show forgot password form and send reset email via Brevo HTTP API."""
+    if request.user.is_authenticated:
+        logger.info("Authenticated user %s tried to access forgot password", request.user.id)
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        email = request.POST.get("email", "").strip().lower()
+
+        if not email:
+            return render(request, "accounts/forgot_password.html", {
+                "error": "Please enter your email address."
+            })
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return render(request, "accounts/reset_email_sent.html")
+
+        # Generate token and UID
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+        # Build reset URL
+        domain = request.get_host()
+        if request.META.get('HTTP_X_FORWARDED_PROTO') == 'https':
+            protocol = 'https'
+        else:
+            protocol = 'https' if request.is_secure() else 'http'
+
+        reset_url = f"{protocol}://{domain}/accounts/password-reset-confirm/{uid}/{token}/"
+
+        # Render email body
+        html_content = render_to_string("accounts/password_reset_email.html", {
+            "user": user,
+            "reset_url": reset_url,
+            "protocol": protocol,
+            "domain": domain,
+        })
+
+        # Send via Brevo HTTP API
+        brevo_api_key = getattr(settings, 'BREVO_API_KEY', None)
+
+        if not brevo_api_key:
+            logger.error("BREVO_API_KEY is not set")
+            return render(request, "accounts/forgot_password.html", {
+                "error": "Email service not configured."
+            })
+
+        payload = {
+            "sender": {
+                "name": "ABFverify",
+                "email": "noreply@abfverify.com"  # Your verified sender
+            },
+            "to": [{"email": email, "name": user.username or email}],
+            "subject": "Password reset for your ABFverify account",
+            "htmlContent": html_content
+        }
+
+        try:
+            response = requests.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={
+                    "accept": "application/json",
+                    "api-key": brevo_api_key,
+                    "content-type": "application/json"
+                },
+                json=payload,
+                timeout=10
+            )
+
+            logger.info("Brevo API status: %s", response.status_code)
+
+            if response.status_code in (200, 201, 202):
+                logger.info("Password reset email sent to %s", email)
+                return render(request, "accounts/reset_email_sent.html")
+            else:
+                logger.error("Brevo API error %s: %s", response.status_code, response.text)
+                return render(request, "accounts/forgot_password.html", {
+                    "error": "Unable to send email. Please contact support."
+                })
+
+        except Exception as e:
+            logger.error("Brevo API request failed: %s", str(e))
+            return render(request, "accounts/forgot_password.html", {
+                "error": "Failed to send email. Please try again later."
+            })
+
+    return render(request, "accounts/forgot_password.html")
+
+
+def reset_email_sent_view(request):
+    """Show 'check your email' confirmation page."""
+    return render(request, "accounts/reset_email_sent.html")
+
+
+def reset_password_confirm_view(request, uidb64, token):
+    """Validate token and let user set a new password."""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is None or not default_token_generator.check_token(user, token):
+        return render(request, "accounts/reset_password.html", {
+            "validlink": False,
+            "error": "This password reset link is invalid or has expired."
+        })
+
+    if request.method == "POST":
+        form = SetPasswordForm(user, request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("password_reset_complete")
+        else:
+            return render(request, "accounts/reset_password.html", {
+                "validlink": True,
+                "form": form,
+            })
+
+    form = SetPasswordForm(user)
+    return render(request, "accounts/reset_password.html", {
+        "validlink": True,
+        "form": form,
+    })
+
+
+def reset_password_complete_view(request):
+    """Password successfully changed."""
+    return render(request, "accounts/password_reset_complete.html")
+
+
+@ratelimit(key='user', rate='5/m', method='POST', block=True)
+@login_required
+def change_password_view(request):
+
+    if request.method == "POST":
+
+        current_password = request.POST.get("current_password")
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        # Check current password
+        if not request.user.check_password(current_password):
+            messages.error(
+                request,
+                "Your current password is incorrect."
+            )
+            return redirect("change_password")
+
+        # Check passwords match
+        if new_password != confirm_password:
+            messages.error(
+                request,
+                "New passwords do not match."
+            )
+            return redirect("change_password")
+
+        # Prevent using same password
+        if request.user.check_password(new_password):
+            messages.error(
+                request,
+                "Your new password cannot be the same as your current password."
+            )
+            return redirect("change_password")
+
+        # Validate password
+        try:
+            validate_password(new_password, request.user)
+
+        except ValidationError as e:
+
+            for error in e.messages:
+                messages.error(request, error)
+
+            return redirect("change_password")
+
+        # Save new password
+        request.user.set_password(new_password)
+        request.user.save()
+
+        # Keep the user logged in
+        update_session_auth_hash(request, request.user)
+
+        messages.success(
+            request,
+            "Password changed successfully."
+        )
+
+        return redirect("change_password")
+
+    return render(
+        request,
+        "panel/change_password.html"
+    )
+
+
+# ==========================
+# MISC PAGES
+# ==========================
+
+def landing_view(request):
+    return render(request, "website/home.html")
+
+
+def privacy_policy(request):
+    return render(request, "website/privacypolicy.html")
+
+
+def terms_of_service(request):
+    return render(request, "website/termsofservice.html")
+
+
+def ratelimited_error(request, exception=None):
+    return render(request, '429.html', status=429)

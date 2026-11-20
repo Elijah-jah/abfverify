@@ -21,6 +21,7 @@
         {% include "finance/includes/gift_bell.html" %}
         <a class="btn-secondary" href="{% url 'finance_dashboard' %}">Finance Overview</a>
         <a class="btn-back" href="{% url 'finance_analytics' %}">Revenue Analytics</a>
+        <a class="btn-back" href="/semilore/">Back to Admin</a>
     </div>
 </header>
 
@@ -59,7 +60,7 @@
             <article class="stat-card stat-card-primary">
                 <span class="card-label">Total Recorded Sales Value</span>
                 <span class="card-value">₦{{ inventory_totals.sales_value|floatformat:2|intcomma }}</span>
-                <span class="card-caption">Logs + fulfilled SMS + non-cancelled boost orders</span>
+                <span class="card-caption">Logs + fulfilled SMS + non-cancelled boost orders + gift orders</span>
             </article>
             <article class="stat-card">
                 <span class="card-label">Logs Sold</span>
@@ -75,6 +76,11 @@
                 <span class="card-label">Boost Orders</span>
                 <span class="card-value txt-yellow">{{ inventory_totals.boost_orders|intcomma }}</span>
                 <span class="card-caption">{{ inventory_totals.boost_units|intcomma }} total followers, likes, views, or other units</span>
+            </article>
+            <article class="stat-card">
+                <span class="card-label">Gift Orders</span>
+                <span class="card-value txt-pink">{{ inventory_totals.gift_orders|intcomma }}</span>
+                <span class="card-caption">₦{{ inventory_totals.gift_revenue|floatformat:2|intcomma }} in gift purchases</span>
             </article>
         </div>
     </section>
@@ -230,6 +236,53 @@
                         <td data-label="Orders">{{ inventory_totals.boost_orders|intcomma }}</td>
                         <td data-label="Total Units">{{ inventory_totals.boost_units|intcomma }}</td>
                         <td data-label="Order Value" colspan="2">₦{{ inventory_totals.boost_value|floatformat:2|intcomma }}</td>
+                        <td data-label="Period">{{ range_label }}</td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </section>
+
+    <!-- Gift orders grouped by gift product -->
+    <section class="stat-section" aria-labelledby="gift-orders-heading">
+        <div class="section-heading-row">
+            <div>
+                <span class="section-eyebrow">Gift Sending</span>
+                <h2 id="gift-orders-heading" class="section-heading">Gift Orders — {{ range_label }}</h2>
+            </div>
+            <span class="inventory-count">{{ inventory_totals.gift_orders|intcomma }} orders</span>
+        </div>
+        <div class="table-wrap inventory-sales-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Gift Product</th>
+                        <th>Orders</th>
+                        <th>Sales Revenue</th>
+                        <th>Latest Order</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in gift_rows %}
+                    <tr>
+                        <td data-label="Gift Product"><strong>{{ row.group_name }}</strong></td>
+                        <td data-label="Orders" class="quantity-cell">{{ row.orders|intcomma }}</td>
+                        <td data-label="Sales Revenue" class="table-emphasis">₦{{ row.revenue|floatformat:2|intcomma }}</td>
+                        <td data-label="Latest Order">{{ row.last_ordered|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="table-empty">No gift orders were placed during {{ range_label|lower }}.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if gift_rows %}
+                <tfoot>
+                    <tr class="table-total">
+                        <td data-label="Total">All gift products</td>
+                        <td data-label="Orders">{{ inventory_totals.gift_orders|intcomma }}</td>
+                        <td data-label="Sales Revenue">₦{{ inventory_totals.gift_revenue|floatformat:2|intcomma }}</td>
                         <td data-label="Period">{{ range_label }}</td>
                     </tr>
                 </tfoot>

@@ -500,6 +500,21 @@ def get_sales_inventory(range_key="today"):
         .order_by("service__category", "service__name")
     )
 
+    # Gift orders (gifts app) - every paid gift order counts as a sale,
+    # grouped by the gift product snapshot name.
+    from gifts.models import GiftOrder
+    gift_sales = _between(GiftOrder.objects.all(), start, end)
+    gift_rows = list(
+        gift_sales
+        .values("group_name")
+        .annotate(
+            orders=Count("id"),
+            revenue=Sum("price"),
+            last_ordered=Max("created_at"),
+        )
+        .order_by("-orders", "group_name")
+    )
+
     totals = {
         "logs_units": sum(row["units_sold"] for row in log_rows),
         "logs_revenue": _q(_sum(log_sales, "price")),
@@ -508,11 +523,14 @@ def get_sales_inventory(range_key="today"):
         "boost_orders": sum(row["orders"] for row in boost_rows),
         "boost_units": sum((row["units"] or 0) for row in boost_rows),
         "boost_value": _q(_sum(boost_sales, "price")),
+        "gift_orders": sum(row["orders"] for row in gift_rows),
+        "gift_revenue": _q(_sum(gift_sales, "price")),
     }
     totals["sales_value"] = _q(
         totals["logs_revenue"]
         + totals["sms_revenue"]
         + totals["boost_value"]
+        + totals["gift_revenue"]
     )
 
     return {
@@ -525,6 +543,7 @@ def get_sales_inventory(range_key="today"):
         "log_rows": log_rows,
         "sms_rows": sms_rows,
         "boost_rows": boost_rows,
+        "gift_rows": gift_rows,
         "inventory_totals": totals,
     }
 
