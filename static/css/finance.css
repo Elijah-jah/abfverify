@@ -1554,3 +1554,27 @@ body.finance-page label {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
+
+/* Gift order photos: header row with the download-all button */
+.go-photos-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.go-photos-head .go-photos-label { margin-bottom: 0; }
+
+.go-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 0;
+    padding: 7px 14px;
+    font-size: .78rem;
+    text-decoration: none;
+}
+
+.go-download-btn svg { width: 14px; height: 14px; }

@@ -276,3 +276,58 @@ def gift_order_update(request, pk):
 
     base = reverse("finance_gift_orders")
     return redirect(f"{base}?open={order.pk}#order-{order.pk}")
+
+
+# ---------------------------------------------------------------------------
+# Gift order photos: download every customer picture of one order as a ZIP
+# ---------------------------------------------------------------------------
+
+@staff_member_required
+def gift_order_images_download(request, pk):
+    """Bundle all customer photos of a gift order into one ZIP download."""
+    import io
+    import os
+    import zipfile
+
+    import requests
+    from django.http import HttpResponse
+    from django.shortcuts import get_object_or_404
+    from django.urls import reverse
+
+    from gifts.models import GiftOrder
+
+    order = get_object_or_404(GiftOrder, pk=pk)
+    buffer = io.BytesIO()
+    added = 0
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+        for img in order.images.all():
+            data = None
+            # Local storage first (dev / disk setups).
+            try:
+                img.image.open("rb")
+                data = img.image.read()
+                img.image.close()
+            except Exception:
+                data = None
+            # Remote storage fallback (e.g. Cloudinary): fetch the public URL.
+            if not data:
+                try:
+                    resp = requests.get(img.image.url, timeout=30)
+                    if resp.status_code == 200:
+                        data = resp.content
+                except Exception:
+                    data = None
+            if not data:
+                continue
+            ext = os.path.splitext(img.image.name or "")[1] or ".jpg"
+            added += 1
+            zf.writestr(f"{order.order_id}_photo_{added}{ext}", data)
+
+    if added == 0:
+        messages.error(request, f"No photos could be downloaded for order {order.order_id}.")
+        base = reverse("finance_gift_orders")
+        return redirect(f"{base}?open={order.pk}#order-{order.pk}")
+
+    response = HttpResponse(buffer.getvalue(), content_type="application/zip")
+    response["Content-Disposition"] = f'attachment; filename="{order.order_id}-photos.zip"'
+    return response

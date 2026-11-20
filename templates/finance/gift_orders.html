@@ -134,7 +134,20 @@
 
                 {% if order.images.all %}
                 <div class="go-photos">
-                    <span class="go-photos-label">Customer pictures ({{ order.images.count }})</span>
+                    <div class="go-photos-head">
+                        <span class="go-photos-label">Customer pictures ({{ order.images.count }})</span>
+                        <a class="btn-primary go-download-btn"
+                           href="{% url 'finance_gift_order_download' order.pk %}"
+                           title="Download all {{ order.images.count }} pictures as one ZIP file">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Download all
+                        </a>
+                    </div>
                     <div class="go-photos-row">
                         {% for img in order.images.all %}
                         <a href="{{ img.image.url }}" target="_blank" rel="noopener">

@@ -1,0 +1,194 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gift Orders - ABFverify Finance</title>
+<link rel="icon" type="image/jpeg" href="{% static 'img/favicon.jpg' %}">
+<link rel="stylesheet" href="{% static 'css/finance.css' %}?v=4">
+</head>
+<body class="finance-page">
+
+<header class="page-header">
+    <div class="header-left">
+        <span class="page-kicker">ABFverify Finance</span>
+        <h1>Gift Orders</h1>
+        <p class="subtitle">Review customer gift orders, add tracking links and move each order from Pending to Processing to Completed.</p>
+    </div>
+    <div class="header-actions">
+        {% include "finance/includes/gift_bell.html" %}
+        <a class="btn-secondary" href="{% url 'finance_dashboard' %}">Business Overview</a>
+        <a class="btn-back" href="/semilore/">Back to Admin</a>
+    </div>
+</header>
+
+<main>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Status filter tabs -->
+    <nav class="go-tabs" aria-label="Filter gift orders by status">
+        <a class="go-tab {% if not status_filter %}active{% endif %}" href="{% url 'finance_gift_orders' %}">
+            All <span class="go-tab-count">{{ counts.all|intcomma }}</span>
+        </a>
+        <a class="go-tab {% if status_filter == 'pending' %}active{% endif %}" href="?status=pending">
+            Pending <span class="go-tab-count">{{ counts.pending|intcomma }}</span>
+        </a>
+        <a class="go-tab {% if status_filter == 'processing' %}active{% endif %}" href="?status=processing">
+            Processing <span class="go-tab-count">{{ counts.processing|intcomma }}</span>
+        </a>
+        <a class="go-tab {% if status_filter == 'completed' %}active{% endif %}" href="?status=completed">
+            Completed <span class="go-tab-count">{{ counts.completed|intcomma }}</span>
+        </a>
+    </nav>
+
+    {% if orders %}
+    <div class="go-list">
+        {% for order in orders %}
+        <details class="go-card" id="order-{{ order.pk }}" {% if open_order == order.pk %}open{% endif %}>
+            <summary class="go-summary">
+                <span class="go-num">Order {{ forloop.counter }}</span>
+
+                <span class="go-img">
+                    {% if order.group_image_url %}
+                    <img src="{{ order.group_image_url }}" alt="{{ order.group_name }}" loading="lazy">
+                    {% else %}
+                    <span class="go-img-fallback">Gift</span>
+                    {% endif %}
+                </span>
+
+                <span class="go-main">
+                    <span class="go-name">{{ order.group_name }}</span>
+                    <span class="go-meta">
+                        {{ order.order_id }} · {{ order.user.username }} ·
+                        {{ order.created_at|date:"M d, Y — H:i" }}
+                    </span>
+                </span>
+
+                <span class="go-side">
+                    <span class="go-price">&#8358;{{ order.price|floatformat:2|intcomma }}</span>
+                    <span class="go-status go-status-{{ order.status }}">{{ order.get_status_display }}</span>
+                </span>
+            </summary>
+
+            <div class="go-details">
+
+                <div class="go-grid">
+                    <div class="go-field">
+                        <span>Customer</span>
+                        <strong>{{ order.user.username }} ({{ order.user.email|default:"no email" }})</strong>
+                    </div>
+                    <div class="go-field">
+                        <span>Category</span>
+                        <strong>{{ order.category_name }}</strong>
+                    </div>
+                    <div class="go-field">
+                        <span>Sender's Name</span>
+                        <strong>{{ order.sender_name }}</strong>
+                    </div>
+                    <div class="go-field">
+                        <span>Receiver's Name</span>
+                        <strong>{{ order.receiver_name }}</strong>
+                    </div>
+                    <div class="go-field go-field-full">
+                        <span>Address</span>
+                        <strong>{{ order.address|linebreaksbr }}</strong>
+                    </div>
+                    <div class="go-field">
+                        <span>City</span>
+                        <strong>{{ order.city }}</strong>
+                    </div>
+                    <div class="go-field">
+                        <span>State</span>
+                        <strong>{{ order.state }}</strong>
+                    </div>
+                    <div class="go-field">
+                        <span>Zip Code</span>
+                        <strong>{{ order.zip_code }}</strong>
+                    </div>
+                    <div class="go-field">
+                        <span>Phone Number</span>
+                        <strong>{{ order.phone }}</strong>
+                    </div>
+                    {% if order.size_info %}
+                    <div class="go-field">
+                        <span>Size</span>
+                        <strong>{{ order.size_info }}</strong>
+                    </div>
+                    {% endif %}
+                    {% if order.note %}
+                    <div class="go-field go-field-full">
+                        <span>Gift Note</span>
+                        <strong>{{ order.note|linebreaksbr }}</strong>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if order.images.all %}
+                <div class="go-photos">
+                    <span class="go-photos-label">Customer pictures ({{ order.images.count }})</span>
+                    <div class="go-photos-row">
+                        {% for img in order.images.all %}
+                        <a href="{{ img.image.url }}" target="_blank" rel="noopener">
+                            <img src="{{ img.image.url }}" alt="Customer photo {{ forloop.counter }}" loading="lazy">
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'finance_gift_order_update' order.pk %}" class="go-actions-form">
+                    {% csrf_token %}
+
+                    <div class="go-tracking-row">
+                        <label for="tracking-{{ order.pk }}">Tracking number / link</label>
+                        <input type="text"
+                               id="tracking-{{ order.pk }}"
+                               name="tracking_link"
+                               value="{{ order.tracking_link }}"
+                               maxlength="500"
+                               placeholder="e.g. 9400-1000-0000-0000 or https://carrier.com/track/…">
+                        <button type="submit" name="action" value="save_tracking" class="btn-primary">
+                            Save
+                        </button>
+                    </div>
+
+                    <div class="go-status-actions">
+                        {% if order.status == 'pending' %}
+                        <button type="submit" name="action" value="processing" class="btn-secondary go-btn-processing">
+                            Mark as Processing
+                        </button>
+                        {% endif %}
+                        {% if order.status != 'completed' %}
+                        <button type="submit" name="action" value="completed" class="btn-secondary go-btn-completed">
+                            Mark as Completed
+                        </button>
+                        {% else %}
+                        <span class="go-done">This order is completed.</span>
+                        {% endif %}
+                    </div>
+                </form>
+
+            </div>
+        </details>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="go-empty">
+        <h3>No gift orders{% if status_filter %} with this status{% endif %}</h3>
+        <p>New customer gift orders will appear here the moment they are placed.</p>
+    </div>
+    {% endif %}
+
+</main>
+
+</body>
+</html>
