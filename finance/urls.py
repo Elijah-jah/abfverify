@@ -1,4 +1,4 @@
-﻿
+
 from django.urls import path
 
 from . import views
@@ -12,4 +12,6 @@ urlpatterns = [
     path("boost-funding/", views.add_boost_funding, name="add_boost_funding"),
     path("log-batch/", views.add_log_batch, name="add_log_batch"),
     path("record-restock/", views.record_untracked_restock, name="record_untracked_restock"),
+    path("gift-orders/", views.gift_orders, name="finance_gift_orders"),
+    path("gift-orders/<int:pk>/update/", views.gift_order_update, name="finance_gift_order_update"),
 ]

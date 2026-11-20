@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     "finance",
     "referrals",
+    "gifts",
 ]
 
 # APScheduler settings
@@ -91,6 +92,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 "wallet.context_processors.wallet_balance",
+                "gifts.context_processors.pending_gift_orders",
             ],
         },
     },

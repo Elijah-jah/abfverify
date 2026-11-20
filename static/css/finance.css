@@ -1,4 +1,4 @@
-﻿/* ==========================================================
+/* ==========================================================
    ABFverify — Finance Dashboard (Light Theme)
    Separate stylesheet · mobile-first · fully responsive
    ========================================================== */
@@ -1216,4 +1216,321 @@ a:hover { text-decoration: underline; }
         text-align: left;
         border-radius: 8px;
     }
+}
+
+
+/* ==========================================================
+   Gift Orders — bell + orders page (appended by gifts installer)
+   ========================================================== */
+
+/* ---------- Glowing notification bell ---------- */
+.gift-bell {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    box-shadow: var(--shadow);
+    transition: transform .15s ease, color .2s ease;
+    flex: 0 0 auto;
+}
+
+.gift-bell svg { width: 20px; height: 20px; }
+
+.gift-bell:hover { transform: translateY(-1px); color: var(--primary); }
+
+.gift-bell-active {
+    color: var(--primary);
+    border-color: rgba(28, 126, 214, .45);
+    animation: giftBellGlow 2s ease-in-out infinite;
+}
+
+@keyframes giftBellGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(28, 126, 214, .45),
+                    0 0 12px rgba(28, 126, 214, .35);
+    }
+    50% {
+        box-shadow: 0 0 0 7px rgba(28, 126, 214, 0),
+                    0 0 22px rgba(28, 126, 214, .6);
+    }
+}
+
+.gift-bell-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--red);
+    color: #fff;
+    font-size: .68rem;
+    font-weight: 800;
+    line-height: 20px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(214, 69, 69, .5);
+    animation: giftBellPulse 2s ease-in-out infinite;
+}
+
+@keyframes giftBellPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+}
+
+/* ---------- Gift orders page ---------- */
+.go-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.go-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: .84rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .15s ease;
+}
+
+.go-tab:hover { color: var(--text); border-color: var(--primary); }
+
+.go-tab.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+.go-tab-count {
+    background: rgba(104, 112, 125, .15);
+    border-radius: 999px;
+    padding: 1px 8px;
+    font-size: .74rem;
+    font-weight: 800;
+}
+
+.go-tab.active .go-tab-count { background: rgba(255, 255, 255, .22); }
+
+.go-list { display: flex; flex-direction: column; gap: 12px; }
+
+.go-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.go-card[open] { border-color: rgba(28, 126, 214, .4); }
+
+.go-summary {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    cursor: pointer;
+    list-style: none;
+    transition: background .15s ease;
+    flex-wrap: wrap;
+}
+
+.go-summary::-webkit-details-marker { display: none; }
+
+.go-summary:hover { background: var(--surface-hover); }
+
+.go-num {
+    flex: 0 0 auto;
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--primary);
+    background: rgba(28, 126, 214, .1);
+    border: 1px solid rgba(28, 126, 214, .25);
+    padding: 5px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.go-img {
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+}
+
+.go-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.go-img-fallback {
+    font-size: .66rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.go-main { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 3px; }
+
+.go-name { font-weight: 700; color: var(--text); font-size: .95rem; }
+
+.go-meta { font-size: .76rem; color: var(--muted); }
+
+.go-side { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex: 0 0 auto; }
+
+.go-price { font-weight: 800; color: var(--text); font-size: .92rem; }
+
+.go-status {
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: .7rem;
+    font-weight: 800;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+}
+
+.go-status-pending    { color: var(--yellow); background: rgba(176, 125, 14, .12);  border: 1px solid rgba(176, 125, 14, .3); }
+.go-status-processing { color: var(--blue);   background: rgba(25, 113, 194, .12); border: 1px solid rgba(25, 113, 194, .3); }
+.go-status-completed  { color: var(--green);  background: rgba(30, 158, 90, .12);  border: 1px solid rgba(30, 158, 90, .3); }
+
+.go-details {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-hover);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.go-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.go-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.go-field-full { grid-column: 1 / -1; }
+
+.go-field span {
+    font-size: .66rem;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.go-field strong { font-size: .88rem; color: var(--text); font-weight: 600; word-break: break-word; }
+
+.go-photos-label {
+    display: block;
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+
+.go-photos-row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.go-photos-row a {
+    width: 86px;
+    height: 86px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    display: block;
+}
+
+.go-photos-row img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.go-actions-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-top: 4px;
+}
+
+.go-tracking-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+}
+
+.go-tracking-row label {
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.go-tracking-row input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: .88rem;
+    outline: none;
+}
+
+.go-tracking-row input:focus { border-color: var(--primary); }
+
+.go-status-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+.go-status-actions .btn-secondary { border: 1px solid var(--border); cursor: pointer; font-family: inherit; }
+
+.go-btn-processing { color: var(--blue) !important; border-color: rgba(25, 113, 194, .4) !important; }
+
+.go-btn-completed { color: var(--green) !important; border-color: rgba(30, 158, 90, .4) !important; }
+
+.go-done { color: var(--green); font-weight: 700; font-size: .86rem; }
+
+.go-empty {
+    text-align: center;
+    padding: 56px 20px;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+}
+
+.go-empty h3 { color: var(--text); margin-bottom: 6px; }
+
+@media (max-width: 640px) {
+    .go-summary { gap: 10px; }
+    .go-num { order: -1; }
+    .go-side { flex-direction: row; align-items: center; gap: 10px; width: 100%; justify-content: space-between; }
+    .go-tracking-row { grid-template-columns: 1fr; }
+    .go-tracking-row button { width: 100%; }
 }

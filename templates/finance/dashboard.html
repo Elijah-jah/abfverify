@@ -1,4 +1,4 @@
-﻿
+
 {% load static %}
 {% load humanize %}
 <!DOCTYPE html>
@@ -19,6 +19,7 @@
         <p class="subtitle">Revenue, deposits, funding, profit, and log inventory in one place.</p>
     </div>
     <div class="header-actions">
+        {% include "finance/includes/gift_bell.html" %}
         <a class="btn-secondary" href="{% url 'finance_inventory' %}">
             Daily Sales Inventory
         </a>

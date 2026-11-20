@@ -1,0 +1,16 @@
+{# Glowing gift-orders bell for finance pages. #}
+{# Badge count comes from gifts.context_processors.pending_gift_orders. #}
+{# Finance pages load no FontAwesome, so the bell is an inline SVG. #}
+<a href="{% url 'finance_gift_orders' %}"
+   class="gift-bell{% if pending_gift_orders_count %} gift-bell-active{% endif %}"
+   title="Gift orders — {{ pending_gift_orders_count|default:0 }} pending"
+   aria-label="Gift orders, {{ pending_gift_orders_count|default:0 }} pending">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.7 21a2 2 0 0 1-3.4 0"/>
+    </svg>
+    {% if pending_gift_orders_count %}
+    <span class="gift-bell-badge">{{ pending_gift_orders_count }}</span>
+    {% endif %}
+</a>

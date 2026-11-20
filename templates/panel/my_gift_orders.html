@@ -1,0 +1,197 @@
+{% extends "panel/dashboard_base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}My Gift Orders - ABFverify{% endblock %}
+
+{% block page_title %}My Gift Orders{% endblock %}
+{% block section_title %}My Gift Orders{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/gifts.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="gf-page">
+
+    <div class="gf-head">
+        <div class="gf-head-text">
+            <h2 class="gf-title">
+                <i class="fa-solid fa-box-open"></i>
+                My Gift Orders
+            </h2>
+            <p class="gf-sub">
+                Track every gift you have sent. Click an order to see its full
+                details and tracking link.
+            </p>
+        </div>
+        <div class="gf-head-side">
+            <button type="button" class="gf-myorders-link"
+                    onclick="location.href='{% url 'gift_sending' %}'">
+                <i class="fa-solid fa-gifts"></i>
+                Send Another Gift
+            </button>
+        </div>
+    </div>
+
+    {% if orders %}
+    <div class="gf-orders">
+        {% for order in orders %}
+        <button type="button" class="gf-order-row js-view-order"
+                data-order='{
+                    "order_id": "{{ order.order_id }}",
+                    "group_name": "{{ order.group_name|escapejs }}",
+                    "category_name": "{{ order.category_name|escapejs }}",
+                    "group_image_url": "{{ order.group_image_url|escapejs }}",
+                    "price": "{{ order.price|floatformat:2 }}",
+                    "status": "{{ order.status }}",
+                    "created": "{{ order.created_at|date:'M d, Y — H:i' }}",
+                    "sender_name": "{{ order.sender_name|escapejs }}",
+                    "receiver_name": "{{ order.receiver_name|escapejs }}",
+                    "address": "{{ order.address|escapejs }}",
+                    "city": "{{ order.city|escapejs }}",
+                    "state": "{{ order.state|escapejs }}",
+                    "zip_code": "{{ order.zip_code|escapejs }}",
+                    "phone": "{{ order.phone|escapejs }}",
+                    "tracking_link": "{{ order.tracking_link|escapejs }}",
+                    "images": [{% for img in order.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]
+                }'>
+            <span class="gf-order-num">Order {{ forloop.revcounter }}</span>
+
+            <span class="gf-order-img">
+                {% if order.group_image_url %}
+                <img src="{{ order.group_image_url }}" alt="{{ order.group_name }}" loading="lazy">
+                {% else %}
+                <i class="fa-solid fa-gift"></i>
+                {% endif %}
+            </span>
+
+            <span class="gf-order-main">
+                <span class="gf-order-name">{{ order.group_name }}</span>
+                <span class="gf-order-meta">
+                    {{ order.order_id }} · {{ order.created_at|date:"M d, Y" }}
+                    · {{ order.images.count }} photo{{ order.images.count|pluralize }}
+                </span>
+            </span>
+
+            <span class="gf-order-side">
+                <span class="gf-order-price">₦{{ order.price|floatformat:2|intcomma }}</span>
+                <span class="gf-status gf-status-{{ order.status }}">{{ order.get_status_display }}</span>
+            </span>
+
+            <i class="fa-solid fa-chevron-right gf-order-chev"></i>
+        </button>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="gf-empty">
+        <i class="fa-solid fa-box-open"></i>
+        <h3>No gift orders yet</h3>
+        <p>When you send a gift it will show up here so you can track it.</p>
+        <button type="button" class="gf-btn gf-btn-primary"
+                onclick="location.href='{% url 'gift_sending' %}'">
+            <i class="fa-solid fa-gifts"></i>
+            Send Your First Gift
+        </button>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- ==================== ORDER DETAILS MODAL ==================== -->
+<div class="gf-modal-overlay" id="gfOrderModal" aria-hidden="true">
+    <div class="gf-modal" role="dialog" aria-modal="true" aria-labelledby="gfOrderModalTitle">
+
+        <button type="button" class="gf-modal-close js-close-order" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="gf-modal-gift">
+            <div class="gf-modal-gift-img">
+                <img id="gfOrderImg" src="" alt="">
+                <div class="gf-card-img-fallback" id="gfOrderImgFallback">
+                    <i class="fa-solid fa-gift"></i>
+                </div>
+            </div>
+            <div class="gf-modal-gift-info">
+                <span class="gf-modal-duration" id="gfOrderId">—</span>
+                <h3 id="gfOrderModalTitle">Gift</h3>
+                <span class="gf-order-status-row">
+                    <span class="gf-status" id="gfOrderStatus">Pending</span>
+                    <span class="gf-modal-price" id="gfOrderPrice">₦0.00</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- TRACKING -->
+        <div class="gf-tracking" id="gfTrackingBox">
+            <div class="gf-tracking-label">
+                <i class="fa-solid fa-location-dot"></i>
+                Tracking
+            </div>
+            <a href="#" id="gfTrackingLink" class="gf-tracking-link" rel="noopener">
+                Track your gift
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+            <p class="gf-tracking-wait" id="gfTrackingWait">
+                No tracking link yet — it will appear here once your gift ships.
+            </p>
+        </div>
+
+        <div class="gf-detail-grid">
+            <div class="gf-detail">
+                <span>Sender's Name</span>
+                <strong id="gfDetailSender">—</strong>
+            </div>
+            <div class="gf-detail">
+                <span>Receiver's Name</span>
+                <strong id="gfDetailReceiver">—</strong>
+            </div>
+            <div class="gf-detail gf-detail-full">
+                <span>Address</span>
+                <strong id="gfDetailAddress">—</strong>
+            </div>
+            <div class="gf-detail">
+                <span>City</span>
+                <strong id="gfDetailCity">—</strong>
+            </div>
+            <div class="gf-detail">
+                <span>State</span>
+                <strong id="gfDetailState">—</strong>
+            </div>
+            <div class="gf-detail">
+                <span>Zip Code</span>
+                <strong id="gfDetailZip">—</strong>
+            </div>
+            <div class="gf-detail">
+                <span>Phone Number</span>
+                <strong id="gfDetailPhone">—</strong>
+            </div>
+            <div class="gf-detail">
+                <span>Placed On</span>
+                <strong id="gfDetailCreated">—</strong>
+            </div>
+        </div>
+
+        <div class="gf-order-photos-wrap" id="gfOrderPhotosWrap">
+            <span class="gf-photos-label">
+                <i class="fa-solid fa-images"></i>
+                Attached Pictures
+            </span>
+            <div class="gf-order-photos" id="gfOrderPhotos"></div>
+        </div>
+
+        <div class="gf-modal-actions">
+            <button type="button" class="gf-btn gf-btn-ghost js-close-order">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back
+            </button>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/gift_orders.js' %}"></script>
+{% endblock %}

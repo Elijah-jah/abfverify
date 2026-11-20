@@ -1,0 +1,276 @@
+{% extends "panel/dashboard_base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Send a Gift - ABFverify{% endblock %}
+
+{% block page_title %}Send a Gift{% endblock %}
+{% block section_title %}Send a Gift{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/gifts.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="gf-page" id="gfPage">
+
+    <!-- PAGE HEAD -->
+    <div class="gf-head">
+        <div class="gf-head-text">
+            <h2 class="gf-title">
+                <i class="fa-solid fa-gifts"></i>
+                Send a Gift
+            </h2>
+            <p class="gf-sub">
+                Pick a gift, fill in the delivery details and we handle the rest.
+                Your wallet is charged only when you confirm.
+            </p>
+        </div>
+        <div class="gf-head-side">
+            <div class="gf-wallet-pill" title="Wallet balance">
+                <i class="fa-solid fa-wallet"></i>
+                <span>₦{{ user_wallet.balance|floatformat:2|intcomma }}</span>
+            </div>
+            <button type="button" class="gf-myorders-link"
+                    onclick="location.href='{% url 'my_gift_orders' %}'">
+                <i class="fa-solid fa-box-open"></i>
+                My Gift Orders
+            </button>
+        </div>
+    </div>
+
+    {% if categories %}
+    <!-- CATEGORY PILLS -->
+    <div class="gf-pills" id="gfPills" role="tablist" aria-label="Gift categories">
+        <button type="button" class="gf-pill active" data-cat="all" role="tab" aria-selected="true">
+            All Gifts
+        </button>
+        {% for category in categories %}
+        <button type="button" class="gf-pill" data-cat="{{ category.id }}" role="tab" aria-selected="false">
+            {{ category.name }}
+        </button>
+        {% endfor %}
+    </div>
+
+    <!-- GIFT GROUP CARDS -->
+    <div class="gf-grid" id="gfGrid">
+        {% for category in categories %}
+            {% for group in category.groups.all %}
+            <article class="gf-card" data-cat="{{ category.id }}">
+                <div class="gf-card-img">
+                    {% if group.image %}
+                    <img src="{{ group.image.url }}" alt="{{ group.name }}" loading="lazy">
+                    {% else %}
+                    <div class="gf-card-img-fallback">
+                        <i class="fa-solid fa-gift"></i>
+                    </div>
+                    {% endif %}
+                    {% if group.delivery_duration %}
+                    <span class="gf-duration">
+                        <i class="fa-solid fa-truck-fast"></i>
+                        {{ group.delivery_duration }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="gf-card-body">
+                    <span class="gf-card-cat">{{ category.name }}</span>
+                    <h3 class="gf-card-name">{{ group.name }}</h3>
+                    {% if group.description %}
+                    <p class="gf-card-desc">{{ group.description|truncatewords:18 }}</p>
+                    {% endif %}
+                    <div class="gf-card-foot">
+                        <span class="gf-card-price">₦{{ group.price|floatformat:2|intcomma }}</span>
+                        <button type="button"
+                                class="gf-send-btn js-open-gift"
+                                data-group-id="{{ group.id }}"
+                                data-group-name="{{ group.name }}"
+                                data-group-price="{{ group.price|floatformat:2 }}"
+                                data-group-image="{% if group.image %}{{ group.image.url }}{% endif %}"
+                                data-group-duration="{{ group.delivery_duration }}"
+                                data-order-url="{% url 'gift_order_create' group.id %}">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            Send this Gift
+                        </button>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        {% endfor %}
+    </div>
+
+    <div class="gf-empty gf-hidden" id="gfEmptyCat">
+        <i class="fa-solid fa-gift"></i>
+        <p>No gifts available in this category yet.</p>
+    </div>
+
+    {% else %}
+    <div class="gf-empty">
+        <i class="fa-solid fa-gift"></i>
+        <h3>No gifts available yet</h3>
+        <p>Please check back soon — new gifts are on the way.</p>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- ==================== ORDER FORM MODAL ==================== -->
+<div class="gf-modal-overlay" id="gfFormModal" aria-hidden="true">
+    <div class="gf-modal" role="dialog" aria-modal="true" aria-labelledby="gfModalTitle">
+
+        <button type="button" class="gf-modal-close js-close-modal" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="gf-modal-gift">
+            <div class="gf-modal-gift-img" id="gfModalImgWrap">
+                <img id="gfModalImg" src="" alt="">
+                <div class="gf-card-img-fallback" id="gfModalImgFallback">
+                    <i class="fa-solid fa-gift"></i>
+                </div>
+            </div>
+            <div class="gf-modal-gift-info">
+                <span class="gf-modal-duration" id="gfModalDuration"></span>
+                <h3 id="gfModalTitle">Gift name</h3>
+                <span class="gf-modal-price" id="gfModalPrice">₦0.00</span>
+            </div>
+        </div>
+
+        <form id="gfOrderForm" novalidate>
+            {% csrf_token %}
+
+            <div class="gf-form-grid">
+                <div class="gf-field">
+                    <label for="gf_sender">Sender's Name</label>
+                    <input type="text" id="gf_sender" name="sender_name" maxlength="150"
+                           placeholder="Your name" autocomplete="name" required>
+                </div>
+                <div class="gf-field">
+                    <label for="gf_receiver">Receiver's Name</label>
+                    <input type="text" id="gf_receiver" name="receiver_name" maxlength="150"
+                           placeholder="Who is receiving it?" required>
+                </div>
+                <div class="gf-field gf-field-full">
+                    <label for="gf_address">Address</label>
+                    <textarea id="gf_address" name="address" rows="2"
+                              placeholder="Street address / house details" required></textarea>
+                </div>
+                <div class="gf-field">
+                    <label for="gf_city">City</label>
+                    <input type="text" id="gf_city" name="city" maxlength="100"
+                           placeholder="City" required>
+                </div>
+                <div class="gf-field">
+                    <label for="gf_state">State</label>
+                    <input type="text" id="gf_state" name="state" maxlength="100"
+                           placeholder="State" required>
+                </div>
+                <div class="gf-field">
+                    <label for="gf_zip">Zip Code</label>
+                    <input type="text" id="gf_zip" name="zip_code" maxlength="20"
+                           placeholder="Zip code" required>
+                </div>
+                <div class="gf-field">
+                    <label for="gf_phone">Phone Number</label>
+                    <input type="tel" id="gf_phone" name="phone" maxlength="30"
+                           placeholder="Receiver's phone number" autocomplete="tel" required>
+                </div>
+            </div>
+
+            <div class="gf-field gf-field-full">
+                <label>
+                    Pictures
+                    <span class="gf-label-hint">Optional — up to 5 photos. They are compressed automatically without losing visible quality.</span>
+                </label>
+                <div class="gf-dropzone" id="gfDropzone">
+                    <input type="file" id="gfImages" accept="image/*" multiple hidden>
+                    <button type="button" class="gf-dropzone-btn" id="gfPickImages">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        Add Pictures
+                    </button>
+                    <span class="gf-dropzone-count" id="gfImageCount">0 / 5</span>
+                </div>
+                <div class="gf-previews" id="gfPreviews"></div>
+                <p class="gf-field-error" id="gfImagesError"></p>
+            </div>
+
+            <p class="gf-form-error" id="gfFormError"></p>
+
+            <div class="gf-modal-actions">
+                <button type="button" class="gf-btn gf-btn-ghost js-close-modal">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Back
+                </button>
+                <button type="submit" class="gf-btn gf-btn-primary" id="gfConfirmBtn">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    Confirm Sending — <span id="gfConfirmPrice">₦0.00</span>
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<!-- ==================== ARE YOU SURE MINI DIALOG ==================== -->
+<div class="gf-modal-overlay gf-overlay-top" id="gfSureModal" aria-hidden="true">
+    <div class="gf-mini" role="alertdialog" aria-modal="true" aria-labelledby="gfSureTitle">
+        <div class="gf-mini-icon">
+            <i class="fa-solid fa-circle-question"></i>
+        </div>
+        <h3 id="gfSureTitle">Are you sure?</h3>
+        <p>
+            You are about to send <strong id="gfSureGift">this gift</strong> for
+            <strong id="gfSurePrice">₦0.00</strong>. The amount will be deducted
+            from your wallet immediately.
+        </p>
+        <div class="gf-mini-actions">
+            <button type="button" class="gf-btn gf-btn-ghost" id="gfSureNo">No, Go Back</button>
+            <button type="button" class="gf-btn gf-btn-primary" id="gfSureYes">
+                Yes, Send It
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== SUCCESS CARD ==================== -->
+<div class="gf-modal-overlay gf-overlay-top" id="gfSuccessModal" aria-hidden="true">
+    <div class="gf-mini gf-success" role="dialog" aria-modal="true" aria-labelledby="gfSuccessTitle">
+        <div class="gf-mini-icon gf-success-icon">
+            <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <h3 id="gfSuccessTitle">Gift Order Placed!</h3>
+        <p>
+            Your order <strong id="gfSuccessOrder">—</strong> has been received and is now
+            <strong>Pending</strong>. You can keep track of the gift on the
+            <strong>My Gift Orders</strong> page.
+        </p>
+        <div class="gf-success-meta">
+            <div>
+                <span>Gift</span>
+                <strong id="gfSuccessGift">—</strong>
+            </div>
+            <div>
+                <span>Charged</span>
+                <strong id="gfSuccessPrice">—</strong>
+            </div>
+            <div>
+                <span>New wallet balance</span>
+                <strong id="gfSuccessBalance">—</strong>
+            </div>
+        </div>
+        <div class="gf-mini-actions">
+            <button type="button" class="gf-btn gf-btn-ghost" id="gfSuccessStay">
+                Keep Browsing
+            </button>
+            <button type="button" class="gf-btn gf-btn-primary"
+                    onclick="location.href='{% url 'my_gift_orders' %}'">
+                <i class="fa-solid fa-box-open"></i>
+                Track My Gift
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/gifts.js' %}"></script>
+{% endblock %}

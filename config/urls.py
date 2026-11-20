@@ -15,6 +15,8 @@ urlpatterns = [
 
     path("", include("marketplace.urls")),
 
+    path("", include("gifts.urls")),
+
     path("accounts/", include("accounts.urls")),
 
     path("api/", include("api_v1.urls")),

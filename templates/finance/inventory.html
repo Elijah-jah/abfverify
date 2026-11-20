@@ -18,6 +18,7 @@
         <p class="subtitle">A product-level breakdown of logs, numbers, and boost orders for any selected period.</p>
     </div>
     <div class="header-actions">
+        {% include "finance/includes/gift_bell.html" %}
         <a class="btn-secondary" href="{% url 'finance_dashboard' %}">Finance Overview</a>
         <a class="btn-back" href="{% url 'finance_analytics' %}">Revenue Analytics</a>
     </div>

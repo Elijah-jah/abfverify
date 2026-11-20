@@ -1,4 +1,4 @@
-﻿
+
 from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
@@ -183,3 +183,100 @@ def add_log_batch(request):
 def rewards(request):
     """Referral & redeem-code payout tracking (money given to users)."""
     return render(request, "finance/rewards.html", get_rewards_context())
+
+
+# ---------------------------------------------------------------------------
+# Gift orders (gifts app) — staff management pages
+# ---------------------------------------------------------------------------
+
+@staff_member_required
+@never_cache
+def gift_orders(request):
+    """List every customer gift order, filterable by status."""
+    from gifts.models import GiftOrder
+
+    status_filter = request.GET.get("status", "")
+    orders = (
+        GiftOrder.objects
+        .select_related("user")
+        .prefetch_related("images")
+    )
+    if status_filter in {"pending", "processing", "completed"}:
+        orders = orders.filter(status=status_filter)
+    else:
+        status_filter = ""
+
+    counts = {
+        "all": GiftOrder.objects.count(),
+        "pending": GiftOrder.objects.filter(status="pending").count(),
+        "processing": GiftOrder.objects.filter(status="processing").count(),
+        "completed": GiftOrder.objects.filter(status="completed").count(),
+    }
+
+    try:
+        open_order = int(request.GET.get("open", "0"))
+    except (TypeError, ValueError):
+        open_order = 0
+
+    return render(request, "finance/gift_orders.html", {
+        "orders": orders,
+        "counts": counts,
+        "status_filter": status_filter,
+        "open_order": open_order,
+    })
+
+
+@staff_member_required
+@require_POST
+def gift_order_update(request, pk):
+    """Save the tracking link or move an order Processing / Completed."""
+    from django.shortcuts import get_object_or_404
+    from django.urls import reverse
+
+    from gifts.models import GiftOrder
+
+    order = get_object_or_404(GiftOrder, pk=pk)
+    action = request.POST.get("action", "")
+
+    if action == "save_tracking":
+        link = (request.POST.get("tracking_link") or "").strip()
+        if len(link) > 500:
+            messages.error(request, "That tracking link is too long (500 characters max).")
+        elif link and not link.lower().startswith(("http://", "https://")):
+            messages.error(
+                request,
+                "Please paste a full tracking link starting with http:// or https://.",
+            )
+        else:
+            order.tracking_link = link
+            order.save(update_fields=["tracking_link", "updated_at"])
+            if link:
+                messages.success(request, f"Tracking link saved for order {order.order_id}.")
+            else:
+                messages.success(request, f"Tracking link cleared for order {order.order_id}.")
+
+    elif action == "processing":
+        if order.can_mark_processing():
+            order.status = "processing"
+            order.save(update_fields=["status", "updated_at"])
+            messages.success(request, f"Order {order.order_id} is now Processing.")
+        else:
+            messages.warning(
+                request,
+                f"Order {order.order_id} cannot move to Processing from "
+                f"'{order.get_status_display()}'.",
+            )
+
+    elif action == "completed":
+        if order.can_mark_completed():
+            order.status = "completed"
+            order.save(update_fields=["status", "updated_at"])
+            messages.success(request, f"Order {order.order_id} is now Completed.")
+        else:
+            messages.warning(request, f"Order {order.order_id} is already Completed.")
+
+    else:
+        messages.error(request, "Unknown action.")
+
+    base = reverse("finance_gift_orders")
+    return redirect(f"{base}?open={order.pk}#order-{order.pk}")

@@ -1,0 +1,232 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rewards &amp; Giveaways — ABFverify Finance</title>
+<link rel="icon" type="image/jpeg" href="{% static 'img/favicon.jpg' %}">
+<link rel="stylesheet" href="{% static 'css/finance.css' %}?v=4">
+</head>
+<body class="finance-page">
+
+<header class="page-header">
+    <div class="header-left">
+        <span class="page-kicker">ABFverify Finance</span>
+        <h1>Rewards &amp; Giveaways</h1>
+        <p class="subtitle">
+            Every naira given out to users — referral signup bonuses, tier rewards,
+            and redeemed codes — tracked in one place.
+        </p>
+    </div>
+    <div class="header-actions">
+        <a class="btn-secondary" href="{% url 'finance_dashboard' %}">
+            Business Overview
+        </a>
+        <a class="btn-back" href="/semilore/">Back to Admin</a>
+    </div>
+</header>
+
+<main>
+
+    <!-- TOTAL GIVEN OUT -->
+    <section class="stat-section" aria-labelledby="rewards-total">
+        <div class="section-heading-row">
+            <div>
+                <span class="section-eyebrow">All Time</span>
+                <h2 id="rewards-total" class="section-heading">Total Given to Users</h2>
+            </div>
+        </div>
+        <div class="cards-grid cards-grid-overview">
+            <article class="stat-card stat-card-primary">
+                <span class="card-label">Total Rewards Paid Out</span>
+                <span class="card-value">&#8358;{{ grand_total|floatformat:2|intcomma }}</span>
+                <span class="card-caption">Signup bonuses + tier rewards + redeemed codes</span>
+            </article>
+            <article class="stat-card">
+                <span class="card-label">Referral Signup Bonuses</span>
+                <span class="card-value txt-blue">&#8358;{{ signup_total|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ signup_count|intcomma }} bonuses paid (&#8358;200 per referred signup)</span>
+            </article>
+            <article class="stat-card">
+                <span class="card-label">Referral Tier Rewards</span>
+                <span class="card-value txt-green">&#8358;{{ tier_total|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ tier_count|intcomma }} tier payouts to referrers</span>
+            </article>
+            <article class="stat-card">
+                <span class="card-label">Code Redemptions</span>
+                <span class="card-value txt-yellow">&#8358;{{ redeem_tx_total|floatformat:2|intcomma }}</span>
+                <span class="card-caption">{{ redeem_tx_count|intcomma }} codes redeemed by users</span>
+            </article>
+        </div>
+        <p class="section-note">
+            All figures come from successful wallet transactions — this is real money
+            credited to user wallets.
+        </p>
+    </section>
+
+    <!-- REFERRAL USAGE -->
+    <section class="stat-section" aria-labelledby="referral-usage">
+        <div class="section-heading-row">
+            <div>
+                <span class="section-eyebrow">Referral Program</span>
+                <h2 id="referral-usage" class="section-heading">Referral Code Usage</h2>
+            </div>
+        </div>
+        <div class="cards-grid cards-grid-overview">
+            <article class="stat-card">
+                <span class="card-label">Users With Referral Codes</span>
+                <span class="card-value txt-blue">{{ total_profiles|intcomma }}</span>
+                <span class="card-caption">Every account has its own code</span>
+            </article>
+            <article class="stat-card">
+                <span class="card-label">Joined With a Code</span>
+                <span class="card-value">{{ referred_signups|intcomma }}</span>
+                <span class="card-caption">Users who signed up using someone's referral code</span>
+            </article>
+            <article class="stat-card">
+                <span class="card-label">Made Their First Deposit</span>
+                <span class="card-value txt-green">{{ qualified_referrals|intcomma }}</span>
+                <span class="card-caption">Referred users who qualified (triggers tier rewards)</span>
+            </article>
+        </div>
+    </section>
+
+    <!-- TIER BREAKDOWN -->
+    <section class="stat-section" aria-labelledby="tier-breakdown">
+        <div class="section-heading-row">
+            <div>
+                <span class="section-eyebrow">Referral Program</span>
+                <h2 id="tier-breakdown" class="section-heading">Tier Rewards Breakdown</h2>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tier</th>
+                        <th>Reward Per User</th>
+                        <th>Times Paid</th>
+                        <th>Total Paid</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in tier_rows %}
+                    <tr>
+                        <td data-label="Tier"><strong>{{ row.tier }} depositing referrals</strong></td>
+                        <td data-label="Reward Per User">&#8358;{{ row.reward|floatformat:2|intcomma }}</td>
+                        <td data-label="Times Paid" class="quantity-cell">{{ row.count|intcomma }}</td>
+                        <td data-label="Total Paid" class="table-emphasis">&#8358;{{ row.total|floatformat:2|intcomma }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- REDEEM CODE INVENTORY -->
+    <section class="stat-section" aria-labelledby="code-inventory">
+        <div class="section-heading-row">
+            <div>
+                <span class="section-eyebrow">Code Generation</span>
+                <h2 id="code-inventory" class="section-heading">Redeem Code Inventory</h2>
+            </div>
+        </div>
+        <div class="cards-grid cards-grid-overview">
+            <article class="stat-card">
+                <span class="card-label">Codes Generated</span>
+                <span class="card-value txt-blue">{{ codes_generated|intcomma }}</span>
+                <span class="card-caption">Worth &#8358;{{ codes_generated_value|floatformat:2|intcomma }} in total</span>
+            </article>
+            <article class="stat-card">
+                <span class="card-label">Codes Redeemed</span>
+                <span class="card-value txt-green">{{ codes_redeemed|intcomma }}</span>
+                <span class="card-caption">&#8358;{{ codes_redeemed_value|floatformat:2|intcomma }} claimed by users</span>
+            </article>
+            <article class="stat-card">
+                <span class="card-label">Codes Still Active</span>
+                <span class="card-value txt-yellow">{{ codes_active|intcomma }}</span>
+                <span class="card-caption">&#8358;{{ codes_active_value|floatformat:2|intcomma }} still out there unclaimed</span>
+            </article>
+        </div>
+    </section>
+
+    <!-- TOP REFERRERS -->
+    <section class="stat-section" aria-labelledby="top-referrers">
+        <div class="section-heading-row">
+            <div>
+                <span class="section-eyebrow">Leaderboard</span>
+                <h2 id="top-referrers" class="section-heading">Top Referrers</h2>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Invited</th>
+                        <th>Deposited</th>
+                        <th>Total Earned</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in top_referrers %}
+                    <tr>
+                        <td data-label="User"><strong>{{ row.username }}</strong></td>
+                        <td data-label="Invited" class="quantity-cell">{{ row.invited|intcomma }}</td>
+                        <td data-label="Deposited" class="quantity-cell">{{ row.deposited|intcomma }}</td>
+                        <td data-label="Total Earned" class="table-emphasis">&#8358;{{ row.earned|floatformat:2|intcomma }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="table-empty">No referrals yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- RECENT PAYOUTS -->
+    <section class="stat-section" aria-labelledby="recent-payouts">
+        <div class="section-heading-row">
+            <div>
+                <span class="section-eyebrow">Latest Activity</span>
+                <h2 id="recent-payouts" class="section-heading">Recent Rewards &amp; Redemptions</h2>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Type</th>
+                        <th>Details</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in recent_payouts %}
+                    <tr>
+                        <td data-label="User"><strong>{{ row.username }}</strong></td>
+                        <td data-label="Type">{{ row.kind }}</td>
+                        <td data-label="Details">{{ row.description }}</td>
+                        <td data-label="Amount" class="table-emphasis">&#8358;{{ row.amount|floatformat:2|intcomma }}</td>
+                        <td data-label="Date">{{ row.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="table-empty">No rewards or redemptions yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+
+</body>
+</html>

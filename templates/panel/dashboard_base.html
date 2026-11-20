@@ -135,6 +135,26 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 
         </button>
 
+        <!-- NEW: Gift Sending -->
+        <button
+            onclick="location.href='{% url 'gift_sending' %}'"
+            class="{% if request.resolver_match.url_name == 'gift_sending' %}active{% endif %}">
+
+            <i class="fa-solid fa-gifts"></i>
+            <span>Send Gift</span>
+
+        </button>
+
+        <button
+            onclick="location.href='{% url 'my_gift_orders' %}'"
+            class="{% if request.resolver_match.url_name == 'my_gift_orders' %}active{% endif %}">
+
+            <i class="fa-solid fa-box-open"></i>
+            <span>My Gift Orders</span>
+
+        </button>
+
+
     </nav>
 
 
