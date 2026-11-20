@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gift Orders - ABFverify Finance</title>
 <link rel="icon" type="image/jpeg" href="{% static 'img/favicon.jpg' %}">
-<link rel="stylesheet" href="{% static 'css/finance.css' %}?v=4">
+<link rel="stylesheet" href="{% static 'css/finance.css' %}?v=5">
 </head>
 <body class="finance-page">
 
@@ -136,23 +136,33 @@
                 <div class="go-photos">
                     <div class="go-photos-head">
                         <span class="go-photos-label">Customer pictures ({{ order.images.count }})</span>
-                        <a class="btn-primary go-download-btn"
-                           href="{% url 'finance_gift_order_download' order.pk %}"
-                           title="Download all {{ order.images.count }} pictures as one ZIP file">
+                        <button type="button" class="btn-primary go-download-btn js-download-photos"
+                                title="Download every picture of this order as image files">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                                 <polyline points="7 10 12 15 17 10"/>
                                 <line x1="12" y1="15" x2="12" y2="3"/>
                             </svg>
-                            Download all
-                        </a>
+                            <span class="go-download-label">Download all</span>
+                        </button>
                     </div>
                     <div class="go-photos-row">
                         {% for img in order.images.all %}
-                        <a href="{{ img.image.url }}" target="_blank" rel="noopener">
-                            <img src="{{ img.image.url }}" alt="Customer photo {{ forloop.counter }}" loading="lazy">
-                        </a>
+                        <span class="go-photo">
+                            <a class="go-photo-view" href="{{ img.image.url }}" target="_blank" rel="noopener" title="View full size">
+                                <img src="{{ img.image.url }}" alt="Customer photo {{ forloop.counter }}" loading="lazy">
+                            </a>
+                            <a class="go-photo-dl" href="{% url 'finance_gift_order_photo_download' order.pk forloop.counter0 %}"
+                               download title="Download this photo" aria-label="Download photo {{ forloop.counter }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                            </a>
+                        </span>
                         {% endfor %}
                     </div>
                 </div>
@@ -175,6 +185,19 @@
                     </div>
 
                     <div class="go-status-actions">
+                        <button type="button" class="btn-secondary go-copy-btn js-copy-info"
+                                data-sender="{{ order.sender_name }}"
+                                data-receiver="{{ order.receiver_name }}"
+                                data-address="{{ order.address }}"
+                                data-city="{{ order.city }}"
+                                data-state="{{ order.state }}"
+                                data-zip="{{ order.zip_code }}"
+                                data-phone="{{ order.phone }}"
+                                data-size="{{ order.size_info }}"
+                                data-note="{{ order.note }}"
+                                title="Copy all the delivery details of this order">
+                            Copy info
+                        </button>
                         {% if order.status == 'pending' %}
                         <button type="submit" name="action" value="processing" class="btn-secondary go-btn-processing">
                             Mark as Processing
@@ -202,6 +225,93 @@
     {% endif %}
 
 </main>
+
+<script>
+(function () {
+    "use strict";
+
+    /* ---------- Copy info: copies the order details in a ready-to-paste format ---------- */
+    function copyText(text, btn) {
+        function feedback() {
+            var original = btn.dataset.originalLabel || btn.textContent.trim();
+            btn.dataset.originalLabel = original;
+            btn.classList.add("copied");
+            btn.textContent = "Copied!";
+            setTimeout(function () {
+                btn.classList.remove("copied");
+                btn.textContent = original;
+            }, 1600);
+        }
+        function fallback() {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.setAttribute("readonly", "");
+            ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;";
+            document.body.appendChild(ta);
+            ta.select();
+            ta.setSelectionRange(0, ta.value.length);
+            try { document.execCommand("copy"); } catch (e) {}
+            document.body.removeChild(ta);
+            feedback();
+        }
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(feedback).catch(fallback);
+        } else {
+            fallback();
+        }
+    }
+
+    document.querySelectorAll(".js-copy-info").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var d = btn.dataset;
+            var lines = [
+                "Sender's name: " + (d.sender || ""),
+                "Receiver's name: " + (d.receiver || ""),
+                "Address: " + (d.address || ""),
+                "City: " + (d.city || ""),
+                "State: " + (d.state || ""),
+                "Zip code: " + (d.zip || ""),
+                "Phone number: " + (d.phone || "")
+            ];
+            if (d.size && d.size.trim()) { lines.push("Size: " + d.size); }
+            if (d.note && d.note.trim()) { lines.push("Note: " + d.note); }
+            copyText(lines.join("\n"), btn);
+        });
+    });
+
+    /* ---------- Download all photos as image files, one after another ---------- */
+    document.querySelectorAll(".js-download-photos").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            if (btn.dataset.busy === "1") { return; }
+            var box = btn.closest(".go-photos");
+            if (!box) { return; }
+            var links = box.querySelectorAll(".go-photo-dl");
+            if (!links.length) { return; }
+            btn.dataset.busy = "1";
+            var label = btn.querySelector(".go-download-label");
+            var original = label ? label.textContent : "";
+            var i = 0;
+            function next() {
+                if (i >= links.length) {
+                    if (label) { label.textContent = original; }
+                    btn.dataset.busy = "0";
+                    return;
+                }
+                if (label) { label.textContent = "Downloading " + (i + 1) + " of " + links.length + "\u2026"; }
+                var a = document.createElement("a");
+                a.href = links[i].href;
+                a.setAttribute("download", "");
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                i += 1;
+                setTimeout(next, 700);
+            }
+            next();
+        });
+    });
+})();
+</script>
 
 </body>
 </html>

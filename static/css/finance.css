@@ -1578,3 +1578,76 @@ body.finance-page label {
 }
 
 .go-download-btn svg { width: 14px; height: 14px; }
+
+/* Gift order tools: per-photo download, download-all + copy info buttons */
+.go-photos-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.go-photos-head .go-photos-label { margin-bottom: 0; }
+
+.go-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 0;
+    padding: 7px 14px;
+    min-height: 0;
+    font-size: .78rem;
+    font-family: inherit;
+}
+
+.go-download-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.go-photo { position: relative; width: 86px; height: 86px; }
+
+.go-photos-row .go-photo-view {
+    width: 86px;
+    height: 86px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    display: block;
+}
+
+.go-photos-row .go-photo-view img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.go-photos-row .go-photo-dl {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background: rgba(15, 23, 42, .88);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity .15s ease, background .15s ease;
+}
+
+.go-photo:hover .go-photo-dl,
+.go-photo-dl:focus-visible { opacity: 1; }
+
+.go-photo-dl:hover { background: var(--primary); }
+
+.go-photos-row .go-photo-dl svg { width: 12px; height: 12px; }
+
+@media (hover: none) {
+    .go-photos-row .go-photo-dl { opacity: 1; }
+}
+
+.go-copy-btn { font-family: inherit; }
+
+.go-copy-btn.copied {
+    border-color: var(--green) !important;
+    color: var(--green) !important;
+}

@@ -331,3 +331,57 @@ def gift_order_images_download(request, pk):
     response = HttpResponse(buffer.getvalue(), content_type="application/zip")
     response["Content-Disposition"] = f'attachment; filename="{order.order_id}-photos.zip"'
     return response
+
+
+# ---------------------------------------------------------------------------
+# Gift order photos: download each customer picture as an image file
+# ---------------------------------------------------------------------------
+
+@staff_member_required
+def gift_order_photo_download(request, pk, index):
+    """Download one customer photo of a gift order as an image file."""
+    import os
+
+    import requests
+    from django.http import Http404, HttpResponse
+    from django.shortcuts import get_object_or_404
+
+    from gifts.models import GiftOrder
+
+    order = get_object_or_404(GiftOrder, pk=pk)
+    images = list(order.images.all())
+    if index < 0 or index >= len(images):
+        raise Http404("Photo not found.")
+    img = images[index]
+
+    data = None
+    # Local storage first (dev / disk setups).
+    try:
+        img.image.open("rb")
+        data = img.image.read()
+        img.image.close()
+    except Exception:
+        data = None
+    # Remote storage fallback (e.g. Cloudinary): fetch the public URL.
+    if not data:
+        try:
+            resp = requests.get(img.image.url, timeout=30)
+            if resp.status_code == 200:
+                data = resp.content
+        except Exception:
+            data = None
+    if not data:
+        raise Http404("Photo could not be downloaded.")
+
+    ext = (os.path.splitext(img.image.name or "")[1] or ".jpg").lower()
+    content_types = {
+        ".png": "image/png",
+        ".gif": "image/gif",
+        ".webp": "image/webp",
+        ".bmp": "image/bmp",
+    }
+    content_type = content_types.get(ext, "image/jpeg")
+    filename = f"{order.order_id}_photo_{index + 1}{ext}"
+    response = HttpResponse(data, content_type=content_type)
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response

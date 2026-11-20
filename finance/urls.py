@@ -14,5 +14,6 @@ urlpatterns = [
     path("record-restock/", views.record_untracked_restock, name="record_untracked_restock"),
     path("gift-orders/", views.gift_orders, name="finance_gift_orders"),
     path("gift-orders/<int:pk>/update/", views.gift_order_update, name="finance_gift_order_update"),
+    path("gift-orders/<int:pk>/photos/<int:index>/download/", views.gift_order_photo_download, name="finance_gift_order_photo_download"),
     path("gift-orders/<int:pk>/download/", views.gift_order_images_download, name="finance_gift_order_download"),
 ]
