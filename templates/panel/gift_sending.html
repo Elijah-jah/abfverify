@@ -8,7 +8,7 @@
 {% block section_title %}Send a Gift{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/gifts.css' %}?v=2">
+<link rel="stylesheet" href="{% static 'css/gifts.css' %}?v=3">
 {% endblock %}
 
 {% block content %}
@@ -27,10 +27,6 @@
             </p>
         </div>
         <div class="gf-head-side">
-            <div class="gf-wallet-pill" title="Wallet balance">
-                <i class="fa-solid fa-wallet"></i>
-                <span>₦{{ user_wallet.balance|floatformat:2|intcomma }}</span>
-            </div>
             <button type="button" class="gf-myorders-link"
                     onclick="location.href='{% url 'my_gift_orders' %}'">
                 <i class="fa-solid fa-box-open"></i>
@@ -75,6 +71,7 @@
                      data-group-price="{{ group.price|floatformat:2 }}"
                      data-group-image="{% if group.image %}{{ group.image.url }}{% endif %}"
                      data-group-duration="{{ group.delivery_duration }}"
+                     data-size-types="{{ group.size_types|join:',' }}"
                      data-order-url="{% url 'gift_order_create' group.id %}"
                      role="button" tabindex="0"
                      aria-label="View {{ group.name }} details">
@@ -106,6 +103,7 @@
                                 data-group-price="{{ group.price|floatformat:2 }}"
                                 data-group-image="{% if group.image %}{{ group.image.url }}{% endif %}"
                                 data-group-duration="{{ group.delivery_duration }}"
+                                data-size-types="{{ group.size_types|join:',' }}"
                                 data-order-url="{% url 'gift_order_create' group.id %}">
                             <i class="fa-solid fa-paper-plane"></i>
                             Send this Gift
@@ -200,6 +198,15 @@
 
         <form id="gfOrderForm" novalidate>
             {% csrf_token %}
+
+            <!-- SIZE (hidden unless this gift has size options ticked in admin) -->
+            <div class="gf-section gf-hidden" id="gfSizeSection">
+                <span class="gf-section-title">
+                    <i class="fa-solid fa-ruler-combined"></i>
+                    Choose Size
+                </span>
+                <div class="gf-form-grid" id="gfSizeGrid"></div>
+            </div>
 
             <!-- DELIVERY DETAILS -->
             <div class="gf-section">
@@ -360,5 +367,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/gifts.js' %}?v=2"></script>
+<script src="{% static 'js/gifts.js' %}?v=3"></script>
 {% endblock %}

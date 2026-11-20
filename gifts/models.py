@@ -5,6 +5,18 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 
+# The size lists a customer can pick from, per size type. The admin only
+# ticks which types apply to a gift group; these are the choices shown.
+SIZE_OPTIONS = {
+    "shoe": [str(n) for n in range(10, 46)],
+    "cloth": ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
+    "frame": [
+        "4x6 in", "5x7 in", "6x8 in", "8x10 in", "8x12 in",
+        "10x12 in", "12x16 in", "16x20 in", "20x24 in",
+    ],
+    "ring": [str(n) + half for n in range(4, 15) for half in ("", ".5")] + ["15"],
+}
+
 
 class GiftCategory(models.Model):
     """Top level: e.g. Flowers, Frames, Hampers (the pill bar on the page)."""
@@ -46,7 +58,29 @@ class GiftGroup(models.Model):
     )
     display_order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
+
+    # Size checkboxes: tick whichever applies to this gift and the order
+    # form will ask the customer for that size. All unticked = the form
+    # shows nothing about sizes. Ticking is optional.
+    has_shoe_sizes = models.BooleanField(default=False, verbose_name="Shoe size")
+    has_cloth_sizes = models.BooleanField(default=False, verbose_name="Cloth size")
+    has_frame_sizes = models.BooleanField(default=False, verbose_name="Frame size")
+    has_ring_sizes = models.BooleanField(default=False, verbose_name="Ring size")
+
     created_at = models.DateTimeField(auto_now_add=True)
+
+    # (key, model field, label shown to the customer)
+    SIZE_FIELD_MAP = (
+        ("shoe", "has_shoe_sizes", "Shoe"),
+        ("cloth", "has_cloth_sizes", "Cloth"),
+        ("frame", "has_frame_sizes", "Frame"),
+        ("ring", "has_ring_sizes", "Ring"),
+    )
+
+    @property
+    def size_types(self):
+        """Enabled size type keys for this group, e.g. ["shoe", "cloth"]."""
+        return [key for key, field, _label in self.SIZE_FIELD_MAP if getattr(self, field)]
 
     class Meta:
         ordering = ["display_order", "name"]
@@ -94,6 +128,10 @@ class GiftOrder(models.Model):
     zip_code = models.CharField(max_length=20)
     phone = models.CharField(max_length=30)
     note = models.TextField(blank=True, default="")  # optional message from the sender
+
+    # Sizes the customer picked, e.g. "Shoe: 42 · Cloth: XL". Empty when
+    # the gift group has no size checkboxes ticked.
+    size_info = models.CharField(max_length=200, blank=True, default="")
 
     # Filled by staff on the finance page — accepts a tracking number,
     # a full tracking link, or any plain text.

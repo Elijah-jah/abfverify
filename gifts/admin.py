@@ -15,10 +15,14 @@ class GiftCategoryAdmin(admin.ModelAdmin):
 class GiftGroupAdmin(admin.ModelAdmin):
     list_display = (
         "image_preview", "name", "category", "price",
-        "delivery_duration", "display_order", "is_active", "created_at",
+        "delivery_duration", "has_shoe_sizes", "has_cloth_sizes",
+        "has_frame_sizes", "has_ring_sizes", "display_order", "is_active", "created_at",
     )
     list_filter = ("category", "is_active")
-    list_editable = ("price", "delivery_duration", "display_order", "is_active")
+    list_editable = (
+        "price", "delivery_duration", "has_shoe_sizes", "has_cloth_sizes",
+        "has_frame_sizes", "has_ring_sizes", "display_order", "is_active",
+    )
     search_fields = ("name", "description", "category__name")
 
     @admin.display(description="Image")
@@ -60,7 +64,7 @@ class GiftOrderImageInline(admin.TabularInline):
 class GiftOrderAdmin(admin.ModelAdmin):
     list_display = (
         "order_id", "group_name", "user", "price",
-        "receiver_name", "status", "created_at",
+        "size_info", "receiver_name", "status", "created_at",
     )
     list_select_related = ("user",)
     inlines = (GiftOrderImageInline,)
@@ -73,6 +77,6 @@ class GiftOrderAdmin(admin.ModelAdmin):
     readonly_fields = (
         "order_id", "user", "group", "group_name", "category_name",
         "group_image_url", "price", "sender_name", "receiver_name",
-        "address", "city", "state", "zip_code", "phone", "note",
+        "address", "city", "state", "zip_code", "phone", "note", "size_info",
         "created_at", "updated_at",
     )

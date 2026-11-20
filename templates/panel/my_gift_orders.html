@@ -8,7 +8,7 @@
 {% block section_title %}My Gift Orders{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/gifts.css' %}">
+<link rel="stylesheet" href="{% static 'css/gifts.css' %}?v=3">
 {% endblock %}
 
 {% block content %}
@@ -53,6 +53,7 @@
                     "state": "{{ order.state|escapejs }}",
                     "zip_code": "{{ order.zip_code|escapejs }}",
                     "phone": "{{ order.phone|escapejs }}",
+                    "size_info": "{{ order.size_info|escapejs }}",
                     "note": "{{ order.note|escapejs }}",
                     "tracking_link": "{{ order.tracking_link|escapejs }}",
                     "images": [{% for img in order.images.all %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}]
@@ -175,6 +176,10 @@
                 <span>Phone Number</span>
                 <strong id="gfDetailPhone">—</strong>
             </div>
+            <div class="gf-detail gf-detail-full gf-hidden" id="gfDetailSizeWrap">
+                <span>Size</span>
+                <strong id="gfDetailSize">—</strong>
+            </div>
             <div class="gf-detail">
                 <span>Placed On</span>
                 <strong id="gfDetailCreated">—</strong>
@@ -205,5 +210,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/gift_orders.js' %}"></script>
+<script src="{% static 'js/gift_orders.js' %}?v=2"></script>
 {% endblock %}

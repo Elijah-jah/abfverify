@@ -4,7 +4,7 @@ from django.db import transaction
 
 from wallet.models import Transaction, Wallet
 
-from .models import GiftGroup, GiftOrder, GiftOrderImage
+from .models import SIZE_OPTIONS, GiftGroup, GiftOrder, GiftOrderImage
 
 logger = logging.getLogger(__name__)
 
@@ -86,6 +86,20 @@ def create_gift_order(user, group_id, form_data, images=None):
 
     # Optional gift note from the sender
     cleaned["note"] = (form_data.get("note") or "").strip()
+
+    # Sizes: only the types the admin enabled on this group are asked for,
+    # and each enabled one is required and must be a real listed option.
+    size_parts = []
+    for key, field, label in GiftGroup.SIZE_FIELD_MAP:
+        if not getattr(group, field):
+            continue
+        value = (form_data.get(f"size_{key}") or "").strip()
+        if not value:
+            raise GiftOrderError(f"Please choose the {label.lower()} size.", field=f"size_{key}")
+        if value not in SIZE_OPTIONS[key]:
+            raise GiftOrderError(f"Please choose a valid {label.lower()} size.", field=f"size_{key}")
+        size_parts.append(f"{label}: {value}")
+    cleaned["size_info"] = " · ".join(size_parts)
 
     wallet = Wallet.objects.select_for_update().get(user=user)
     if wallet.balance < group.price:

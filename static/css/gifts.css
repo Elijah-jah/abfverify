@@ -681,6 +681,20 @@ body.light .gf-detail-img::before {
 
 .gf-field-full { grid-column: 1 / -1; }
 
+.gf-field select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 38px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+                      linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position: calc(100% - 19px) 50%, calc(100% - 13px) 50%;
+    background-size: 6px 6px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+.gf-field select:invalid { color: var(--muted); }
+
 .gf-field label {
     font-size: .84rem;
     font-weight: 600;
@@ -688,6 +702,7 @@ body.light .gf-detail-img::before {
 }
 
 .gf-field input,
+.gf-field select,
 .gf-field textarea {
     width: 100%;
     padding: 11px 13px;
@@ -703,12 +718,14 @@ body.light .gf-detail-img::before {
 }
 
 .gf-field input:focus,
+.gf-field select:focus,
 .gf-field textarea:focus {
     border-color: var(--brand);
     box-shadow: 0 0 0 3px var(--brand-soft);
 }
 
 .gf-field input.gf-invalid,
+.gf-field select.gf-invalid,
 .gf-field textarea.gf-invalid { border-color: var(--danger); }
 
 /* ---------- Dropzone / previews ---------- */
@@ -1196,11 +1213,12 @@ body.light .gf-detail-img::before {
     margin: 0;
 }
 
-/* ---------- Order details: pinned summary header ----------
-   The image, order id, name, status and price stay fixed at the
+/* ---------- Pinned summary header (order details + order form) ----------
+   The image, order id / duration, name and price stay fixed at the
    top of the card; only the content below (tracking, details,
-   photos) scrolls. */
-#gfOrderModal .gf-modal-gift {
+   photos / the form fields) scrolls. */
+#gfOrderModal .gf-modal-gift,
+#gfFormModal .gf-modal-gift {
     position: sticky;
     top: 0;
     z-index: 6;
@@ -1330,6 +1348,7 @@ body.light .gf-detail-img::before {
 @media (max-width: 640px) {
     /* Prevent iOS focus-zoom on inputs (needs >= 16px font) */
     .gf-field input,
+    .gf-field select,
     .gf-field textarea,
     .gf-search input { font-size: 16px; }
 
@@ -1433,7 +1452,8 @@ body.light .gf-detail-img::before {
     .gf-detail { padding: 10px 12px; }
 
     /* Pinned header matches the mobile card padding */
-    #gfOrderModal .gf-modal-gift {
+    #gfOrderModal .gf-modal-gift,
+    #gfFormModal .gf-modal-gift {
         margin: -18px -16px 14px;
         padding: 12px 16px;
     }

@@ -10,6 +10,14 @@
     var MAX_DIMENSION = 2000;   // px, longest side
     var JPEG_QUALITY = 0.85;    // visually lossless for web viewing
 
+    /* Size choices - must mirror SIZE_OPTIONS in gifts/models.py */
+    var SIZE_TYPES = {
+        shoe:  { label: "Shoe",  options: (function () { var a = []; for (var i = 10; i <= 45; i++) a.push(String(i)); return a; })() },
+        cloth: { label: "Cloth", options: ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] },
+        frame: { label: "Frame", options: ["4x6 in", "5x7 in", "6x8 in", "8x10 in", "8x12 in", "10x12 in", "12x16 in", "16x20 in", "20x24 in"] },
+        ring:  { label: "Ring",  options: (function () { var a = []; for (var i = 4; i <= 14; i++) { a.push(String(i)); a.push(i + ".5"); } a.push("15"); return a; })() }
+    };
+
     /* ---------------- Search + category pill filter ---------------- */
     var pills = document.querySelectorAll(".gf-pill");
     var cards = document.querySelectorAll(".gf-card");
@@ -144,6 +152,7 @@
             fallback.style.display = "flex";
         }
 
+        buildSizeFields(data.sizeTypes || "");
         form.reset();
         clearImages();
         clearErrors();
@@ -159,6 +168,7 @@
             price: el.getAttribute("data-group-price"),
             image: el.getAttribute("data-group-image") || "",
             duration: el.getAttribute("data-group-duration") || "",
+            sizeTypes: el.getAttribute("data-size-types") || "",
             orderUrl: el.getAttribute("data-order-url")
         };
     }
@@ -331,6 +341,49 @@
         imagesError.textContent = "";
     }
 
+    /* ---------------- Size fields ---------------- */
+    var sizeSection = document.getElementById("gfSizeSection");
+    var sizeGrid = document.getElementById("gfSizeGrid");
+
+    function buildSizeFields(sizeTypes) {
+        sizeGrid.innerHTML = "";
+        var types = sizeTypes.split(",").filter(function (t) { return SIZE_TYPES[t]; });
+
+        types.forEach(function (key) {
+            var cfg = SIZE_TYPES[key];
+
+            var field = document.createElement("div");
+            field.className = "gf-field";
+
+            var label = document.createElement("label");
+            label.setAttribute("for", "gf_size_" + key);
+            label.textContent = cfg.label + " size";
+
+            var select = document.createElement("select");
+            select.id = "gf_size_" + key;
+            select.name = "size_" + key;
+            select.required = true;
+
+            var placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.textContent = "Select " + cfg.label.toLowerCase() + " size";
+            select.appendChild(placeholder);
+
+            cfg.options.forEach(function (opt) {
+                var o = document.createElement("option");
+                o.value = opt;
+                o.textContent = opt;
+                select.appendChild(o);
+            });
+
+            field.appendChild(label);
+            field.appendChild(select);
+            sizeGrid.appendChild(field);
+        });
+
+        sizeSection.classList.toggle("gf-hidden", types.length === 0);
+    }
+
     /* ---------------- Validation ---------------- */
     var REQUIRED = ["sender_name", "receiver_name", "address", "city", "state", "zip_code", "phone"];
 
@@ -351,7 +404,24 @@
                 ok = false;
             }
         });
-        if (!ok) formError.textContent = "Please fill in every delivery field above.";
+        var deliveryOk = ok;
+        var sizeMissing = false;
+        sizeGrid.querySelectorAll("select").forEach(function (sel) {
+            if (!sel.value) {
+                sel.classList.add("gf-invalid");
+                ok = false;
+                sizeMissing = true;
+            }
+        });
+        if (!ok) {
+            if (sizeMissing && !deliveryOk) {
+                formError.textContent = "Please fill in every delivery field and choose a size above.";
+            } else if (sizeMissing) {
+                formError.textContent = "Please choose a size above.";
+            } else {
+                formError.textContent = "Please fill in every delivery field above.";
+            }
+        }
         return ok;
     }
 

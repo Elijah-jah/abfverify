@@ -118,6 +118,12 @@
                         <span>Phone Number</span>
                         <strong>{{ order.phone }}</strong>
                     </div>
+                    {% if order.size_info %}
+                    <div class="go-field">
+                        <span>Size</span>
+                        <strong>{{ order.size_info }}</strong>
+                    </div>
+                    {% endif %}
                     {% if order.note %}
                     <div class="go-field go-field-full">
                         <span>Gift Note</span>

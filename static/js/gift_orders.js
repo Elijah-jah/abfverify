@@ -111,6 +111,16 @@
                 copyText(tracking, copyBtn);
             };
 
+            // Size (only when the gift had size options)
+            var sizeWrap = document.getElementById("gfDetailSizeWrap");
+            var sizeEl = document.getElementById("gfDetailSize");
+            if (data.size_info) {
+                sizeEl.textContent = data.size_info;
+                sizeWrap.classList.remove("gf-hidden");
+            } else {
+                sizeWrap.classList.add("gf-hidden");
+            }
+
             // Gift note (optional)
             var noteWrap = document.getElementById("gfDetailNoteWrap");
             var noteEl = document.getElementById("gfDetailNote");
