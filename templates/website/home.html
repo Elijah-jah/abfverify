@@ -25,7 +25,7 @@
     <script>
     (function () {
         try {
-            if (localStorage.getItem("theme") === "light") {
+            if (localStorage.getItem("theme") !== "dark") {
                 document.documentElement.classList.add("pre-light");
             }
         } catch (e) {}

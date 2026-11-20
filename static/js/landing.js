@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
        the pre-paint script marks <html>, so body.light isn't set yet) */
     var storedIsLight = false;
     try {
-        storedIsLight = localStorage.getItem("theme") === "light";
+        storedIsLight = localStorage.getItem("theme") !== "dark";
     } catch (e) {}
 
     applyTheme(storedIsLight);

@@ -60,8 +60,6 @@
 
     if (savedTheme === "light" || savedTheme === "dark") {
         setTheme(savedTheme === "light");
-    } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        setTheme(false);
     } else {
         setTheme(true);
     }

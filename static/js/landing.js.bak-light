@@ -1,0 +1,148 @@
+document.addEventListener("DOMContentLoaded", function () {
+    "use strict";
+
+    /* ==========================
+       THEME TOGGLE
+       Convention: dark is default, body.light = light,
+       preference stored in localStorage under "theme".
+    ========================== */
+
+    var themeToggle = document.getElementById("themeToggle");
+
+    function applyTheme(isLight) {
+        // clear the pre-paint html class so it can never fight body.light
+        // (this was the cause of the half-dark / half-light page)
+        document.documentElement.classList.remove("pre-light");
+
+        document.body.classList.toggle("light", isLight);
+
+        if (themeToggle) {
+            themeToggle.innerHTML = isLight
+                ? '<i class="bi bi-sun-fill"></i>'
+                : '<i class="bi bi-moon-stars-fill"></i>';
+        }
+    }
+
+    /* initial state: read the STORED preference (not the body class —
+       the pre-paint script marks <html>, so body.light isn't set yet) */
+    var storedIsLight = false;
+    try {
+        storedIsLight = localStorage.getItem("theme") === "light";
+    } catch (e) {}
+
+    applyTheme(storedIsLight);
+
+    /* ---------- reveal helper: force-show anything already on screen ----------
+       covers anchor jumps (/#boost) and the theme toggle, where sections
+       could otherwise stay stuck invisible */
+    function revealInView() {
+        document.querySelectorAll(".rv").forEach(function (el) {
+            if (el.classList.contains("animate")) return;
+            var rect = el.getBoundingClientRect();
+            if (rect.top < window.innerHeight && rect.bottom > 0) {
+                el.classList.add("animate");
+            }
+        });
+    }
+
+    // run once on load in case we landed on an anchor mid-page
+    revealInView();
+
+    if (themeToggle) {
+        themeToggle.addEventListener("click", function () {
+            var isLight = !document.body.classList.contains("light");
+            applyTheme(isLight);
+            try {
+                localStorage.setItem("theme", isLight ? "light" : "dark");
+            } catch (e) {}
+            // make sure nothing is left invisible after the switch
+            revealInView();
+        });
+    }
+
+    /* ==========================
+       BACK TO TOP
+    ========================== */
+
+    var backTop = document.getElementById("backToTop");
+
+    if (backTop) {
+        window.addEventListener("scroll", function () {
+            backTop.classList.toggle("show", window.scrollY > 400);
+        });
+
+        backTop.addEventListener("click", function () {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+    }
+
+    /* ==========================
+       SCROLL REVEAL
+    ========================== */
+
+    var animated = document.querySelectorAll(".rv");
+
+    if ("IntersectionObserver" in window) {
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("animate");
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12 });
+
+        animated.forEach(function (el) { observer.observe(el); });
+    } else {
+        animated.forEach(function (el) { el.classList.add("animate"); });
+    }
+
+    /* ==========================
+       ACTIVE NAV LINK
+    ========================== */
+
+    var sections = document.querySelectorAll("section[id]");
+    var navLinks = document.querySelectorAll(".nav-link");
+
+    window.addEventListener("scroll", function () {
+        var current = "";
+
+        sections.forEach(function (section) {
+            if (window.scrollY >= section.offsetTop - 140) {
+                current = section.getAttribute("id");
+            }
+        });
+
+        navLinks.forEach(function (link) {
+            link.classList.remove("active");
+            if (link.getAttribute("href") === "#" + current) {
+                link.classList.add("active");
+            }
+        });
+    });
+
+    /* ==========================
+       PHONE TILT (desktop only)
+       Targets the new .iphone frame; pauses the float animation
+       while tilting so the two transforms don't fight each other.
+    ========================== */
+
+    var phone = document.querySelector(".iphone");
+    var finePointer = window.matchMedia && window.matchMedia("(pointer: fine)").matches;
+
+    if (phone && finePointer) {
+        window.addEventListener("mousemove", function (e) {
+            var x = (window.innerWidth / 2 - e.clientX) / 60;
+            var y = (window.innerHeight / 2 - e.clientY) / 60;
+            phone.classList.add("tilting");
+            phone.style.transform =
+                "rotateY(" + x + "deg) rotateX(" + (-y) + "deg)";
+        });
+
+        document.addEventListener("mouseleave", function () {
+            phone.classList.remove("tilting");
+            phone.style.transform = "";
+        });
+    }
+
+});
