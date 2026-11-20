@@ -486,17 +486,17 @@ body.light .gf-detail-img::before {
 .gf-modal-overlay {
     position: fixed;
     inset: 0;
-    z-index: 900;
+    z-index: 10050;              /* above topbar (1000) and float buttons (9999) */
     background: rgba(3, 7, 18, .72);
     backdrop-filter: blur(6px);
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
-    padding: 5vh 14px 24px;
+    padding: 24px 16px;
     overflow-y: auto;
     opacity: 0;
     pointer-events: none;
-    transition: opacity .22s ease;
+    transition: opacity .25s ease;
 }
 
 .gf-modal-overlay.open {
@@ -505,14 +505,14 @@ body.light .gf-detail-img::before {
 }
 
 .gf-overlay-top {
-    z-index: 960;
-    align-items: center;
+    z-index: 10100;
 }
 
 .gf-modal {
     width: 100%;
     max-width: 640px;
     max-height: 90vh;
+    max-height: 90dvh;
     overflow-y: auto;
     background: var(--card);
     border: 1px solid var(--border);
@@ -520,12 +520,32 @@ body.light .gf-detail-img::before {
     box-shadow: var(--shadow);
     padding: 22px;
     position: relative;
-    transform: translateY(14px);
-    transition: transform .22s ease;
+    opacity: 0;
+    transform: translateY(10px) scale(.97);
+    transition: opacity .25s ease, transform .3s cubic-bezier(.22, 1, .36, 1);
     -webkit-overflow-scrolling: touch;
 }
 
-.gf-modal-overlay.open .gf-modal { transform: translateY(0); }
+.gf-modal-overlay.open .gf-modal {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Slim, theme-matched scrollbar inside cards */
+.gf-modal::-webkit-scrollbar,
+.gf-mini::-webkit-scrollbar { width: 6px; }
+
+.gf-modal::-webkit-scrollbar-track,
+.gf-mini::-webkit-scrollbar-track { background: transparent; }
+
+.gf-modal::-webkit-scrollbar-thumb,
+.gf-mini::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 999px;
+}
+
+.gf-modal::-webkit-scrollbar-thumb:hover,
+.gf-mini::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
 .gf-modal-close {
     position: absolute;
@@ -831,17 +851,24 @@ body.light .gf-detail-img::before {
 .gf-mini {
     width: 100%;
     max-width: 430px;
+    max-height: 88vh;
+    max-height: 88dvh;
+    overflow-y: auto;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     padding: 28px 24px 24px;
     text-align: center;
-    transform: translateY(14px);
-    transition: transform .22s ease;
+    opacity: 0;
+    transform: translateY(10px) scale(.96);
+    transition: opacity .25s ease, transform .3s cubic-bezier(.22, 1, .36, 1);
 }
 
-.gf-modal-overlay.open .gf-mini { transform: translateY(0); }
+.gf-modal-overlay.open .gf-mini {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
 
 .gf-mini-icon {
     position: relative;
@@ -1256,20 +1283,27 @@ body.light .gf-detail-img::before {
     .gf-modal-overlay {
         align-items: center;
         justify-content: center;
-        padding: 18px;
+        padding: 20px 14px;
     }
 
     .gf-modal {
-        max-height: 86vh;
+        max-height: 84vh;
+        max-height: 84dvh;
         overflow-y: auto;
         border-radius: 18px;
         padding: 18px 16px;
     }
 
-    /* Product details: picture sits neatly inside the rounded card */
+    /* Product details: picture sits neatly inside the rounded card,
+       kept moderate so the whole card fits comfortably */
     #gfDetailModal .gf-modal { padding: 0; }
-    #gfDetailModal .gf-detail-img { border-radius: 18px 18px 0 0; }
-    #gfDetailModal .gf-detail-body { padding: 16px 16px 0; }
+    #gfDetailModal .gf-detail-img {
+        border-radius: 18px 18px 0 0;
+        aspect-ratio: 16 / 10;
+    }
+    #gfDetailModal .gf-detail-body { padding: 14px 16px 0; }
+    #gfDetailModal .gf-detail-name { font-size: 1.12rem; }
+    #gfDetailModal .gf-detail-desc { font-size: .84rem; }
 
     /* Sticky action bar inside the card for long content */
     #gfFormModal .gf-modal-actions,
