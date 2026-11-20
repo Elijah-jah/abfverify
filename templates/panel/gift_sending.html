@@ -66,8 +66,18 @@
     <div class="gf-grid" id="gfGrid">
         {% for category in categories %}
             {% for group in category.groups.all %}
-            <article class="gf-card" data-cat="{{ category.id }}"
-                     data-search="{{ group.name|lower }} {{ category.name|lower }} {{ group.description|lower }}">
+            <article class="gf-card js-view-gift" data-cat="{{ category.id }}"
+                     data-search="{{ group.name|lower }} {{ category.name|lower }} {{ group.description|lower }}"
+                     data-group-id="{{ group.id }}"
+                     data-group-name="{{ group.name }}"
+                     data-cat-name="{{ category.name }}"
+                     data-group-desc="{{ group.description }}"
+                     data-group-price="{{ group.price|floatformat:2 }}"
+                     data-group-image="{% if group.image %}{{ group.image.url }}{% endif %}"
+                     data-group-duration="{{ group.delivery_duration }}"
+                     data-order-url="{% url 'gift_order_create' group.id %}"
+                     role="button" tabindex="0"
+                     aria-label="View {{ group.name }} details">
                 <div class="gf-card-img"{% if group.image %} style="--gf-img: url('{{ group.image.url }}')"{% endif %}>
                     {% if group.image %}
                     <img src="{{ group.image.url }}" alt="{{ group.name }}" loading="lazy">
@@ -120,6 +130,50 @@
     </div>
     {% endif %}
 
+</div>
+
+<!-- ==================== PRODUCT DETAILS MODAL ==================== -->
+<div class="gf-modal-overlay" id="gfDetailModal" aria-hidden="true">
+    <div class="gf-modal gf-detail-modal" role="dialog" aria-modal="true" aria-labelledby="gfDetailName">
+
+        <button type="button" class="gf-modal-close js-close-detail" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="gf-detail-img" id="gfDetailImgWrap">
+            <img id="gfDetailImg" src="" alt="">
+            <div class="gf-card-img-fallback" id="gfDetailImgFallback">
+                <i class="fa-solid fa-gift"></i>
+            </div>
+            <span class="gf-duration" id="gfDetailDurationBadge">
+                <i class="fa-solid fa-truck-fast"></i>
+                <span id="gfDetailDurationText"></span>
+            </span>
+        </div>
+
+        <div class="gf-detail-body">
+            <span class="gf-card-cat" id="gfDetailCat">Category</span>
+            <h3 class="gf-detail-name" id="gfDetailName">Gift name</h3>
+            <p class="gf-detail-desc" id="gfDetailDesc"></p>
+
+            <div class="gf-detail-price-row">
+                <span class="gf-detail-price-label">Price</span>
+                <span class="gf-detail-price" id="gfDetailPrice">₦0.00</span>
+            </div>
+
+            <div class="gf-modal-actions">
+                <button type="button" class="gf-btn gf-btn-ghost js-close-detail">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Back
+                </button>
+                <button type="button" class="gf-btn gf-btn-primary" id="gfDetailSend">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    Send this Gift
+                </button>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <!-- ==================== ORDER FORM MODAL ==================== -->
