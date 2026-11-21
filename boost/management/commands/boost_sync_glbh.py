@@ -2,12 +2,12 @@ from django.core.management.base import BaseCommand
 from django.db.models import Count
 
 from boost.models import BoostService
-from boost.providers import GoodLuckBoostHub, GoodLuckBoostHubError
+from boost.providers import ReallySimpleSocial, ReallySimpleSocialError
 
 
 class Command(BaseCommand):
     help = (
-        "Switch to GoodLuckBoostHub: delete old services with no orders, "
+        "Switch to ReallySimpleSocial: delete old services with no orders, "
         "deactivate old ones with orders, then import the FULL new catalog "
         "(name, category, type, rate, min/max, refill, cancel)."
     )
@@ -23,8 +23,8 @@ class Command(BaseCommand):
 
         # ---- 1. Fetch the full catalog from the new provider ----
         try:
-            api_services = GoodLuckBoostHub().get_services()
-        except GoodLuckBoostHubError as e:
+            api_services = ReallySimpleSocial().get_services()
+        except ReallySimpleSocialError as e:
             self.stdout.write(self.style.ERROR(f"Provider error: {e}"))
             return
 

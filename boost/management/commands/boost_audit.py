@@ -1,10 +1,10 @@
-﻿import re
+import re
 
 from django.core.management.base import BaseCommand
 from django.db.models import Count
 
 from boost.models import BoostService, BoostOrder
-from boost.providers import GoodLuckBoostHub, GoodLuckBoostHubError
+from boost.providers import ReallySimpleSocial, ReallySimpleSocialError
 
 
 TIMEFRAME_PATTERNS = [
@@ -44,12 +44,12 @@ class Command(BaseCommand):
         # ---- 1. What does the provider currently offer? ----
         provider_ids = set()
         try:
-            api_services = GoodLuckBoostHub().get_services()
+            api_services = ReallySimpleSocial().get_services()
             provider_ids = {str(s["service"]) for s in api_services}
             self.stdout.write(self.style.SUCCESS(
-                f"Provider (GoodLuckBoostHub) currently offers: {len(provider_ids)} services"
+                f"Provider (ReallySimpleSocial) currently offers: {len(provider_ids)} services"
             ))
-        except GoodLuckBoostHubError as e:
+        except ReallySimpleSocialError as e:
             self.stdout.write(self.style.ERROR(f"Could not reach provider: {e}"))
 
         # ---- 2. Local DB state ----

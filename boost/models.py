@@ -1,4 +1,4 @@
-﻿from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_UP
 
 from django.conf import settings
 from django.db import models
@@ -8,7 +8,7 @@ class BoostSettings(models.Model):
     """Singleton — edit exchange rate & profit from admin, like SMS pricing."""
     exchange_rate = models.DecimalField(
         max_digits=10, decimal_places=2, default=1.0,
-        help_text="Provider bills in NGN. Keep this at 1.0. Only change it if you switch to a USD-billing provider.",
+        help_text="ReallySimpleSocial bills in USD. Set this to the current NGN value of $1 (e.g. 1500).",
     )
     profit_flat = models.DecimalField(
         max_digits=10, decimal_places=2, default=1000.0,
@@ -38,7 +38,7 @@ class BoostSettings(models.Model):
 
 
 class BoostService(models.Model):
-    """Synced from GoodLuckBoostHub API."""
+    """Synced from ReallySimpleSocial API."""
     service_id = models.PositiveIntegerField(unique=True)  # provider's ID
     name = models.CharField(max_length=255)
     category = models.CharField(max_length=255, blank=True, db_index=True)
@@ -47,7 +47,7 @@ class BoostService(models.Model):
         blank=True, default="",
         help_text="Shown to users on the order form (e.g. what link to paste)",
     )
-    rate = models.DecimalField(max_digits=16, decimal_places=4, help_text="Provider cost per 1000 units (NGN)")
+    rate = models.DecimalField(max_digits=16, decimal_places=4, help_text="Provider cost per 1000 units (USD)")
     min_order = models.PositiveIntegerField(default=1)
     max_order = models.PositiveIntegerField(default=1000)
     refill = models.BooleanField(default=False)
@@ -65,7 +65,7 @@ class BoostService(models.Model):
         """What the customer pays in NGN for `quantity` units."""
         settings_obj = settings_obj or BoostSettings.get_solo()
         qty = Decimal(quantity)
-        # Convert provider cost to NGN FIRST (exchange_rate is 1.0 for NGN-billing providers)
+        # Convert the USD provider cost to NGN (exchange_rate = NGN value of $1)
         cost_ngn = (self.rate / Decimal("1000")) * qty * settings_obj.exchange_rate
         # THEN add profits, both in NGN
         profit = settings_obj.profit_flat + (cost_ngn * settings_obj.profit_percent / Decimal("100"))

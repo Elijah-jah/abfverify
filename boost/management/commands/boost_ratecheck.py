@@ -1,7 +1,7 @@
-﻿from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand
 
 from boost.models import BoostService
-from boost.providers import GoodLuckBoostHub
+from boost.providers import ReallySimpleSocial
 
 
 class Command(BaseCommand):
@@ -14,7 +14,7 @@ class Command(BaseCommand):
 
         self.stdout.write("Fetching from API (takes a few seconds)...")
         try:
-            services = GoodLuckBoostHub().get_services()
+            services = ReallySimpleSocial().get_services()
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"API error: {e}"))
             return

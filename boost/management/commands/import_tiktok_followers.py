@@ -1,9 +1,9 @@
-﻿from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation
 
 from django.core.management.base import BaseCommand, CommandError
 
 from boost.models import BoostService
-from boost.providers import GoodLuckBoostHub, GoodLuckBoostHubError
+from boost.providers import ReallySimpleSocial, ReallySimpleSocialError
 
 
 TARGET_NAME = "Tiktok followers | No refill - NGN 5000 per 1000"
@@ -23,12 +23,12 @@ def get_rate(service):
 
 
 class Command(BaseCommand):
-    help = "Import the selected TikTok followers service from GoodLuckBoostHub."
+    help = "Import the selected TikTok followers service from ReallySimpleSocial."
 
     def handle(self, *args, **options):
         try:
-            services = GoodLuckBoostHub().get_services()
-        except GoodLuckBoostHubError as exc:
+            services = ReallySimpleSocial().get_services()
+        except ReallySimpleSocialError as exc:
             raise CommandError(f"Provider connection failed: {exc}") from exc
 
         # First try an exact name match.

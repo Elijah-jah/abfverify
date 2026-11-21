@@ -1,19 +1,23 @@
-﻿from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand
 
 from boost.models import BoostService
-from boost.providers import GoodLuckBoostHub, GoodLuckBoostHubError
+from boost.providers import ReallySimpleSocial, ReallySimpleSocialError
 
 
 class Command(BaseCommand):
-    help = "Sync boost services from GoodLuckBoostHub into the database"
+    help = "Sync boost services from ReallySimpleSocial into the database"
 
     def handle(self, *args, **options):
         try:
-            provider = GoodLuckBoostHub()
+            provider = ReallySimpleSocial()
             services = provider.get_services()
-        except GoodLuckBoostHubError as e:
+        except ReallySimpleSocialError as e:
             self.stderr.write(self.style.ERROR(f"Sync failed: {e}"))
             return
+
+        # Hide everything not in the provider's current catalog, so old
+        # leftovers stay for order history but can no longer be ordered.
+        BoostService.objects.update(is_active=False)
 
         created = updated = 0
         for s in services:
@@ -26,6 +30,7 @@ class Command(BaseCommand):
                 "max_order": s["max"],
                 "refill": bool(s.get("refill")),
                 "cancel": bool(s.get("cancel")),
+                "is_active": True,
             }
             desc = s.get("description") or s.get("desc")
             if desc:

@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 from decimal import Decimal
 
 from django.contrib import messages
@@ -10,7 +10,7 @@ from django.urls import reverse
 
 from wallet.models import Wallet, Transaction
 from .models import BoostService, BoostOrder, BoostSettings, OPEN_STATUSES
-from .providers import GoodLuckBoostHub, GoodLuckBoostHubError
+from .providers import ReallySimpleSocial, ReallySimpleSocialError
 
 logger = logging.getLogger(__name__)
 
@@ -69,14 +69,14 @@ def boost_view(request):
             messages.error(request, "Your balance is low. Please recharge to continue.")
             return ajax_error_response("wallet")
 
-        provider = GoodLuckBoostHub()
+        provider = ReallySimpleSocial()
         try:
             provider_order_id = provider.add_order(
                 service_id=service.service_id,
                 link=link,
                 quantity=quantity,
             )
-        except GoodLuckBoostHubError as e:
+        except ReallySimpleSocialError as e:
             logger.exception("Boost order failed for user %s: %s", request.user.id, e)
             messages.error(request, "Unable to place boost order. Please try again later.")
             return ajax_error_response("boost")

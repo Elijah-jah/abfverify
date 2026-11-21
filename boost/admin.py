@@ -1,7 +1,7 @@
-﻿from django.contrib import admin
+from django.contrib import admin
 
 from .models import BoostService, BoostOrder, BoostSettings
-from .providers import GoodLuckBoostHub, GoodLuckBoostHubError
+from .providers import ReallySimpleSocial, ReallySimpleSocialError
 
 
 @admin.register(BoostService)
@@ -12,14 +12,18 @@ class BoostServiceAdmin(admin.ModelAdmin):
     list_per_page = 50
     actions = ["sync_from_api"]
 
-    @admin.action(description="Sync services from GoodLuckBoostHub (fetches ALL)")
+    @admin.action(description="Sync services from ReallySimpleSocial (fetches ALL)")
     def sync_from_api(self, request, queryset):
         try:
-            provider = GoodLuckBoostHub()
+            provider = ReallySimpleSocial()
             services = provider.get_services()
-        except GoodLuckBoostHubError as e:
+        except ReallySimpleSocialError as e:
             self.message_user(request, f"Sync failed: {e}", level="error")
             return
+
+        # Hide everything not in the provider's current catalog, so old
+        # leftovers stay for order history but can no longer be ordered.
+        BoostService.objects.update(is_active=False)
 
         created = updated = 0
         for s in services:
@@ -32,9 +36,10 @@ class BoostServiceAdmin(admin.ModelAdmin):
                 "max_order": s["max"],
                 "refill": bool(s.get("refill")),
                 "cancel": bool(s.get("cancel")),
+                "is_active": True,
             }
 
-            # Import description only if the API returns one â€” otherwise
+            # Import description only if the API returns one — otherwise
             # keep whatever is already saved (e.g. written manually in admin)
             desc = s.get("description") or s.get("desc")
             if desc:

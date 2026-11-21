@@ -1,10 +1,10 @@
-﻿import json
+import json
 import re
 from collections import defaultdict
 
 from django.core.management.base import BaseCommand
 
-from boost.providers import GoodLuckBoostHub, GoodLuckBoostHubError
+from boost.providers import ReallySimpleSocial, ReallySimpleSocialError
 
 
 def tf_summary(s):
@@ -21,8 +21,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **opts):
         try:
-            services = GoodLuckBoostHub().get_services()
-        except GoodLuckBoostHubError as e:
+            services = ReallySimpleSocial().get_services()
+        except ReallySimpleSocialError as e:
             self.stdout.write(self.style.ERROR(f"Provider error: {e}"))
             return
 

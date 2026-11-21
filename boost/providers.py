@@ -1,18 +1,18 @@
-﻿import requests
+import requests
 from django.conf import settings
 
 
-class GoodLuckBoostHubError(Exception):
+class ReallySimpleSocialError(Exception):
     pass
 
 
-class GoodLuckBoostHub:
-    BASE_URL = "https://goodluckboosthub.com/api/v2"
+class ReallySimpleSocial:
+    BASE_URL = "https://reallysimplesocial.com/api/v2"
 
     def __init__(self, api_key=None):
-        self.api_key = api_key or settings.GLBH_API_KEY
+        self.api_key = api_key or settings.RSS_API_KEY
         if not self.api_key:
-            raise GoodLuckBoostHubError("GLBH_API_KEY is not configured")
+            raise ReallySimpleSocialError("RSS_API_KEY is not configured")
 
     def _request(self, **params):
         params["key"] = self.api_key
@@ -20,16 +20,16 @@ class GoodLuckBoostHub:
             resp = requests.post(self.BASE_URL, data=params, timeout=30)
             resp.raise_for_status()
         except requests.RequestException as e:
-            raise GoodLuckBoostHubError(f"Connection error: {e}")
+            raise ReallySimpleSocialError(f"Connection error: {e}")
 
         try:
             data = resp.json()
         except ValueError:
-            raise GoodLuckBoostHubError("Invalid response from provider")
+            raise ReallySimpleSocialError("Invalid response from provider")
 
         # This API returns {"error": "..."} on failure
         if isinstance(data, dict) and data.get("error"):
-            raise GoodLuckBoostHubError(data["error"])
+            raise ReallySimpleSocialError(data["error"])
 
         return data
 

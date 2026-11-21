@@ -1,6 +1,6 @@
-﻿import logging
+import logging
 from .models import BoostOrder, OPEN_STATUSES
-from .providers import GoodLuckBoostHub
+from .providers import ReallySimpleSocial
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ def sync_boost_orders_job():
         return
 
     try:
-        provider = GoodLuckBoostHub()
+        provider = ReallySimpleSocial()
         results = provider.get_orders_status(open_orders)
     except Exception:
         logger.exception("Boost status sync failed")
